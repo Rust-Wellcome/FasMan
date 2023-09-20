@@ -7,6 +7,6 @@ This is a re-write of the current fasta manipulation scripts i've written whilst
 
 TODO:
 - Change the arg structure into:
-    - `split-count -f test.fasta -c 1000`
-    - `split-mem -f test.fasta -s 50MB`
-    - `reformat-head -f test.fasta --header-regex`
+    - `split-count -f test.fasta -c 1000 --output-format {user defined}`
+    - `split-mem -f test.fasta -s 50MB --output-format {user defined}`
+    - `reformat-head -f test.fasta --header-regex {user defined} --output-format {user defined}`
