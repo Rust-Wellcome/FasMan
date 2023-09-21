@@ -31,12 +31,15 @@ fn main() -> Result<(), Error> {
             .about("Command for splitting fasta files by user given size (in MegaBytes) into n (fasta_size / user_given_size) files")
             .arg(
                 Arg::new("fasta-file")
+                    .short('f')
                     .aliases(["fasta"])
                     .required(true)
                     .help("A path to a valid fasta file.")
             )
             .arg(
                 Arg::new("mem-size")
+                    .short('s')
+                    .long("mem-size")
                     .required(true)
                     .help("Size in MB that a fasta file is to be chunked into")
             )
@@ -50,9 +53,11 @@ fn main() -> Result<(), Error> {
 
     if &args[1].to_string() == "splitbycount" {
         let bycount = match_result.subcommand_matches("splitbycount");
+        println!("Fasta file for processing: {:?}", bycount.unwrap().get_one::<String>("fasta-file").unwrap());
         println!("Number of sequence-header pairs per file: {:?}", bycount.unwrap().get_one::<String>("count").unwrap());
     } else if &args[1].to_string() == "splitbysize" {
         let bysize = match_result.subcommand_matches("splitbysize");
+        println!("Fasta file for processing: {:?}", bysize.unwrap().get_one::<String>("fasta-file").unwrap());
         println!("Size to chunk fasta into: {:?}", bysize);
     };
     //if bycount {
