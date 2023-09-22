@@ -29,12 +29,14 @@ fn splitbycount(file: &str, chunk: &u16) -> Result<(), std::io::Error> {
             } else {
                 println!("Sequence");
                 counter += 1;
+                global_counter += 1;
             }
         } else {
             counter = 0;
             println!("CHUNK");
         }
     }
+    println!("Total number of pairs: {:?}", global_counter);
     Ok(())
 }
 
