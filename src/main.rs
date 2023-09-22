@@ -3,7 +3,17 @@ use std::env;
 use std::io::{BufReader, BufRead, Error};
 use clap::{Command, command, Arg};
 
+fn splitbycount() -> Result<(), std::io::Error> {
+    println!("hello");
 
+    Ok(())
+}
+
+fn splitbysize() -> Result<(), std::io::Error> {
+    println!("hello");
+
+    Ok(())
+}
 
 fn main() -> Result<(), Error> {
     let match_result = command!()
@@ -48,17 +58,18 @@ fn main() -> Result<(), Error> {
 
     //println!("{}", &match_result.get_one::<String>("count").unwrap_or(&"DEFAULT".to_string()));
 
-
     let args: Vec<String> = env::args().collect();
 
     if &args[1].to_string() == "splitbycount" {
         let bycount = match_result.subcommand_matches("splitbycount");
         println!("Fasta file for processing: {:?}", bycount.unwrap().get_one::<String>("fasta-file").unwrap());
         println!("Number of sequence-header pairs per file: {:?}", bycount.unwrap().get_one::<String>("count").unwrap());
+        splitbycount();
     } else if &args[1].to_string() == "splitbysize" {
         let bysize = match_result.subcommand_matches("splitbysize");
         println!("Fasta file for processing: {:?}", bysize.unwrap().get_one::<String>("fasta-file").unwrap());
         println!("Size to chunk fasta into: {:?}", bysize);
+        splitbysize();
     };
     //if bycount {
     //    println!("Count to split by: {}", bycount.unwrap().get_one::<String>("count").unwrap());
