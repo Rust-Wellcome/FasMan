@@ -4,22 +4,22 @@ use std::env;
 use std::io::{BufReader, BufRead, Error};
 use clap::{Command, command, Arg};
 use serde::{Serialize, Deserialize};
-use serde_yaml::Value;
-use regex::Regex;
 
-#[derive(Debug, PartialEq, Default, Serialize, Deserialize)]
+//use regex::Regex;
+
+#[derive(Debug, Serialize, Deserialize)]
 struct TreeValYaml {
-    assembly: Vec<Assembly>,
+    assembly: Assembly,
     reference_file: String,
-    assem_reads: Vec<AssemReads>,
-    alignment: Vec<Alignment>,
-    self_comp: Vec<SelfComp>,
-    intron: Vec<Intron>,
-    telomere: Vec<Telomere>,
-    synteny: Vec<Synteny>,
-    busco: Vec<Busco>
+    assem_reads: AssemReads,
+    alignment: Alignment,
+    self_comp: SelfComp,
+    intron: Intron,
+    telomere: Telomere,
+    synteny: Synteny,
+    busco: Busco,
 }
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Assembly {
     level: String,
     sample_id: String,
@@ -29,57 +29,96 @@ struct Assembly {
     gevalType: String
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct AssemReads {
     pacbio: String,
     hic: String,
     supplementary: String
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Alignment {
     data_dir: String,
     common_name: String,
     geneset: String
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct SelfComp {
     motif_len: u16,
     mummer_chunk: u16
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Intron {
     size: String
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Telomere {
     teloseq: String
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Synteny {
     synteny_genome_path: String
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Busco {
     lineages_path: String,
     lineage: String
 }
 
 
-fn validateyaml(file: &str, verbose: &bool) -> Result<(), std::io::Error> {
-    println!{"Validating Yaml: {}", file};
-    let input = fs::File::open(file).expect("Unable to read from file");
-
-    let contents: Vec<TreeValYaml> = serde_yaml::from_reader(input).expect("Unable to read from file");
-    println!("{:?}", contents);
-    Ok(())
+fn validatepaths(path: &str) {
+    match fs::metadata(path) {
+        Ok(_) => println!("PATH EXISTS: {}", path),
+        Err(_) => println!("PATH DOESN'T EXIST | CHECK YAML!: {}", path),
+    }
 }
 
+// Check if pacbio has fasta.gz files and cram has cram and crai
+/* fn validatedata(path: &str) {
+    Ok(())
+} */
+
+
+fn validateyaml(file: &str, _verbose: &bool) -> Result<(), std::io::Error> {
+    println!{"Validating Yaml: {}", file};
+    let input = fs::File::open(file).expect("Unable to read from file");
+    let contents: TreeValYaml = serde_yaml::from_reader(input).expect("Unable to read from file");
+
+    println!("RUNNING VALIDATE-YAML FOR SAMPLE: {}", contents.assembly.sample_id);
+    println!("RUNNING VALIDATE-YAML ON FILE: {}", file);
+
+    validatepaths(&contents.reference_file);
+    validatepaths(&contents.assem_reads.pacbio);
+    validatepaths(&contents.alignment.data_dir);
+    validatepaths(&contents.synteny.synteny_genome_path);
+    validatepaths(&contents.busco.lineages_path);
+    validatepaths(&contents.assem_reads.hic);
+
+    println!("CHECKING GENESET DIRECTORIES RESOLVE");
+    let genesets = contents.alignment.geneset.split(",");
+    for set in genesets {
+        let gene_alignment_path = contents.alignment.data_dir.clone() + &contents.assembly.classT + "/csv_data/" + &set + "-data.csv";
+        validatepaths(&gene_alignment_path);
+    }
+
+    println!("CHECKING SYNTENY DIRECTORIES RESOLVE");
+    let synteny_full = contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + "/";
+    let synteny_path = fs::read_dir(&synteny_full)?;
+    for path in synteny_path {
+        let path = path?.path();
+        if path.is_file() {
+            let data = std::fs::read_to_string(path)?;
+            println!("SYNTENIC GENOME FOUND: {}", data)
+        }
+    }
+
+    Ok(())
+}
 
 fn splitbycount(file: &str, chunk: &u16) -> Result<(), std::io::Error> {
     println!("Splitting file: {}", file);
