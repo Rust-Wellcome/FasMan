@@ -79,7 +79,22 @@ fn validatepaths(path: &str) {
 }
 
 // Check if pacbio has fasta.gz files and cram has cram and crai
-/* fn validatedata(path: &str) {
+/* fn validatedata(path: &str, dtype: &str) {
+    if dtype == "pacbio" {
+        let data_files = fs::read_dir(&path).unwrap();
+        data_files.filter_map(Result::Ok)
+            .filter(|d| d.path().extension() == Some(OdStr::from_bytes(b"fasta.gz")))
+            .for_each(|f| println!("PATH EXISTS: {:?}", f) )
+    }
+
+    if dtype == "hic" {
+        let data_files = fs::read_dir(&path).unwrap();
+        data_files.filter_map(Result::Ok)
+            .filter(|d| d.path().extension() == Some(OdStr::from_bytes(b"cram")))
+            .for_each(|f| println!("PATH EXISTS: {:?}", f) )
+    }
+    // If equals cram and equals crai then paths exist, else oops your missing or, the other or both.
+
     Ok(())
 } */
 
@@ -93,20 +108,22 @@ fn validateyaml(file: &str, _verbose: &bool) -> Result<(), std::io::Error> {
     println!("RUNNING VALIDATE-YAML ON FILE: {}", file);
 
     validatepaths(&contents.reference_file);
-    validatepaths(&contents.assem_reads.pacbio);
     validatepaths(&contents.alignment.data_dir);
     validatepaths(&contents.synteny.synteny_genome_path);
     validatepaths(&contents.busco.lineages_path);
+    validatepaths(&contents.assem_reads.pacbio);
+    //validatedata(&contents.assem_reads.pacbio, "pacbio");
     validatepaths(&contents.assem_reads.hic);
+    //validatedata(&contents.assem_reads.hic, "hic"):
 
-    println!("CHECKING GENESET DIRECTORIES RESOLVE");
+    println!("CHECKING GENESET DIRECTORY RESOLVES");
     let genesets = contents.alignment.geneset.split(",");
     for set in genesets {
         let gene_alignment_path = contents.alignment.data_dir.clone() + &contents.assembly.classT + "/csv_data/" + &set + "-data.csv";
         validatepaths(&gene_alignment_path);
     }
 
-    println!("CHECKING SYNTENY DIRECTORIES RESOLVE");
+    println!("CHECKING SYNTENY DIRECTORY RESOLVES");
     let synteny_full = contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + "/";
     let synteny_path = fs::read_dir(&synteny_full)?;
     for path in synteny_path {
@@ -116,6 +133,10 @@ fn validateyaml(file: &str, _verbose: &bool) -> Result<(), std::io::Error> {
             println!("SYNTENIC GENOME FOUND: {}", data)
         }
     }
+
+    println!("CHECKING BUSCO DIRECTORY RESOLVES");
+    let busco_path = contents.busco.lineages_path.clone() + "/lineages/" + &contents.busco.lineage;
+    validatepaths(&busco_path);
 
     Ok(())
 }
