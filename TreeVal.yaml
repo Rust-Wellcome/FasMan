@@ -5,13 +5,13 @@ assembly:
   classT: nematode
   asmVersion: 1
   gevalType: DTOL
-reference_file: /lustre/scratch123/tol/resources/treeval/treeval-testdata/TreeValSmallData/Oscheius_DF5033/assembly/draft/DF5033.hifiasm.noTelos.20211120/DF5033.noTelos.hifiasm.purged.noCont.noMito.fasta
+reference_file: /TreeValTestDir/test.fasta
 assem_reads:
-  pacbio: /lustre/scratch123/tol/resources/treeval/treeval-testdata/TreeValSmallData/Oscheius_DF5033/genomic_data/nxOscSpes1/pacbio/fasta/
-  hic: /lustre/scratch123/tol/resources/treeval/treeval-testdata/TreeValSmallData/Oscheius_DF5033/genomic_data/nxOscSpes1/hic-arima2/full/
+  pacbio: /Trepacbio/genomic_data/pacbio/fasta/
+  hic: /TreeValTestDir/genomic_data//hic-arima2/
   supplementary: path
 alignment:
-  data_dir: /lustre/scratch123/tol/resources/treeval/gene_alignment_data/
+  data_dir: /TreeValTestDir/gene_alignment_data/
   common_name: "" # For future implementation (adding bee, wasp, ant etc)
   geneset: "OscheiusTipulae.ASM1342590v1,CaenorhabditisElegans.WBcel235,Gae_host.Gae"
   #Path should end up looking like "{data_dir}{classT}/{common_name}/csv_data/{geneset}-data.csv"
@@ -23,7 +23,7 @@ intron:
 telomere:
   teloseq: TTAGGG
 synteny:
-  synteny_genome_path: /lustre/scratch123/tol/resources/treeval/synteny/
+  synteny_genome_path: /TreeValTestDir/synteny/
 busco:
-  lineages_path: /lustre/scratch123/tol/resources/busco/v5
+  lineages_path: /TreeValTestDir/busco/v5
   lineage: nematoda_odb10
