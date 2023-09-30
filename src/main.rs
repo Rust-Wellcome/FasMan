@@ -117,7 +117,12 @@ fn validatedata(path: &str, dtype: &str, _sep: &str) {
                     })
                     .map(|f| f.path())
                     .collect();
-                println!("{:?}", &files);
+
+                if files.len() == 0 {
+                    println!("{}", "NO SYNTENIC GENOMES".red())
+                } else {
+                    println!("{} {:?}", "YOUR GENOMES ARE:".green(), &files);
+                }
                 // IF COLLECT SIZE == 0 "NO FILES THOUGH"
             }
         }
