@@ -1,8 +1,11 @@
+#![allow(non_snake_case)]
+
 use std::fs;
 use std::fs::File;
 use std::env;
 use std::io::{BufReader, BufRead, Error, ErrorKind};
 use std::path::PathBuf;
+use colored::Colorize;
 use clap::{Command, command, Arg};
 use serde::{Serialize, Deserialize};
 
@@ -20,6 +23,7 @@ struct TreeValYaml {
     synteny: Synteny,
     busco: Busco,
 }
+
 #[derive(Debug, Serialize, Deserialize)]
 struct Assembly {
     level: String,
@@ -72,39 +76,49 @@ struct Busco {
 }
 
 
-fn validatepaths(path: &str, sep: &str) {
+fn validatepaths(path: &str) {
     match fs::metadata(path) {
-        Ok(_) => println!("PATH EXISTS: {}", path),
-        Err(_) => println!("PATH DOESN'T EXIST | CHECK YAML!: {}", path),
+        Ok(_) => println!("{} {}", "PATH EXISTS: ".green(), path.green()),
+        Err(_) => println!("{} {}", "PATH DOESN'T EXIST | CHECK YAML!:".red().bold(), path),
     }
 }
 
 // Check if pacbio has fasta.gz files and cram has cram and crai
-fn validatedata(path: &str, dtype: &str, sep: &str) {
-        match fs::read_dir(&path) {
-            Err(e) if e.kind() == ErrorKind::NotFound => {}
-            Err(e) => panic!("DIRECTORY PATH DOESN'T EXIST: {e}"),
-            Ok(data_files) => {
-                if dtype == "pacbio" {
-                    let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
-                        .filter(|d| match d.path().extension() {
-                            None => false,
-                            Some(ex) => ex == "fasta.gz"
-                        })
-                        .map(|f| f.path())
-                        .collect();
-                    println!("{:?}", &files);
-            
-                } else if dtype == "hic" {
-                    let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
-                        .filter(|d| match d.path().extension() {
-                            None => false,
-                            Some(ex) => ex == "cram" || ex == "crai"
-                        })
-                        .map(|f| f.path())
-                        .collect();
-                    println!("{:?}", &files);
-                    // IF COLLECT SIZE == 0 "NO FILES THOUGH"
+fn validatedata(path: &str, dtype: &str, _sep: &str) {
+    match fs::read_dir(&path) {
+        Err(e) if e.kind() == ErrorKind::NotFound => {}
+        Err(e) => panic!("{} {e}", "DIRECTORY PATH DOESN'T EXIST: ".red().bold()),
+        Ok(data_files) => {
+            if dtype == "pacbio" {
+                let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
+                    .filter(|d| match d.path().extension() {
+                        None => false,
+                        Some(ex) => ex == "fasta.gz"
+                    })
+                    .map(|f| f.path())
+                    .collect();
+                println!("{:?}", &files);
+        
+            } else if dtype == "hic" {
+                let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
+                    .filter(|d| match d.path().extension() {
+                        None => false,
+                        Some(ex) => ex == "cram" || ex == "crai"
+                    })
+                    .map(|f| f.path())
+                    .collect();
+                println!("{:?}", &files);
+                // IF COLLECT SIZE == 0 "NO FILES THOUGH"
+            } else if dtype == "synteny" {
+                let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
+                    .filter(|d| match d.path().extension() {
+                        None => false,
+                        Some(ex) => ex == "fa" || ex == "fasta" || ex == "fna"
+                    })
+                    .map(|f| f.path())
+                    .collect();
+                println!("{:?}", &files);
+                // IF COLLECT SIZE == 0 "NO FILES THOUGH"
             }
         }
     };
@@ -113,50 +127,46 @@ fn validatedata(path: &str, dtype: &str, sep: &str) {
 
 
 fn validateyaml(file: &str, _verbose: &bool, sep: &str) -> Result<(), std::io::Error> {
-    println!{"Validating Yaml: {}", file};
+    println!{"Validating Yaml: {}", file.purple()};
+
     let input = fs::File::open(file).expect("Unable to read from file");
     let contents: TreeValYaml = serde_yaml::from_reader(input).expect("Unable to read from file");
 
-    println!("RUNNING VALIDATE-YAML FOR SAMPLE: {}", contents.assembly.sample_id);
-    println!("RUNNING VALIDATE-YAML ON FILE: {}", file);
+    println!("RUNNING VALIDATE-YAML FOR SAMPLE: {}", contents.assembly.sample_id.purple());
 
-    validatepaths(&contents.reference_file, &sep);
-    validatepaths(&contents.alignment.data_dir, &sep);
-    validatepaths(&contents.synteny.synteny_genome_path, &sep);
-    validatepaths(&contents.busco.lineages_path, &sep);
-    validatepaths(&contents.assem_reads.pacbio, &sep);
+    validatepaths(&contents.reference_file);
+    validatepaths(&contents.alignment.data_dir);
+    validatepaths(&contents.synteny.synteny_genome_path);
+    validatepaths(&contents.busco.lineages_path);
+
+    validatepaths(&contents.assem_reads.pacbio);
     validatedata(&contents.assem_reads.pacbio, "pacbio", &sep);
-    validatepaths(&contents.assem_reads.hic, &sep);
+
+    validatepaths(&contents.assem_reads.hic);
     validatedata(&contents.assem_reads.hic, "hic", &sep);
 
-    println!("CHECKING GENESET DIRECTORY RESOLVES");
+    println!("{}", "CHECKING GENESET DIRECTORY RESOLVES".blue());
     let genesets = contents.alignment.geneset.split(",");
     for set in genesets {
         let gene_alignment_path = contents.alignment.data_dir.clone() + &contents.assembly.classT + &sep + "csv_data" + &sep + &set + "-data.csv";
-        validatepaths(&gene_alignment_path, &sep);
+        validatepaths(&gene_alignment_path);
     };
 
-    println!("CHECKING SYNTENY DIRECTORY RESOLVES");
+    println!("{}", "CHECKING SYNTENY DIRECTORY RESOLVES".blue());
     let synteny_full = contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + &sep;
-    let synteny_path = fs::read_dir(&synteny_full)?;
-    for path in synteny_path {
-        let path = path?.path();
-        if path.is_file() {
-            let data = std::fs::read_to_string(path)?;
-            println!("SYNTENIC GENOME FOUND: {}", data)
-        } else {
-            println!{"NO SYNTENIC GENOMES IN DIRECTORY: {}", std::fs::read_to_string(path)?}
-        }
-    };
+    validatepaths(&synteny_full);
+    validatedata(&synteny_full, "synteny", &sep);
 
-    println!("CHECKING BUSCO DIRECTORY RESOLVES");
+
+    println!("{}", "CHECKING BUSCO DIRECTORY RESOLVES".blue());
     let busco_path = contents.busco.lineages_path.clone()  + &sep + "lineages" + &sep + &contents.busco.lineage;
-    validatepaths(&busco_path, &sep);
+    validatepaths(&busco_path);
+    // NOW CHECK FOR FILES IN DIRECTORY?
 
     Ok(())
 }
 
-fn splitbycount(file: &str, chunk: &u16, sep: &str) -> Result<(), std::io::Error> {
+fn splitbycount(file: &str, chunk: &u16, _sep: &str) -> Result<(), std::io::Error> {
     println!("Splitting file: {}", file);
     println!("Splitting bycount: {}", chunk);
     //if bycount {
@@ -193,13 +203,13 @@ fn splitbycount(file: &str, chunk: &u16, sep: &str) -> Result<(), std::io::Error
     Ok(())
 }
 
-fn splitbysize(file: &str, sep: &str) -> Result<(), std::io::Error> {
+fn splitbysize(file: &str, _sep: &str) -> Result<(), std::io::Error> {
     println!("Splitting file: {}", file);
 
     Ok(())
 }
 
-fn mapheaders(file: &str, sep: &str) -> Result<(), std::io::Error> {
+fn mapheaders(file: &str, _sep: &str) -> Result<(), std::io::Error> {
     println!("Mapping headers for file: {}", file);
 
     Ok(())
@@ -284,44 +294,47 @@ fn main() -> Result<(), Error> {
     )
     .get_matches();
 
-    //println!("{}", &match_result.get_one::<String>("count").unwrap_or(&"DEFAULT".to_string()));
-
-    let args: Vec<String> = env::args().collect();
-
-    println!("OPERATING SYSTEM: {}", env::consts::OS); // Prints the current OS.
+    println!("OPERATING SYSTEM: {}", env::consts::OS.purple()); // Prints the current OS.
     let mut path_sep = "/";
     match env::consts::OS {
         "windows" => path_sep = "\\",
         _ => println!("No path changes needed")
-    }
-
-    // Should replace this with a "match &*args[1]" Would require wrapping each subcommands entirely in a seperate function
-    if &args[1].to_string() == "splitbycount" {
-        let arguments = match_result.subcommand_matches("splitbycount");
-        let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
-        let fasta_count = arguments.unwrap().get_one::<u16>("count").unwrap();
-        println!("Fasta file for processing: {:?}", fasta_file);
-        println!("{:?}", &fasta_count);
-        println!("Number of sequence-header pairs per file: {:?}", fasta_count);
-        splitbycount(fasta_file, &fasta_count, path_sep);
-    } else if &args[1].to_string() == "splitbysize" {
-        let arguments = match_result.subcommand_matches("splitbysize");
-        let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
-        println!("Fasta file for processing: {:?}", arguments.unwrap().get_one::<String>("fasta-file").unwrap());
-        println!("Size to chunk fasta into: {:?}", arguments.unwrap().get_one::<u16>("mem-size").unwrap());
-        splitbysize(fasta_file, path_sep);
-    } else if &args[1].to_string() == "mapheaders" {
-        let arguments = match_result.subcommand_matches("mapheaders");
-        let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
-        println!("Fasta file for processing: {:?}", arguments.unwrap().get_one::<String>("fasta-file").unwrap());
-        println!("Replace headers with string: {:?}", arguments.unwrap().get_one::<String>("replace-with").unwrap());
-        mapheaders(fasta_file, path_sep);
-    } else if &args[1].to_string() == "validateyaml" {
-        let arguments = match_result.subcommand_matches("validateyaml");
-        let yaml_file = arguments.unwrap().get_one::<String>("yaml").unwrap();
-        let verbose_flag = arguments.unwrap().get_one::<bool>("verbose").unwrap();
-        validateyaml(yaml_file, verbose_flag, path_sep);
     };
 
+    // Should really be using this: https://docs.rs/clap/latest/clap/struct.ArgMatches.html#method.subcommand
+    match match_result.subcommand_name() {
+        Some("splitbycount") => {
+            let arguments = match_result.subcommand_matches("splitbycount");
+            let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
+            let fasta_count = arguments.unwrap().get_one::<u16>("count").unwrap();
+            println!("Fasta file for processing: {:?}", fasta_file);
+            println!("{:?}", &fasta_count);
+            println!("Number of sequence-header pairs per file: {:?}", fasta_count);
+            let _ = splitbycount(fasta_file, &fasta_count, path_sep);
+        },
+        Some("splitbysize") => {
+            let arguments = match_result.subcommand_matches("splitbysize");
+            let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
+            println!("Fasta file for processing: {:?}", arguments.unwrap().get_one::<String>("fasta-file").unwrap());
+            println!("Size to chunk fasta into: {:?}", arguments.unwrap().get_one::<u16>("mem-size").unwrap());
+            let _ = splitbysize(fasta_file, path_sep);
+        }, 
+        Some("mapheaders") => {
+            let arguments = match_result.subcommand_matches("mapheaders");
+            let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
+            println!("Fasta file for processing: {:?}", arguments.unwrap().get_one::<String>("fasta-file").unwrap());
+            println!("Replace headers with string: {:?}", arguments.unwrap().get_one::<String>("replace-with").unwrap());
+            let _ = mapheaders(fasta_file, path_sep);
+        },
+         Some("validateyaml") => {
+            let arguments = match_result.subcommand_matches("validateyaml");
+            let yaml_file = arguments.unwrap().get_one::<String>("yaml").unwrap();
+            let verbose_flag = arguments.unwrap().get_one::<bool>("verbose").unwrap();
+            let _ = validateyaml(yaml_file, verbose_flag, path_sep);
+        },
+        _ => {
+            println!{"NOT A COMMAND"}
+        },
+    };
     Ok(())
 }
