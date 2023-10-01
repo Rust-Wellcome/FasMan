@@ -83,7 +83,11 @@ fn validatepaths(path: &str) {
     }
 }
 
-// Check if pacbio has fasta.gz files and cram has cram and crai
+//
+// FUNCTION: Check if pacbio has fasta.gz files, cram has cram and crai and synteny has fasta
+//           could make this much easier and consise by passing in a list of file types to check
+//           validatedata(path, [fa, fna, fasta])
+//
 fn validatedata(path: &str, dtype: &str, _sep: &str) {
     match fs::read_dir(&path) {
         Err(e) if e.kind() == ErrorKind::NotFound => {}
@@ -97,8 +101,13 @@ fn validatedata(path: &str, dtype: &str, _sep: &str) {
                     })
                     .map(|f| f.path())
                     .collect();
-                println!("{:?}", &files);
-        
+
+                if files.len() == 0 {
+                    println!("{}", "NO PACBIO DATA FILES".red())
+                } else {
+                    println!("{} {:?}", "YOUR FILES ARE:".green(), &files);
+                }
+
             } else if dtype == "hic" {
                 let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
                     .filter(|d| match d.path().extension() {
@@ -107,8 +116,13 @@ fn validatedata(path: &str, dtype: &str, _sep: &str) {
                     })
                     .map(|f| f.path())
                     .collect();
-                println!("{:?}", &files);
-                // IF COLLECT SIZE == 0 "NO FILES THOUGH"
+
+                if files.len() == 0 {
+                    println!("{}", "NO HIC DATA FILES".red())
+                } else {
+                    println!("{} {:?}", "YOUR FILES ARE:".green(), &files);
+                }
+
             } else if dtype == "synteny" {
                 let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
                     .filter(|d| match d.path().extension() {
@@ -123,7 +137,6 @@ fn validatedata(path: &str, dtype: &str, _sep: &str) {
                 } else {
                     println!("{} {:?}", "YOUR GENOMES ARE:".green(), &files);
                 }
-                // IF COLLECT SIZE == 0 "NO FILES THOUGH"
             }
         }
     };
@@ -167,6 +180,13 @@ fn validateyaml(file: &str, _verbose: &bool, sep: &str) -> Result<(), std::io::E
     let busco_path = contents.busco.lineages_path.clone()  + &sep + "lineages" + &sep + &contents.busco.lineage;
     validatepaths(&busco_path);
     // NOW CHECK FOR FILES IN DIRECTORY?
+    
+    println!("{}\n{}\n{}\n{}", 
+        "VALIDATION COMPLETE".purple(),
+        "Check the log to see what failed",
+        "FULL : ONLY synteny fails are permitted".purple(),
+        "RAPID: geneset, busco and synteny fails are permitted".purple()
+    );
 
     Ok(())
 }
@@ -299,12 +319,20 @@ fn main() -> Result<(), Error> {
     )
     .get_matches();
 
+    println!{
+        "{}\n{}\n{}",
+        "WELLCOME TO TreeVal Data Prepper".bold().purple(),
+        "This has been made to help prep data for use in the Treeval and curationpretext pipelines",
+        "ONLY THE yamlvalidator IS SPECIFIC TO TREEVAL, THE OTHER COMMANDS CAN BE USED FOR ANY OTHER PURPOSE YOU WANT".purple()
+    };
     println!("OPERATING SYSTEM: {}", env::consts::OS.purple()); // Prints the current OS.
     let mut path_sep = "/";
     match env::consts::OS {
         "windows" => path_sep = "\\",
-        _ => println!("No path changes needed")
+        _ => ()
     };
+
+    println!("RUNNING : {:?} : SUBCOMMAND", match_result.subcommand_name().unwrap());
 
     // Should really be using this: https://docs.rs/clap/latest/clap/struct.ArgMatches.html#method.subcommand
     match match_result.subcommand_name() {
