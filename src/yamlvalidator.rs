@@ -175,7 +175,7 @@ pub mod yamlvalidator {
         // NOW CHECK FOR FILES IN DIRECTORY?
         
         println!("{}\n{}\n{}\n{}\n{}", 
-            "VALIDATION COMPLETE".purple(),
+            "VALIDATION COMPLETE".purple().bold(),
             "GENERAL INFORMATION:".purple().bold(),
             "Check the log to see what failed",
             "FULL : ONLY synteny fails are permitted".purple(),
