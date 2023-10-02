@@ -10,6 +10,9 @@ use clap::{Command, command, Arg};
 mod yamlvalidator;
 use crate::yamlvalidator::yamlvalidator::validateyaml;
 
+mod mapheaders;
+use crate::mapheaders::mapheaders::mapfastahead;
+
 
 fn splitbycount(file: &str, chunk: &u16, _sep: &str) -> Result<(), std::io::Error> {
     println!("Splitting file: {}", file);
@@ -50,12 +53,6 @@ fn splitbycount(file: &str, chunk: &u16, _sep: &str) -> Result<(), std::io::Erro
 
 fn splitbysize(file: &str, _sep: &str) -> Result<(), std::io::Error> {
     println!("Splitting file: {}", file);
-
-    Ok(())
-}
-
-fn mapheaders(file: &str, _sep: &str) -> Result<(), std::io::Error> {
-    println!("Mapping headers for file: {}", file);
 
     Ok(())
 }
