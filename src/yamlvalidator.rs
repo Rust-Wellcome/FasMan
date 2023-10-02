@@ -3,7 +3,7 @@ pub mod yamlvalidator {
     use colored::Colorize;
     use std::fs;
     use std::path::PathBuf;
-    use std::io::{ErrorKind};
+    use std::io::ErrorKind;
 
     #[derive(Debug, Serialize, Deserialize)]
     struct TreeValYaml {
