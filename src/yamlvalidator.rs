@@ -1,9 +1,14 @@
 pub mod yamlvalidator {
+    use csv::Error;
     use serde::{Serialize, Deserialize};
     use colored::Colorize;
-    use std::fs;
+    use std::fs::{self, File};
     use std::path::PathBuf;
     use std::io::ErrorKind;
+    use csv::ReaderBuilder;
+    use noodles::fasta as fasta;
+    // Would be nice if there was a simple format_check
+    // use noodles::cram as cram;
 
     #[derive(Debug, Serialize, Deserialize)]
     struct TreeValYaml {
@@ -69,12 +74,54 @@ pub mod yamlvalidator {
         lineage: String
     }
 
+    //
+    // CSV STRUCT
+    //
+    //#[derive(Deserialize)]
+    //struct Record {
+    //    org: String,
+    //    type: String,
+    //    data_file: String
+    //}
+
     pub fn validatepaths(path: &str, field_id: &str) {
         match fs::metadata(path) {
-            Ok(_) => println!("{}   \t{}\t{}", &field_id.green(), "| PATH EXISTS: ".green(), path.green()),
-            Err(_) => println!("{}   \t{}\t{}", &field_id.red().bold(), "| CHECK YAML!:".red().bold(), path),
+            Ok(_) => {
+                println!("{}{}   \t{}\t{}", ">-".green(), &field_id.green(), "| PATH EXISTS: ".green(), path.green());
+                match field_id {
+                    "REFERENCE" => { validatefasta(path) },
+                    "GENESET-CSV" => { let _ = validatecsv(path); },
+                    "HIC" => {}
+                    _ => println!("Error")
+                }
+            },
+            Err(_) => println!("{}{}   \t{}\t{}", "<-".red().bold(), &field_id.red().bold(), "| CHECK YAML!:".red().bold(), path),
         }
     }
+
+    pub fn validatefasta(path: &str) {
+        let reader = fasta::reader::Builder.build_from_path(path);
+
+        let mut binding = reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
+        let result = binding.records();
+        let counter = result.count();
+        println!("{} {} {}", ">- REFERENCE H/S PAIRS:".green(), counter, "H/S PAIRS".green())
+    }
+
+    pub fn validatecsv(path: &str) -> Result<(), Error> {
+        let file = File::open(path)?;
+
+        let mut reader = ReaderBuilder::new()
+            .has_headers(true)
+            .delimiter(b',')
+            .from_reader(file);
+
+        let record = reader.records().count();
+        println!("{} {} {}", ">-GENESET-RECORD-COUNT: >".green(), record, "<".green());
+
+        Ok(())
+    }
+
     
     //
     // FUNCTION: Check if pacbio has fasta.gz files, cram has cram and crai and synteny has fasta
@@ -84,7 +131,7 @@ pub mod yamlvalidator {
     pub fn validatedata(path: &str, dtype: &str, _sep: &str) {
         match fs::read_dir(&path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {}
-            Err(e) => panic!("{} {e}", "DIRECTORY PATH DOESN'T EXIST: ".red().bold()),
+            Err(e) => panic!("{} {e}", "<-DIRECTORY PATH DOESN'T EXIST: ".red().bold()),
             Ok(data_files) => {
                 if dtype == "pacbio" {
                     let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
@@ -96,9 +143,9 @@ pub mod yamlvalidator {
                         .collect();
     
                     if files.len() == 0 {
-                        println!("{}", "NO PACBIO DATA FILES".red())
+                        println!("{}", "<-NO PACBIO DATA FILES".red())
                     } else {
-                        println!("{} {:?}", "YOUR FILES ARE:".green(), &files);
+                        println!("{} {:?}", ">-YOUR FILES ARE:".green(), &files);
                     }
     
                 } else if dtype == "hic" {
@@ -111,9 +158,9 @@ pub mod yamlvalidator {
                         .collect();
     
                     if files.len() == 0 {
-                        println!("{}", "NO HIC DATA FILES".red())
+                        println!("{}", "<-NO HIC DATA FILES".red())
                     } else {
-                        println!("{} {:?}", "YOUR FILES ARE:".green(), &files);
+                        println!("{} {:?}", ">-YOUR FILES ARE:".green(), &files);
                     }
     
                 } else if dtype == "synteny" {
@@ -126,9 +173,9 @@ pub mod yamlvalidator {
                         .collect();
     
                     if files.len() == 0 {
-                        println!("{}", "NO SYNTENIC GENOMES".red())
+                        println!("{}", "<-NO SYNTENIC GENOMES".red())
                     } else {
-                        println!("{} {:?}", "YOUR GENOMES ARE:".green(), &files);
+                        println!("{} {:?}", ">-YOUR GENOMES ARE:".green(), &files);
                     }
                 }
             }

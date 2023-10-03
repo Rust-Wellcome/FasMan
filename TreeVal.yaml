@@ -5,13 +5,13 @@ assembly:
   classT: nematode
   asmVersion: 1
   gevalType: DTOL
-reference_file: /TreeValTestDir/test.fasta
+reference_file: /Users/dp24/Documents/FastaManipulator/TreeValTestDir/assembly/test.fasta
 assem_reads:
-  pacbio: /Trepacbio/genomic_data/pacbio/fasta/
-  hic: /TreeValTestDir/genomic_data//hic-arima2/
+  pacbio: /Users/dp24/Documents/FastaManipulator/TreeValTestDir/genomic_data/pacbio/fasta/
+  hic: /Users/dp24/Documents/FastaManipulator/TreeValTestDir/genomic_data/hic-arima2/
   supplementary: path
 alignment:
-  data_dir: /TreeValTestDir/gene_alignment_data/
+  data_dir: /Users/dp24/Documents/FastaManipulator/TreeValTestDir/gene_alignment_data/
   common_name: "" # For future implementation (adding bee, wasp, ant etc)
   geneset: "OscheiusTipulae.ASM1342590v1,CaenorhabditisElegans.WBcel235,Gae_host.Gae"
   #Path should end up looking like "{data_dir}{classT}/{common_name}/csv_data/{geneset}-data.csv"
@@ -23,7 +23,7 @@ intron:
 telomere:
   teloseq: TTAGGG
 synteny:
-  synteny_genome_path: /TreeValTestDir/synteny/
+  synteny_genome_path: /Users/dp24/Documents/FastaManipulator/TreeValTestDir/synteny/
 busco:
-  lineages_path: /TreeValTestDir/busco/v5
+  lineages_path: /Users/dp24/Documents/FastaManipulator/TreeValTestDir/busco/v5
   lineage: nematoda_odb10

@@ -11,7 +11,7 @@ mod yamlvalidator;
 use crate::yamlvalidator::yamlvalidator::validateyaml;
 
 mod mapheaders;
-use crate::mapheaders::mapheaders::mapfastahead;
+use crate::mapheaders::map_headers::map_fasta_head;
 
 
 fn splitbycount(file: &str, chunk: &u16, _sep: &str) -> Result<(), std::io::Error> {
@@ -174,9 +174,9 @@ fn main() -> Result<(), Error> {
             let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
             println!("Fasta file for processing: {:?}", arguments.unwrap().get_one::<String>("fasta-file").unwrap());
             println!("Replace headers with string: {:?}", arguments.unwrap().get_one::<String>("replace-with").unwrap());
-            let _ = mapheaders(fasta_file, path_sep);
+            let _ = map_fasta_head(fasta_file, path_sep);
         },
-         Some("validateyaml") => {
+        Some("validateyaml") => {
             let arguments = match_result.subcommand_matches("validateyaml");
             let yaml_file = arguments.unwrap().get_one::<String>("yaml").unwrap();
             let verbose_flag = arguments.unwrap().get_one::<bool>("verbose").unwrap();
