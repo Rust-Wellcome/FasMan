@@ -76,6 +76,14 @@ fn main() -> Result<(), Error> {
                     .required(false)
                     .help("Print explainers as to why validation fails, if it does fail")
             )
+            .arg(
+                Arg::new("output")
+                    .short('o')
+                    .aliases(["out"])
+                    .required(false)
+                    .default_value("./")
+                    .help("Output the log to file")
+            )
     )
     .subcommand(
         Command::new("splitbycount")
@@ -86,6 +94,14 @@ fn main() -> Result<(), Error> {
                     .aliases(["fasta"])
                     .required(true)
                     .help("A path to a valid fasta file.")
+            )
+            .arg(
+                Arg::new("output-directory")
+                    .short('o')
+                    .aliases(["out"])
+                    .required(false)
+                    .default_value("./")
+                    .help("The output directory that files will be placed in")
             )
             .arg(
                 Arg::new("count")
@@ -114,6 +130,14 @@ fn main() -> Result<(), Error> {
                     .value_parser(clap::value_parser!(u16))
                     .help("Size in MB that a fasta file is to be chunked into")
             )
+            .arg(
+                Arg::new("output-directory")
+                    .short('o')
+                    .aliases(["out"])
+                    .required(false)
+                    .default_value("./")
+                    .help("The output directory that files will be placed in")
+            )
     )
     .subcommand(
         Command::new("mapheaders")
@@ -124,6 +148,14 @@ fn main() -> Result<(), Error> {
                     .aliases(["fasta"])
                     .required(true)
                     .help("A path to a valid fasta file.")
+            )
+            .arg(
+                Arg::new("output-directory")
+                    .short('o')
+                    .aliases(["out"])
+                    .required(false)
+                    .default_value("./")
+                    .help("The output directory which will contain the mapped-heads.txt as well as the *mapped.fasta")
             )
             .arg(
                 Arg::new("replace-with")
@@ -151,7 +183,6 @@ fn main() -> Result<(), Error> {
 
     println!("RUNNING : {:?} : SUBCOMMAND", match_result.subcommand_name().unwrap());
 
-    // Should really be using this: https://docs.rs/clap/latest/clap/struct.ArgMatches.html#method.subcommand
     match match_result.subcommand_name() {
         Some("splitbycount") => {
             let arguments = match_result.subcommand_matches("splitbycount");
@@ -172,15 +203,16 @@ fn main() -> Result<(), Error> {
         Some("mapheaders") => {
             let arguments = match_result.subcommand_matches("mapheaders");
             let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
-            println!("Fasta file for processing: {:?}", arguments.unwrap().get_one::<String>("fasta-file").unwrap());
-            println!("Replace headers with string: {:?}", arguments.unwrap().get_one::<String>("replace-with").unwrap());
-            let _ = map_fasta_head(fasta_file, path_sep);
+            let replacer = arguments.unwrap().get_one::<String>("replace-with").unwrap();
+            let output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
+            let _ = map_fasta_head(fasta_file, path_sep, replacer, output);
         },
         Some("validateyaml") => {
             let arguments = match_result.subcommand_matches("validateyaml");
             let yaml_file = arguments.unwrap().get_one::<String>("yaml").unwrap();
-            let verbose_flag = arguments.unwrap().get_one::<bool>("verbose").unwrap();
-            let _ = validateyaml(yaml_file, verbose_flag, path_sep);
+            let output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
+            let verbose_flag: &bool = arguments.unwrap().get_one::<bool>("verbose").unwrap();
+            let _ = validateyaml(yaml_file, verbose_flag, output, path_sep);
         },
         _ => {
             println!{"NOT A COMMAND"}

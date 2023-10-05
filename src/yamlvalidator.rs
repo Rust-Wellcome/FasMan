@@ -184,7 +184,7 @@ pub mod yamlvalidator {
     }
     
     
-    pub fn validateyaml(file: &str, _verbose: &bool, sep: &str) -> Result<(), std::io::Error> {
+    pub fn validateyaml(file: &str, _verbose: &bool, output: &str, sep: &str) -> Result<(), std::io::Error> {
         println!{"Validating Yaml: {}", file.purple()};
     
         let input = fs::File::open(file).expect("Unable to read from file");
