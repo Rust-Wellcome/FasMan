@@ -5,17 +5,17 @@ use std::io::Error;
 use colored::Colorize;
 use clap::{Command, command, Arg};
 
-mod yamlvalidator;
-use crate::yamlvalidator::yamlvalidator::validate_yaml;
+mod yaml_validator;
+use crate::yaml_validator::yaml_validator::validate_yaml;
 
-mod mapheaders;
-use crate::mapheaders::map_headers::map_fasta_head;
+mod map_headers;
+use crate::map_headers::map_headers::map_fasta_head;
 
-mod splitbysize;
-use crate::splitbysize::splitbysize::split_file_by_size;
+mod split_by_size;
+use crate::split_by_size::split_by_size::split_file_by_size;
 
-mod splitbycount;
-use crate::splitbycount::splitbycount::split_file_by_count;
+mod split_by_count;
+use crate::split_by_count::split_by_count::split_file_by_count;
 
 fn main() -> Result<(), Error> {
     let match_result = command!()
