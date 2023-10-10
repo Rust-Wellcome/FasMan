@@ -8,3 +8,13 @@ theunspokenanimation
 universe
 >validseq
 ATGCAGATGGCAACATTTGTGGGTTTCCACA
+>gappyseq
+ATNNNGGCGTNNNNATGAGGNNNNATGAGATAGNNNNN
+>GC_heavy
+GGCGCCGGGCGCGCCGCGCGCGATATTGCGCGATAGG
+>AT_heavy
+AATATATTATTTTAGCGGTATATATAGCTATAT
+>mixed_case
+ACTGCATCGATGtcgtagcatCTCGATCGgtGCTgactgtaC
+>lower_case
+ctacgatgcatgcgtgtgtgatcgtgtgtgatcgttgtgtgtggg
