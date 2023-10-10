@@ -1,4 +1,5 @@
 pub mod yamlvalidator {
+    use clap::ArgMatches;
     use csv::Error;
     use serde::{Serialize, Deserialize};
     use colored::Colorize;
@@ -84,13 +85,13 @@ pub mod yamlvalidator {
     //    data_file: String
     //}
 
-    pub fn validatepaths(path: &str, field_id: &str) {
+    pub fn validate_paths(path: &str, field_id: &str) {
         match fs::metadata(path) {
             Ok(_) => {
                 println!("{}{}   \t{}\t{}", ">-".green(), &field_id.green(), "| PATH EXISTS: ".green(), path.green());
                 match field_id {
-                    "REFERENCE" => { validatefasta(path) },
-                    "GENESET-CSV" => { let _ = validatecsv(path); },
+                    "REFERENCE" => { validate_fasta(path) },
+                    "GENESET-CSV" => { let _ = validate_csv(path); },
                     "HIC" => {}
                     _ => println!("Error")
                 }
@@ -99,7 +100,7 @@ pub mod yamlvalidator {
         }
     }
 
-    pub fn validatefasta(path: &str) {
+    pub fn validate_fasta(path: &str) {
         let reader = fasta::reader::Builder.build_from_path(path);
 
         let mut binding = reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
@@ -108,7 +109,7 @@ pub mod yamlvalidator {
         println!("{} {} {}", ">- REFERENCE H/S PAIRS:".green(), counter, "H/S PAIRS".green())
     }
 
-    pub fn validatecsv(path: &str) -> Result<(), Error> {
+    pub fn validate_csv(path: &str) -> Result<(), Error> {
         let file = File::open(path)?;
 
         let mut reader = ReaderBuilder::new()
@@ -128,7 +129,7 @@ pub mod yamlvalidator {
     //           could make this much easier and consise by passing in a list of file types to check
     //           validatedata(path, [fa, fna, fasta])
     //
-    pub fn validatedata(path: &str, dtype: &str, _sep: &str) {
+    pub fn validate_data(path: &str, dtype: &str, _sep: &str) {
         match fs::read_dir(&path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {}
             Err(e) => panic!("{} {e}", "<-DIRECTORY PATH DOESN'T EXIST: ".red().bold()),
@@ -184,7 +185,11 @@ pub mod yamlvalidator {
     }
     
     
-    pub fn validateyaml(file: &str, _verbose: &bool, output: &str, sep: &str) -> Result<(), std::io::Error> {
+    pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>, sep: &str) -> Result<(), std::io::Error> {
+        let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
+        let _output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
+        let _verbose_flag: &bool = arguments.unwrap().get_one::<bool>("verbose").unwrap();
+
         println!{"Validating Yaml: {}", file.purple()};
     
         let input = fs::File::open(file).expect("Unable to read from file");
@@ -192,33 +197,33 @@ pub mod yamlvalidator {
     
         println!("RUNNING VALIDATE-YAML FOR SAMPLE: {}", contents.assembly.sample_id.purple());
     
-        validatepaths(&contents.reference_file, "REFERENCE");
-        validatepaths(&contents.alignment.data_dir, "GENESET");
-        validatepaths(&contents.synteny.synteny_genome_path, "SYNTENY");
-        validatepaths(&contents.busco.lineages_path, "BUSCO");
+        validate_paths(&contents.reference_file, "REFERENCE");
+        validate_paths(&contents.alignment.data_dir, "GENESET");
+        validate_paths(&contents.synteny.synteny_genome_path, "SYNTENY");
+        validate_paths(&contents.busco.lineages_path, "BUSCO");
     
-        validatepaths(&contents.assem_reads.pacbio, "PACBIO");
-        validatedata(&contents.assem_reads.pacbio, "pacbio", &sep);
+        validate_paths(&contents.assem_reads.pacbio, "PACBIO");
+        validate_data(&contents.assem_reads.pacbio, "pacbio", &sep);
     
-        validatepaths(&contents.assem_reads.hic, "HIC");
-        validatedata(&contents.assem_reads.hic, "hic", &sep);
+        validate_paths(&contents.assem_reads.hic, "HIC");
+        validate_data(&contents.assem_reads.hic, "hic", &sep);
     
         println!("{}", "CHECKING GENESET DIRECTORY RESOLVES".blue());
         let genesets = contents.alignment.geneset.split(",");
         for set in genesets {
             let gene_alignment_path = contents.alignment.data_dir.clone() + &contents.assembly.classT + &sep + "csv_data" + &sep + &set + "-data.csv";
-            validatepaths(&gene_alignment_path, "GENESET-CSV");
+            validate_paths(&gene_alignment_path, "GENESET-CSV");
         };
     
         println!("{}", "CHECKING SYNTENY DIRECTORY RESOLVES".blue());
         let synteny_full = contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + &sep;
-        validatepaths(&synteny_full, "SYNTENY-FASTA");
-        validatedata(&synteny_full, "synteny", &sep);
+        validate_paths(&synteny_full, "SYNTENY-FASTA");
+        validate_data(&synteny_full, "synteny", &sep);
     
     
         println!("{}", "CHECKING BUSCO DIRECTORY RESOLVES".blue());
         let busco_path = contents.busco.lineages_path.clone()  + &sep + "lineages" + &sep + &contents.busco.lineage;
-        validatepaths(&busco_path, "BUSCO-DB");
+        validate_paths(&busco_path, "BUSCO-DB");
         // NOW CHECK FOR FILES IN DIRECTORY?
         
         println!("{}\n{}\n{}\n{}\n{}", 

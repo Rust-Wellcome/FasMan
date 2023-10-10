@@ -1,61 +1,21 @@
 #![allow(non_snake_case)]
 
-use std::fs::File;
 use std::env;
-use std::io::{BufReader, BufRead, Error};
+use std::io::Error;
 use colored::Colorize;
 use clap::{Command, command, Arg};
-//use serde::{Serialize, Deserialize};
 
 mod yamlvalidator;
-use crate::yamlvalidator::yamlvalidator::validateyaml;
+use crate::yamlvalidator::yamlvalidator::validate_yaml;
 
 mod mapheaders;
 use crate::mapheaders::map_headers::map_fasta_head;
 
+mod splitbysize;
+use crate::splitbysize::splitbysize::split_file_by_size;
 
-fn splitbycount(file: &str, chunk: &u16, _sep: &str) -> Result<(), std::io::Error> {
-    println!("Splitting file: {}", file);
-    println!("Splitting bycount: {}", chunk);
-    //if bycount {
-    //    println!("Count to split by: {}", bycount.unwrap().get_one::<String>("count").unwrap());
-    // }
-    // returns bool bycount.unwrap().contains_id("count");
-    
-    // ---
-    let  chunk_val = chunk.clone();
-    let mut counter = 0;
-    let mut global_counter = 0;
-
-    //let mut output = File::create(path)?;
-    //write!(output, "Rust\n💖\nFun")?;
-
-    let input = File::open(file)?;
-    let buffered = BufReader::new(input);
-
-    for line in buffered.lines() {
-        if counter != chunk_val {
-            if line?.starts_with('>') {
-                println!("header");
-            } else {
-                println!("Sequence");
-                counter += 1;
-                global_counter += 1;
-            }
-        } else {
-            counter = 0;
-            println!("CHUNK");
-        }
-    }
-    println!("Total number of pairs: {:?}", global_counter);
-    Ok(())
-}
-
-fn splitbysize(file: &str, _sep: &str) -> Result<(), std::io::Error> {
-    println!("Splitting file: {}", file);
-
-    Ok(())
-}
+mod splitbycount;
+use crate::splitbycount::splitbycount::split_file_by_count;
 
 fn main() -> Result<(), Error> {
     let match_result = command!()
@@ -174,10 +134,17 @@ fn main() -> Result<(), Error> {
         "This has been made to help prep data for use in the Treeval and curationpretext pipelines",
         "ONLY THE yamlvalidator IS SPECIFIC TO TREEVAL, THE OTHER COMMANDS CAN BE USED FOR ANY OTHER PURPOSE YOU WANT".purple()
     };
+
     println!("OPERATING SYSTEM: {}", env::consts::OS.purple()); // Prints the current OS.
+    
     let mut path_sep = "/";
     match env::consts::OS {
-        "windows" => path_sep = "\\",
+        "windows" => {
+            path_sep = "\\";
+            println!("Changing path separators, because windows...")
+        },
+        "macos" => println!("Supported: Basically linux"),
+        "linux" => println!("Supported: Linux"),
         _ => ()
     };
 
@@ -186,33 +153,19 @@ fn main() -> Result<(), Error> {
     match match_result.subcommand_name() {
         Some("splitbycount") => {
             let arguments = match_result.subcommand_matches("splitbycount");
-            let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
-            let fasta_count = arguments.unwrap().get_one::<u16>("count").unwrap();
-            println!("Fasta file for processing: {:?}", fasta_file);
-            println!("{:?}", &fasta_count);
-            println!("Number of sequence-header pairs per file: {:?}", fasta_count);
-            let _ = splitbycount(fasta_file, &fasta_count, path_sep);
+            let _ = split_file_by_count(arguments, path_sep);
         },
         Some("splitbysize") => {
-            let arguments = match_result.subcommand_matches("splitbysize");
-            let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
-            println!("Fasta file for processing: {:?}", arguments.unwrap().get_one::<String>("fasta-file").unwrap());
-            println!("Size to chunk fasta into: {:?}", arguments.unwrap().get_one::<u16>("mem-size").unwrap());
-            let _ = splitbysize(fasta_file, path_sep);
+            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("splitbysize");
+            let _ = split_file_by_size(arguments, path_sep);
         }, 
         Some("mapheaders") => {
-            let arguments = match_result.subcommand_matches("mapheaders");
-            let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
-            let replacer = arguments.unwrap().get_one::<String>("replace-with").unwrap();
-            let output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
-            let _ = map_fasta_head(fasta_file, path_sep, replacer, output);
+            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("mapheaders");
+            let _ = map_fasta_head(arguments);
         },
         Some("validateyaml") => {
             let arguments = match_result.subcommand_matches("validateyaml");
-            let yaml_file = arguments.unwrap().get_one::<String>("yaml").unwrap();
-            let output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
-            let verbose_flag: &bool = arguments.unwrap().get_one::<bool>("verbose").unwrap();
-            let _ = validateyaml(yaml_file, verbose_flag, output, path_sep);
+            let _ = validate_yaml(arguments, path_sep);
         },
         _ => {
             println!{"NOT A COMMAND"}

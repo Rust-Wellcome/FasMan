@@ -6,6 +6,7 @@ pub mod map_headers {
     use std::io::prelude::*;
     use std::fs;
 
+    use clap::ArgMatches;
     use noodles::fasta;
     use colored::Colorize;
     use std::fmt;
@@ -83,7 +84,11 @@ pub mod map_headers {
         }
     }
 
-    pub fn map_fasta_head(file: &str, _sep: &str, replacer: &str, output: &str) -> Result<(), Box<dyn Error>> {
+    pub fn map_fasta_head(arguments: std::option::Option<&ArgMatches>) -> Result<(), Box<dyn Error>> {
+        let file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
+        let replacer: &String = arguments.unwrap().get_one::<String>("replace-with").unwrap();
+        let output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
+        
         println!("Mapping headers for file: {}", file);
         println!("Replace headers with string: {:?}", &replacer);
     
@@ -105,7 +110,7 @@ pub mod map_headers {
 
         let new_fasta = format!("{output}mapped.fasta");
 
-        create_mapped_fasta(file, &new_fasta, new_map);
+        let _ = create_mapped_fasta(file, &new_fasta, new_map);
 
         println!("{}\n{}\n\t{}\n\t{}", "FASTA HAS BEEN MAPPED AND REWRITTEN".green(), "FOUND HERE:".green(), &new_fasta.green(), &output_file.green());
         Ok(())
