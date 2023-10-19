@@ -92,8 +92,6 @@ pub mod map_headers {
         println!("Mapping headers for file: {}", file);
         println!("Replace headers with string: {:?}", &replacer);
     
-        let _ = validate_fasta(file);
-
         let name_vec: Result<Vec<String>, Box<dyn Error>> = validate_fasta(file);
         
         let names: Vec<String> = match name_vec {

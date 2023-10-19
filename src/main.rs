@@ -11,6 +11,9 @@ use crate::yaml_validator::yaml_validator::validate_yaml;
 mod map_headers;
 use crate::map_headers::map_headers::map_fasta_head;
 
+/* mod remap_head;
+use crate::remap_head::remap_head::remapping_headers; */
+
 mod split_by_size;
 use crate::split_by_size::split_by_size::split_file_by_size;
 
@@ -126,6 +129,32 @@ fn main() -> Result<(), Error> {
                     .help("The new header format, appended with a numerical value. Without being set the new header will default to 'FM_{numberical}'")
             )
     )
+    .subcommand(
+        Command::new("remapheaders")
+            .about("Subcommand for stripping out headers and replacing with a standardised automatic or user-given string, this also returns a dict of old:new headers")
+            .arg(
+                Arg::new("fasta-file")
+                    .short('f')
+                    .aliases(["fasta"])
+                    .required(true)
+                    .help("A path to a valid fasta file.")
+            )
+            .arg(
+                Arg::new("output-directory")
+                    .short('o')
+                    .aliases(["out"])
+                    .required(false)
+                    .default_value("./")
+                    .help("The output directory which will contain the mapped-heads.txt as well as the *mapped.fasta")
+            )
+            .arg(
+                Arg::new("map-file")
+                    .short('m')
+                    .aliases(["mapped-header-file"])
+                    .required(true)
+                    .help("The original mapped header field, a TSV of old-header, new-header")
+            )
+    )
     .get_matches();
 
     println!{
@@ -143,8 +172,8 @@ fn main() -> Result<(), Error> {
             path_sep = "\\";
             println!("Changing path separators, because windows...")
         },
-        "macos" => println!("Supported: Basically linux"),
-        "linux" => println!("Supported: Linux"),
+        "macos" => println!("Supported:  macos is basically linux"),
+        "linux" => println!("Supported: linux is Linux!"),
         _ => ()
     };
 
@@ -167,8 +196,12 @@ fn main() -> Result<(), Error> {
             let arguments = match_result.subcommand_matches("validateyaml");
             let _ = validate_yaml(arguments, path_sep);
         },
+/*         Some("remapheaders") => {
+            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("remapheaders");
+            let _ = remapping_headers(arguments);
+        } */
         _ => {
-            println!{"NOT A COMMAND"}
+            unreachable!()
         },
     };
     Ok(())
