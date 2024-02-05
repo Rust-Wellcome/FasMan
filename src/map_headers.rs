@@ -3,9 +3,6 @@ pub mod map_headers {
     use std::error::Error;
     use std::iter::Zip;
     use std::fs::File;
-    //use std::io::prelude::*;
-    //use std::fs;
-
     use clap::ArgMatches;
     use noodles::fasta;
     use colored::Colorize;
@@ -23,6 +20,8 @@ pub mod map_headers {
 
 
     pub fn validate_fasta(path: &str) -> Result<Vec<std::string::String>, Box<dyn Error>> {
+        // Simply validate the fasta is valid by reading though and ensure there are
+        // valid record formats through out the file
         let reader: Result<fasta::Reader<Box<dyn BufRead>>, std::io::Error> = fasta::reader::Builder.build_from_path(path);
         let result = match &reader {
             Ok(names) => {
@@ -39,6 +38,8 @@ pub mod map_headers {
 
 
     pub fn create_mapping(name_vec: Vec<std::string::String>, new_name: &str) -> Zip<std::vec::IntoIter<std::string::String>, std::vec::IntoIter<std::string::String>> {
+        // Generate a new mapping for the Fasta
+        //
         let mut new_heads: Vec<String> = Vec::new();
         let mut head_counter: i32 = 0;
         let name_vec_clone = name_vec.clone();
@@ -66,6 +67,7 @@ pub mod map_headers {
         let file_reader: File = File::open(input).expect("CAN'T OPEN FILE");
         let buff_reader: BufReader<File> = BufReader::new(file_reader);
         let mut new_fasta: File = File::create(output).unwrap();
+        print!("{:?}", mapped);
 
         for line in buff_reader.lines() {
             let l: &str = &line.as_ref().unwrap()[..];
@@ -88,12 +90,12 @@ pub mod map_headers {
         let file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let replacer: &String = arguments.unwrap().get_one::<String>("replace-with").unwrap();
         let output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
-        
+
         println!("Mapping headers for file: {}", file);
         println!("Replace headers with string: {:?}", &replacer);
-    
+
         let name_vec: Result<Vec<String>, Box<dyn Error>> = validate_fasta(file);
-        
+
         let names: Vec<String> = match name_vec {
             Ok(names) => names,
             Err(_e) => return Err(EmptyVec.into())
@@ -113,5 +115,5 @@ pub mod map_headers {
         println!("{}\n{}\n\t{}\n\t{}", "FASTA HAS BEEN MAPPED AND REWRITTEN".green(), "FOUND HERE:".green(), &new_fasta.green(), &output_file.green());
         Ok(())
     }
-    
+
 }
