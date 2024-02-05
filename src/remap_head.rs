@@ -18,7 +18,7 @@ pub mod remapping_headers {
         for line in buff_reader.lines() {
             let old_new = match line {
                 Ok(string) => {
-                    let mut old_new = string.split("\t");
+                    let mut old_new = string.split('\t');
                     let x = old_new.next().unwrap();
                     let y = old_new.next().unwrap();
                     old_head.push(x.to_string());
@@ -51,13 +51,13 @@ pub mod remapping_headers {
         println!("Replace headers with string: {}", map_file);
 
         let valid: Result<Vec<String>, Box<dyn Error>> =
-            map_headers::mapping_headers::validate_fasta(&file);
+            map_headers::mapping_headers::validate_fasta(file);
         let valid_fasta = match &valid {
             Ok(thing) => {
                 println!("Fasta is Valid!")
             }
             Err(_) => {
-                println!("")
+                println!("NOT A VALID FASTA")
             }
         };
 
@@ -66,7 +66,7 @@ pub mod remapping_headers {
 
         let new_fasta: String = format!("{output}_OH.fasta");
 
-        let _ = map_headers::mapping_headers::create_mapped_fasta(file, &new_fasta, new_map);
+        _ = map_headers::mapping_headers::create_mapped_fasta(file, &new_fasta, new_map);
 
         println!(
             "{}\n{}\n\t{}\n",

@@ -15,7 +15,7 @@ pub mod split_by_count {
             fasta_count
         );
 
-        let chunk_val = fasta_count.clone();
+        let chunk_val = *fasta_count;
         let mut counter = 0;
         let mut global_counter = 0;
 

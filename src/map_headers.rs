@@ -31,7 +31,7 @@ pub mod mapping_headers {
                 let names: Vec<_> = result.flatten().map(|res| res.name().to_owned()).collect();
                 return Ok(names);
             }
-            Err(_) => return Err(format!("Error...").into()),
+            Err(_) => return Err("Error...".into()),
         };
     }
 
@@ -87,8 +87,8 @@ pub mod mapping_headers {
 
         for line in buff_reader.lines() {
             let l: &str = &line.as_ref().unwrap()[..];
-            if l.starts_with(">") {
-                let mut to_replace = l.replace(">", "");
+            if l.starts_with('>') {
+                let mut to_replace = l.replace('>', "");
                 let mut mapped_heads: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
                     mapped.clone();
                 let mut map: Option<(String, String)> =
@@ -138,7 +138,7 @@ pub mod mapping_headers {
 
         let new_fasta: String = format!("{output}mapped.fasta");
 
-        let _ = create_mapped_fasta(file, &new_fasta, new_map);
+        _ = create_mapped_fasta(file, &new_fasta, new_map);
 
         println!(
             "{}\n{}\n\t{}\n\t{}",

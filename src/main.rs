@@ -6,7 +6,7 @@ use std::env;
 use std::io::Error;
 
 mod yaml_validator;
-use crate::yaml_validator::yaml_validator::validate_yaml;
+use crate::yaml_validator::yaml_validator_mod::validate_yaml;
 
 mod map_headers;
 use crate::map_headers::mapping_headers::map_fasta_head;
@@ -258,26 +258,26 @@ fn main() -> Result<(), Error> {
     match match_result.subcommand_name() {
         Some("splitbycount") => {
             let arguments = match_result.subcommand_matches("splitbycount");
-            let _ = split_file_by_count(arguments, path_sep);
+            _ = split_file_by_count(arguments, path_sep);
         }
         Some("splitbysize") => {
             let arguments: Option<&clap::ArgMatches> =
                 match_result.subcommand_matches("splitbysize");
-            let _ = split_file_by_size(arguments, path_sep);
+            _ = split_file_by_size(arguments, path_sep);
         }
         Some("mapheaders") => {
             let arguments: Option<&clap::ArgMatches> =
                 match_result.subcommand_matches("mapheaders");
-            let _ = map_fasta_head(arguments);
+            _ = map_fasta_head(arguments);
         }
         Some("validateyaml") => {
             let arguments = match_result.subcommand_matches("validateyaml");
-            let _ = validate_yaml(arguments, path_sep);
+            _ = validate_yaml(arguments, path_sep);
         }
         Some("remapheaders") => {
             let arguments: Option<&clap::ArgMatches> =
                 match_result.subcommand_matches("remapheaders");
-            let _ = remapping_head(arguments);
+            _ = remapping_head(arguments);
         }
         _ => {
             unreachable!()

@@ -1,4 +1,4 @@
-pub mod yaml_validator {
+pub mod yaml_validator_mod {
     use clap::ArgMatches;
     use colored::Colorize;
     use csv::Error;
@@ -98,7 +98,7 @@ pub mod yaml_validator {
                 match field_id {
                     "REFERENCE" => validate_fasta(path),
                     "GENESET-CSV" => {
-                        let _ = validate_csv(path);
+                        _ = validate_csv(path);
                     }
                     "HIC" => {}
                     _ => println!("Error"),
@@ -153,7 +153,7 @@ pub mod yaml_validator {
     //           validatedata(path, [fa, fna, fasta])
     //
     pub fn validate_data(path: &str, dtype: &str, _sep: &str) {
-        match fs::read_dir(&path) {
+        match fs::read_dir(path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {}
             Err(e) => panic!("{} {e}", "<-DIRECTORY PATH DOESN'T EXIST: ".red().bold()),
             Ok(data_files) => {
@@ -241,14 +241,14 @@ pub mod yaml_validator {
         validate_data(&contents.assem_reads.hic, "hic", sep);
 
         println!("{}", "CHECKING GENESET DIRECTORY RESOLVES".blue());
-        let genesets = contents.alignment.geneset.split(",");
+        let genesets = contents.alignment.geneset.split(',');
         for set in genesets {
             let gene_alignment_path = contents.alignment.data_dir.clone()
                 + &contents.assembly.classT
                 + sep
                 + "csv_data"
                 + sep
-                + &set
+                + set
                 + "-data.csv";
             validate_paths(&gene_alignment_path, "GENESET-CSV");
         }
