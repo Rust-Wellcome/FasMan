@@ -16,7 +16,7 @@ pub mod remapping_headers {
         let mut new_head: Vec<String> = Vec::new();
 
         for line in buff_reader.lines() {
-            let old_new = match line {
+            match line {
                 Ok(string) => {
                     let mut old_new = string.split('\t');
                     let x = old_new.next().unwrap();
@@ -31,15 +31,14 @@ pub mod remapping_headers {
         }
 
         let mapped_heads: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
-            new_head.to_owned().into_iter().zip(old_head);
-        print!("{:?}", mapped_heads);
+            new_head.into_iter().zip(old_head);
 
         return mapped_heads;
     }
 
     pub fn remapping_head(
         arguments: std::option::Option<&ArgMatches>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) {
         let file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let map_file: &String = arguments.unwrap().get_one::<String>("map-file").unwrap();
         let output: &String = arguments
@@ -52,7 +51,7 @@ pub mod remapping_headers {
 
         let valid: Result<Vec<String>, Box<dyn Error>> =
             map_headers::mapping_headers::validate_fasta(file);
-        let valid_fasta = match &valid {
+        match &valid {
             Ok(thing) => {
                 println!("Fasta is Valid!")
             }
@@ -66,7 +65,7 @@ pub mod remapping_headers {
 
         let new_fasta: String = format!("{output}_OH.fasta");
 
-        _ = map_headers::mapping_headers::create_mapped_fasta(file, &new_fasta, new_map);
+        map_headers::mapping_headers::create_mapped_fasta(file, &new_fasta, new_map);
 
         println!(
             "{}\n{}\n\t{}\n",
@@ -75,6 +74,5 @@ pub mod remapping_headers {
             &new_fasta.green()
         );
 
-        Ok(())
     }
 }

@@ -210,7 +210,7 @@ pub mod yaml_validator_mod {
     pub fn validate_yaml(
         arguments: std::option::Option<&ArgMatches>,
         sep: &str,
-    ) -> Result<(), std::io::Error> {
+    ) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
         let _output: &String = arguments
             .unwrap()
@@ -269,11 +269,9 @@ pub mod yaml_validator_mod {
             "{}\n{}\n{}\n{}\n{}",
             "VALIDATION COMPLETE".purple().bold(),
             "GENERAL INFORMATION:".purple().bold(),
-            "Check the log to see what failed",
+            "Check the log to see what failed".bold(),
             "FULL : ONLY synteny fails are permitted".purple(),
             "RAPID: geneset, busco and synteny fails are permitted".purple()
         );
-
-        Ok(())
     }
 }

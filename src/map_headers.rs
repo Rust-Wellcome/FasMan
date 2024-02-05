@@ -23,7 +23,7 @@ pub mod mapping_headers {
         // valid record formats through out the file
         let reader: Result<fasta::Reader<Box<dyn BufRead>>, std::io::Error> =
             fasta::reader::Builder.build_from_path(path);
-        let result = match &reader {
+        match &reader {
             Ok(names) => {
                 let mut binding: fasta::Reader<Box<dyn BufRead>> =
                     reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
@@ -51,7 +51,7 @@ pub mod mapping_headers {
         }
 
         let mapped_heads: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
-            name_vec_clone.to_owned().into_iter().zip(new_heads);
+            name_vec_clone.into_iter().zip(new_heads);
 
         return mapped_heads;
     }
@@ -83,7 +83,6 @@ pub mod mapping_headers {
         let file_reader: File = File::open(input).expect("CAN'T OPEN FILE");
         let buff_reader: BufReader<File> = BufReader::new(file_reader);
         let mut new_fasta: File = File::create(output).unwrap();
-        print!("{:?}", mapped);
 
         for line in buff_reader.lines() {
             let l: &str = &line.as_ref().unwrap()[..];
@@ -138,7 +137,7 @@ pub mod mapping_headers {
 
         let new_fasta: String = format!("{output}mapped.fasta");
 
-        _ = create_mapped_fasta(file, &new_fasta, new_map);
+        create_mapped_fasta(file, &new_fasta, new_map);
 
         println!(
             "{}\n{}\n\t{}\n\t{}",

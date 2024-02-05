@@ -1,4 +1,4 @@
-pub mod split_by_count {
+pub mod split_by_count_mod {
     use clap::ArgMatches;
     use std::{
         fs::File,

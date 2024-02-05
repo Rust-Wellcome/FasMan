@@ -15,10 +15,10 @@ mod remap_head;
 use crate::remap_head::remapping_headers::remapping_head;
 
 mod split_by_size;
-use crate::split_by_size::split_by_size::split_file_by_size;
+use crate::split_by_size::split_by_size_mod::split_file_by_size;
 
 mod split_by_count;
-use crate::split_by_count::split_by_count::split_file_by_count;
+use crate::split_by_count::split_by_count_mod::split_file_by_count;
 
 fn main() -> Result<(), Error> {
     let match_result = command!()
@@ -233,7 +233,7 @@ fn main() -> Result<(), Error> {
     println! {
         "{}\n{}\n{}",
         "WELLCOME TO TreeVal Data Prepper".bold().purple(),
-        "This has been made to help prep data for use in the Treeval and curationpretext pipelines",
+        "This has been made to help prep data for use in the Treeval and curationpretext pipelines".bold(),
         "ONLY THE yamlvalidator IS SPECIFIC TO TREEVAL, THE OTHER COMMANDS CAN BE USED FOR ANY OTHER PURPOSE YOU WANT".purple()
     };
 
@@ -257,19 +257,19 @@ fn main() -> Result<(), Error> {
 
     match match_result.subcommand_name() {
         Some("splitbycount") => {
-            _ = split_file_by_count(match_result.subcommand_matches("splitbycount"), path_sep);
+            split_file_by_count(match_result.subcommand_matches("splitbycount"), path_sep);
         }
         Some("splitbysize") => {
-            _ = split_file_by_size(match_result.subcommand_matches("splitbysize"), path_sep);
+            split_file_by_size(match_result.subcommand_matches("splitbysize"), path_sep);
         }
         Some("mapheaders") => {
             _ = map_fasta_head(match_result.subcommand_matches("mapheaders"));
         }
         Some("validateyaml") => {
-            _ = validate_yaml(match_result.subcommand_matches("validateyaml"), path_sep);
+            validate_yaml(match_result.subcommand_matches("validateyaml"), path_sep);
         }
         Some("remapheaders") => {
-            _ = remapping_head(match_result.subcommand_matches("remapheaders"));
+            remapping_head(match_result.subcommand_matches("remapheaders"));
         }
         _ => {
             unreachable!()

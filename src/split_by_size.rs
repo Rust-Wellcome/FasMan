@@ -1,4 +1,4 @@
-pub mod split_by_size {
+pub mod split_by_size_mod {
     use clap::ArgMatches;
 
     pub fn split_file_by_size(arguments: std::option::Option<&ArgMatches>, _sep: &str) {
