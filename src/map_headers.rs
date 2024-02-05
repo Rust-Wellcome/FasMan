@@ -95,11 +95,11 @@ pub mod mapping_headers {
                     mapped_heads.find(|x: &(String, String)| x.0 == to_replace);
                 let mut new_head: String = map.expect("").1;
                 let fmt_head: String = format!(">{}\n", new_head);
-                new_fasta.write_all(&fmt_head.into_bytes());
+                let _ = new_fasta.write_all(&fmt_head.into_bytes());
             } else {
                 let mut seq = line.expect("");
                 let fmt_seq = format!("{}\n", seq);
-                new_fasta.write_all(&fmt_seq.into_bytes());
+                let _ = new_fasta.write_all(&fmt_seq.into_bytes());
             }
         }
     }

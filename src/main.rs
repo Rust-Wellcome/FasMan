@@ -257,27 +257,19 @@ fn main() -> Result<(), Error> {
 
     match match_result.subcommand_name() {
         Some("splitbycount") => {
-            let arguments = match_result.subcommand_matches("splitbycount");
-            _ = split_file_by_count(arguments, path_sep);
+            _ = split_file_by_count(match_result.subcommand_matches("splitbycount"), path_sep);
         }
         Some("splitbysize") => {
-            let arguments: Option<&clap::ArgMatches> =
-                match_result.subcommand_matches("splitbysize");
-            _ = split_file_by_size(arguments, path_sep);
+            _ = split_file_by_size(match_result.subcommand_matches("splitbysize"), path_sep);
         }
         Some("mapheaders") => {
-            let arguments: Option<&clap::ArgMatches> =
-                match_result.subcommand_matches("mapheaders");
-            _ = map_fasta_head(arguments);
+            _ = map_fasta_head(match_result.subcommand_matches("mapheaders"));
         }
         Some("validateyaml") => {
-            let arguments = match_result.subcommand_matches("validateyaml");
-            _ = validate_yaml(arguments, path_sep);
+            _ = validate_yaml(match_result.subcommand_matches("validateyaml"), path_sep);
         }
         Some("remapheaders") => {
-            let arguments: Option<&clap::ArgMatches> =
-                match_result.subcommand_matches("remapheaders");
-            _ = remapping_head(arguments);
+            _ = remapping_head(match_result.subcommand_matches("remapheaders"));
         }
         _ => {
             unreachable!()
