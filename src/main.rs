@@ -1,24 +1,24 @@
 #![allow(non_snake_case)]
 
+use clap::{command, Arg, Command};
+use colored::Colorize;
 use std::env;
 use std::io::Error;
-use colored::Colorize;
-use clap::{Command, command, Arg};
 
 mod yaml_validator;
-use crate::yaml_validator::yaml_validator::validate_yaml;
+use crate::yaml_validator::yaml_validator_mod::validate_yaml;
 
 mod map_headers;
-use crate::map_headers::map_headers::map_fasta_head;
+use crate::map_headers::mapping_headers::map_fasta_head;
 
-/* mod remap_head;
-use crate::remap_head::remap_head::remapping_headers; */
+mod remap_head;
+use crate::remap_head::remapping_headers::remapping_head;
 
 mod split_by_size;
-use crate::split_by_size::split_by_size::split_file_by_size;
+use crate::split_by_size::split_by_size_mod::split_file_by_size;
 
 mod split_by_count;
-use crate::split_by_count::split_by_count::split_file_by_count;
+use crate::split_by_count::split_by_count_mod::split_file_by_count;
 
 fn main() -> Result<(), Error> {
     let match_result = command!()
@@ -126,12 +126,12 @@ fn main() -> Result<(), Error> {
                     .aliases(["replacement"])
                     .required(false)
                     .default_value("FMMH")
-                    .help("The new header format, appended with a numerical value. Without being set the new header will default to 'FM_{numberical}'")
+                    .help("The new header format, appended with a numerical value. Without being set the new header will default to 'FMMH_{numberical}'")
             )
     )
     .subcommand(
         Command::new("remapheaders")
-            .about("Subcommand for stripping out headers and replacing with a standardised automatic or user-given string, this also returns a dict of old:new headers")
+            .about("Subcommand for stripping out previously mapped headers and replacing with the old headers")
             .arg(
                 Arg::new("fasta-file")
                     .short('f')
@@ -144,7 +144,7 @@ fn main() -> Result<(), Error> {
                     .short('o')
                     .aliases(["out"])
                     .required(false)
-                    .default_value("./")
+                    .default_value("./new")
                     .help("The output directory which will contain the mapped-heads.txt as well as the *mapped.fasta")
             )
             .arg(
@@ -155,54 +155,125 @@ fn main() -> Result<(), Error> {
                     .help("The original mapped header field, a TSV of old-header, new-header")
             )
     )
+    .subcommand(
+        Command::new("profileONGOING")
+        .about("Profile an input fasta file and return various statistics")
+        .arg(
+            Arg::new("fasta-file")
+                .short('f')
+                .aliases(["fsata"])
+                .required(true)
+                .help("The input fasta file for profiling")
+        )
+    )
+    .subcommand(
+        Command::new("agp-to-fasta")
+        .about("Convert an agp file and original fasta file into a fasta file - useful for curation")
+        .arg(
+            Arg::new("original-fasta-file")
+                .short('f')
+                .aliases(["original-fasta"])
+                .required(true)
+                .help("The input fasta file for re-organising")
+        )
+        .arg(
+            Arg::new("agp")
+                .short('a')
+                .aliases(["agp file"])
+                .required(true)
+                .help("The AGP file used to re-organise the input fasta")
+        )
+        .arg(
+            Arg::new("sort")
+                .short('s')
+                .required(false)
+                .value_parser(clap::value_parser!(u16))
+                .default_value("false")
+                .help("Size sort the output or leave as order in AGP")
+        )
+        .arg(
+            Arg::new("output")
+                .short('o')
+                .aliases(["out"])
+                .required(false)
+                .default_value("./new.fasta")
+                .help("The output name of the new fasta file")
+        )
+    )
+    .subcommand(
+        Command::new("subsetONGOING")
+        .about("Subset a fasta file in a random manner by percentage of file")
+        .arg(
+            Arg::new("fasta-file")
+                .short('f')
+                .aliases(["fsata"])
+                .required(true)
+                .help("The input fasta file for profiling")
+        )
+        .arg(
+            Arg::new("random")
+                .short('r')
+                .value_parser(clap::value_parser!(bool))
+                .default_value("false")
+                .aliases(["random"])
+                .help("Random subset of input file. Default skims the first X given percent")
+        )
+        .arg(
+            Arg::new("percent")
+                .short('p')
+                .value_parser(clap::value_parser!(u16))
+                .default_value("50")
+                .aliases(["proportion"])
+                .required(true)
+                .help("Percentage of the original file entries that should be retained")
+        )
+    )
     .get_matches();
 
-    println!{
+    println! {
         "{}\n{}\n{}",
         "WELLCOME TO TreeVal Data Prepper".bold().purple(),
-        "This has been made to help prep data for use in the Treeval and curationpretext pipelines",
+        "This has been made to help prep data for use in the Treeval and curationpretext pipelines".bold(),
         "ONLY THE yamlvalidator IS SPECIFIC TO TREEVAL, THE OTHER COMMANDS CAN BE USED FOR ANY OTHER PURPOSE YOU WANT".purple()
     };
 
     println!("OPERATING SYSTEM: {}", env::consts::OS.purple()); // Prints the current OS.
-    
+
     let mut path_sep = "/";
     match env::consts::OS {
         "windows" => {
             path_sep = "\\";
             println!("Changing path separators, because windows...")
-        },
+        }
         "macos" => println!("Supported:  macos is basically linux"),
         "linux" => println!("Supported: linux is Linux!"),
-        _ => ()
+        _ => (),
     };
 
-    println!("RUNNING : {:?} : SUBCOMMAND", match_result.subcommand_name().unwrap());
+    println!(
+        "RUNNING : {:?} : SUBCOMMAND",
+        match_result.subcommand_name().unwrap()
+    );
 
     match match_result.subcommand_name() {
         Some("splitbycount") => {
-            let arguments = match_result.subcommand_matches("splitbycount");
-            let _ = split_file_by_count(arguments, path_sep);
-        },
+            split_file_by_count(match_result.subcommand_matches("splitbycount"), path_sep);
+        }
         Some("splitbysize") => {
-            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("splitbysize");
-            let _ = split_file_by_size(arguments, path_sep);
-        }, 
+            split_file_by_size(match_result.subcommand_matches("splitbysize"), path_sep);
+        }
         Some("mapheaders") => {
-            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("mapheaders");
-            let _ = map_fasta_head(arguments);
-        },
+            _ = map_fasta_head(match_result.subcommand_matches("mapheaders"));
+        }
         Some("validateyaml") => {
-            let arguments = match_result.subcommand_matches("validateyaml");
-            let _ = validate_yaml(arguments, path_sep);
-        },
-/*         Some("remapheaders") => {
-            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("remapheaders");
-            let _ = remapping_headers(arguments);
-        } */
+            validate_yaml(match_result.subcommand_matches("validateyaml"), path_sep);
+        }
+        Some("remapheaders") => {
+            remapping_head(match_result.subcommand_matches("remapheaders"));
+        }
         _ => {
             unreachable!()
-        },
+        }
     };
     Ok(())
 }
