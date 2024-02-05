@@ -36,9 +36,7 @@ pub mod remapping_headers {
         return mapped_heads;
     }
 
-    pub fn remapping_head(
-        arguments: std::option::Option<&ArgMatches>,
-    ) {
+    pub fn remapping_head(arguments: std::option::Option<&ArgMatches>) {
         let file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let map_file: &String = arguments.unwrap().get_one::<String>("map-file").unwrap();
         let output: &String = arguments
@@ -52,7 +50,7 @@ pub mod remapping_headers {
         let valid: Result<Vec<String>, Box<dyn Error>> =
             map_headers::mapping_headers::validate_fasta(file);
         match &valid {
-            Ok(thing) => {
+            Ok(_thing) => {
                 println!("Fasta is Valid!")
             }
             Err(_) => {
@@ -73,6 +71,5 @@ pub mod remapping_headers {
             "FOUND HERE:".green(),
             &new_fasta.green()
         );
-
     }
 }

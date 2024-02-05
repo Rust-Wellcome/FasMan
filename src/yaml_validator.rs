@@ -207,10 +207,7 @@ pub mod yaml_validator_mod {
         };
     }
 
-    pub fn validate_yaml(
-        arguments: std::option::Option<&ArgMatches>,
-        sep: &str,
-    ) {
+    pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>, sep: &str) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
         let _output: &String = arguments
             .unwrap()

@@ -24,7 +24,7 @@ pub mod mapping_headers {
         let reader: Result<fasta::Reader<Box<dyn BufRead>>, std::io::Error> =
             fasta::reader::Builder.build_from_path(path);
         match &reader {
-            Ok(names) => {
+            Ok(_names) => {
                 let mut binding: fasta::Reader<Box<dyn BufRead>> =
                     reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
                 let result: fasta::reader::Records<'_, Box<dyn BufRead>> = binding.records();
