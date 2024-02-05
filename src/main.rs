@@ -1,9 +1,9 @@
 #![allow(non_snake_case)]
 
+use clap::{command, Arg, Command};
+use colored::Colorize;
 use std::env;
 use std::io::Error;
-use colored::Colorize;
-use clap::{Command, command, Arg};
 
 mod yaml_validator;
 use crate::yaml_validator::yaml_validator::validate_yaml;
@@ -230,7 +230,7 @@ fn main() -> Result<(), Error> {
     )
     .get_matches();
 
-    println!{
+    println! {
         "{}\n{}\n{}",
         "WELLCOME TO TreeVal Data Prepper".bold().purple(),
         "This has been made to help prep data for use in the Treeval and curationpretext pipelines",
@@ -244,38 +244,44 @@ fn main() -> Result<(), Error> {
         "windows" => {
             path_sep = "\\";
             println!("Changing path separators, because windows...")
-        },
+        }
         "macos" => println!("Supported:  macos is basically linux"),
         "linux" => println!("Supported: linux is Linux!"),
-        _ => ()
+        _ => (),
     };
 
-    println!("RUNNING : {:?} : SUBCOMMAND", match_result.subcommand_name().unwrap());
+    println!(
+        "RUNNING : {:?} : SUBCOMMAND",
+        match_result.subcommand_name().unwrap()
+    );
 
     match match_result.subcommand_name() {
         Some("splitbycount") => {
             let arguments = match_result.subcommand_matches("splitbycount");
             let _ = split_file_by_count(arguments, path_sep);
-        },
+        }
         Some("splitbysize") => {
-            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("splitbysize");
+            let arguments: Option<&clap::ArgMatches> =
+                match_result.subcommand_matches("splitbysize");
             let _ = split_file_by_size(arguments, path_sep);
-        },
+        }
         Some("mapheaders") => {
-            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("mapheaders");
+            let arguments: Option<&clap::ArgMatches> =
+                match_result.subcommand_matches("mapheaders");
             let _ = map_fasta_head(arguments);
-        },
+        }
         Some("validateyaml") => {
             let arguments = match_result.subcommand_matches("validateyaml");
             let _ = validate_yaml(arguments, path_sep);
-        },
+        }
         Some("remapheaders") => {
-            let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("remapheaders");
+            let arguments: Option<&clap::ArgMatches> =
+                match_result.subcommand_matches("remapheaders");
             let _ = remapping_head(arguments);
         }
         _ => {
             unreachable!()
-        },
+        }
     };
     Ok(())
 }
