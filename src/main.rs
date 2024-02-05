@@ -9,10 +9,10 @@ mod yaml_validator;
 use crate::yaml_validator::yaml_validator::validate_yaml;
 
 mod map_headers;
-use crate::map_headers::map_headers::map_fasta_head;
+use crate::map_headers::mapping_headers::map_fasta_head;
 
 mod remap_head;
-use crate::remap_head::remap_head::remapping_headers;
+use crate::remap_head::remapping_headers::remapping_head;
 
 mod split_by_size;
 use crate::split_by_size::split_by_size::split_file_by_size;
@@ -271,7 +271,7 @@ fn main() -> Result<(), Error> {
         },
         Some("remapheaders") => {
             let arguments: Option<&clap::ArgMatches> = match_result.subcommand_matches("remapheaders");
-            let _ = remapping_headers(arguments);
+            let _ = remapping_head(arguments);
         }
         _ => {
             unreachable!()

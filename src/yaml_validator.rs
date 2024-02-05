@@ -123,7 +123,7 @@ pub mod yaml_validator {
         Ok(())
     }
 
-    
+
     //
     // FUNCTION: Check if pacbio has fasta.gz files, cram has cram and crai and synteny has fasta
     //           could make this much easier and consise by passing in a list of file types to check
@@ -142,13 +142,13 @@ pub mod yaml_validator {
                         })
                         .map(|f| f.path())
                         .collect();
-    
-                    if files.len() == 0 {
+
+                    if files.is_empty() {
                         println!("{}", "<-NO PACBIO DATA FILES".red())
                     } else {
                         println!("{} {:?}", ">-YOUR FILES ARE:".green(), &files);
                     }
-    
+
                 } else if dtype == "hic" {
                     let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
                         .filter(|d| match d.path().extension() {
@@ -157,13 +157,13 @@ pub mod yaml_validator {
                         })
                         .map(|f| f.path())
                         .collect();
-    
-                    if files.len() == 0 {
+
+                    if files.is_empty() {
                         println!("{}", "<-NO HIC DATA FILES".red())
                     } else {
                         println!("{} {:?}", ">-YOUR FILES ARE:".green(), &files);
                     }
-    
+
                 } else if dtype == "synteny" {
                     let files: Vec<PathBuf> = data_files.filter_map(|f| f.ok())
                         .filter(|d| match d.path().extension() {
@@ -172,8 +172,8 @@ pub mod yaml_validator {
                         })
                         .map(|f| f.path())
                         .collect();
-    
-                    if files.len() == 0 {
+
+                    if files.is_empty() {
                         println!("{}", "<-NO SYNTENIC GENOMES".red())
                     } else {
                         println!("{} {:?}", ">-YOUR GENOMES ARE:".green(), &files);
@@ -181,59 +181,59 @@ pub mod yaml_validator {
                 }
             }
         };
-    
+
     }
-    
-    
+
+
     pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>, sep: &str) -> Result<(), std::io::Error> {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
         let _output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
         let _verbose_flag: &bool = arguments.unwrap().get_one::<bool>("verbose").unwrap();
 
         println!{"Validating Yaml: {}", file.purple()};
-    
+
         let input = fs::File::open(file).expect("Unable to read from file");
         let contents: TreeValYaml = serde_yaml::from_reader(input).expect("Unable to read from file");
-    
+
         println!("RUNNING VALIDATE-YAML FOR SAMPLE: {}", contents.assembly.sample_id.purple());
-    
+
         validate_paths(&contents.reference_file, "REFERENCE");
         validate_paths(&contents.alignment.data_dir, "GENESET");
         validate_paths(&contents.synteny.synteny_genome_path, "SYNTENY");
         validate_paths(&contents.busco.lineages_path, "BUSCO");
-    
+
         validate_paths(&contents.assem_reads.pacbio, "PACBIO");
-        validate_data(&contents.assem_reads.pacbio, "pacbio", &sep);
-    
+        validate_data(&contents.assem_reads.pacbio, "pacbio", sep);
+
         validate_paths(&contents.assem_reads.hic, "HIC");
-        validate_data(&contents.assem_reads.hic, "hic", &sep);
-    
+        validate_data(&contents.assem_reads.hic, "hic", sep);
+
         println!("{}", "CHECKING GENESET DIRECTORY RESOLVES".blue());
         let genesets = contents.alignment.geneset.split(",");
         for set in genesets {
-            let gene_alignment_path = contents.alignment.data_dir.clone() + &contents.assembly.classT + &sep + "csv_data" + &sep + &set + "-data.csv";
+            let gene_alignment_path = contents.alignment.data_dir.clone() + &contents.assembly.classT + sep + "csv_data" + sep + &set + "-data.csv";
             validate_paths(&gene_alignment_path, "GENESET-CSV");
         };
-    
+
         println!("{}", "CHECKING SYNTENY DIRECTORY RESOLVES".blue());
-        let synteny_full = contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + &sep;
+        let synteny_full = contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + sep;
         validate_paths(&synteny_full, "SYNTENY-FASTA");
-        validate_data(&synteny_full, "synteny", &sep);
-    
-    
+        validate_data(&synteny_full, "synteny", sep);
+
+
         println!("{}", "CHECKING BUSCO DIRECTORY RESOLVES".blue());
-        let busco_path = contents.busco.lineages_path.clone()  + &sep + "lineages" + &sep + &contents.busco.lineage;
+        let busco_path = contents.busco.lineages_path.clone()  + sep + "lineages" + sep + &contents.busco.lineage;
         validate_paths(&busco_path, "BUSCO-DB");
         // NOW CHECK FOR FILES IN DIRECTORY?
-        
-        println!("{}\n{}\n{}\n{}\n{}", 
+
+        println!("{}\n{}\n{}\n{}\n{}",
             "VALIDATION COMPLETE".purple().bold(),
             "GENERAL INFORMATION:".purple().bold(),
             "Check the log to see what failed",
             "FULL : ONLY synteny fails are permitted".purple(),
             "RAPID: geneset, busco and synteny fails are permitted".purple()
         );
-    
+
         Ok(())
     }
 }

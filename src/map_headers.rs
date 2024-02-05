@@ -1,4 +1,4 @@
-pub mod map_headers {
+pub mod mapping_headers {
     use std::io::{BufWriter, Write, BufRead, BufReader};
     use std::error::Error;
     use std::iter::Zip;

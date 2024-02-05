@@ -7,5 +7,5 @@ pub mod split_by_size {
         println!("Size to chunk fasta into: {:?}", arguments.unwrap().get_one::<u16>("mem-size").unwrap());
     }
 
-} 
+}
 

@@ -1,4 +1,4 @@
-pub mod remap_head {
+pub mod remapping_headers {
     use std::{error::Error, fs::File};
     use std::io::{BufRead, BufReader};
     use std::iter::Zip;
@@ -35,7 +35,7 @@ pub mod remap_head {
 
     }
 
-    pub fn remapping_headers (arguments: std::option::Option<&ArgMatches>) -> Result<(), Box<dyn Error>> {
+    pub fn remapping_head (arguments: std::option::Option<&ArgMatches>) -> Result<(), Box<dyn Error>> {
         let file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let map_file: &String = arguments.unwrap().get_one::<String>("map-file").unwrap();
         let output: &String = arguments.unwrap().get_one::<String>("output-directory").unwrap();
@@ -43,7 +43,7 @@ pub mod remap_head {
         println!("Mapping headers for file: {}", file);
         println!("Replace headers with string: {}", map_file);
 
-        let valid: Result<Vec<String>, Box<dyn Error>> = map_headers::map_headers::validate_fasta(&file);
+        let valid: Result<Vec<String>, Box<dyn Error>> = map_headers::mapping_headers::validate_fasta(&file);
         let valid_fasta = match &valid {
             Ok(thing) => {
                 println!("Fasta is Valid!")
@@ -57,7 +57,7 @@ pub mod remap_head {
 
         let new_fasta: String = format!("{output}_OH.fasta");
 
-        let _ = map_headers::map_headers::create_mapped_fasta(file, &new_fasta, new_map);
+        let _ = map_headers::mapping_headers::create_mapped_fasta(file, &new_fasta, new_map);
 
         println!("{}\n{}\n\t{}\n", "FASTA HAS BEEN RE-APPED AND REWRITTEN".green(), "FOUND HERE:".green(), &new_fasta.green());
 
