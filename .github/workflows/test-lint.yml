@@ -23,70 +23,70 @@ env:
   # All other dependencies including registry deps will still use the incremental cache.
   CARGO_INCREMENTAL: 0
 
-  jobs:
-    rust-test:
-      runs-on: ${{ matrix.os }}-latest
+jobs:
+  rust-test:
+    runs-on: ${{ matrix.os }}-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, windows, macos]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - run: cargo test --locked --all-features --all-targets
+      - run: cargo test --locked --all-features --doc
+
+  rust-lint:
+    runs-on: ${{ matrix.os }}-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, windows, macos]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - run: cargo clippy --all-features --all-targets --locked
+      - run: cargo doc --no-deps
+
+  rust-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # rustfmt, might change some formatting between versions. This check should
+      # use the toolchain version from `rust-toolchain.toml` since that is also the
+      # version invoked during normal development in the repo. The formatting
+      # shouldn't matter for consumers of Marker. Therefore it's safe to use the
+      # nightly version of rustfmt
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - run: cargo fmt --check
   
-      strategy:
-        fail-fast: false
-        matrix:
-          os: [ubuntu, windows, macos]
+  rust-unused-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/download/cargo-machete.sh
+      - run: cargo-machete
+
+  # Check the formatting of TOML files in the repository
+  toml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/download/taplo.sh
+      - run: taplo fmt --check
+
+  # Check for typos in the repository based on a static dictionary
+  typos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/download/typos.sh
+      - run: typos
+
   
-      steps:
-        - uses: actions/checkout@v4
-        - uses: actions-rust-lang/setup-rust-toolchain@v1
-  
-        - run: cargo test --locked --all-features --all-targets
-        - run: cargo test --locked --all-features --doc
-  
-    rust-lint:
-      runs-on: ${{ matrix.os }}-latest
-  
-      strategy:
-        fail-fast: false
-        matrix:
-          os: [ubuntu, windows, macos]
-  
-      steps:
-        - uses: actions/checkout@v4
-        - uses: actions-rust-lang/setup-rust-toolchain@v1
-  
-        - run: cargo clippy --all-features --all-targets --locked
-        - run: cargo doc --no-deps
-  
-    rust-formatting:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        # rustfmt, might change some formatting between versions. This check should
-        # use the toolchain version from `rust-toolchain.toml` since that is also the
-        # version invoked during normal development in the repo. The formatting
-        # shouldn't matter for consumers of Marker. Therefore it's safe to use the
-        # nightly version of rustfmt
-        - uses: actions-rust-lang/setup-rust-toolchain@v1
-        - run: cargo fmt --check
-    
-    rust-unused-dependencies:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - run: scripts/download/cargo-machete.sh
-        - run: cargo-machete
-  
-    # Check the formatting of TOML files in the repository
-    toml:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - run: scripts/download/taplo.sh
-        - run: taplo fmt --check
-  
-    # Check for typos in the repository based on a static dictionary
-    typos:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - run: scripts/download/typos.sh
-        - run: typos
-  
-    
