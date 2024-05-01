@@ -5,7 +5,7 @@ pub mod split_by_count_mod {
         io::{BufRead, BufReader},
     };
 
-    pub fn split_file_by_count(arguments: std::option::Option<&ArgMatches>, _sep: &str) {
+    pub fn split_file_by_count(arguments: std::option::Option<&ArgMatches>) {
         let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let fasta_count = arguments.unwrap().get_one::<u16>("count").unwrap();
         println!("Fasta file for processing: {:?}", fasta_file);
