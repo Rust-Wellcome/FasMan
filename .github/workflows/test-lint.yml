@@ -39,7 +39,7 @@ env:
         - run: cargo test --locked --all-features --all-targets
         - run: cargo test --locked --all-features --doc
   
-          rust-lint:
+    rust-lint:
       runs-on: ${{ matrix.os }}-latest
   
       strategy:
