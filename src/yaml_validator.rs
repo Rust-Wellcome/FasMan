@@ -152,7 +152,7 @@ pub mod yaml_validator_mod {
     //           could make this much easier and consise by passing in a list of file types to check
     //           validatedata(path, [fa, fna, fasta])
     //
-    pub fn validate_data(path: &str, dtype: &str, _sep: &str) {
+    pub fn validate_data(path: &str, dtype: &str) {
         match fs::read_dir(path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {}
             Err(e) => panic!("{} {e}", "<-DIRECTORY PATH DOESN'T EXIST: ".red().bold()),
@@ -207,7 +207,7 @@ pub mod yaml_validator_mod {
         };
     }
 
-    pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>, sep: &str) {
+    pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
         let _output: &String = arguments
             .unwrap()
@@ -232,19 +232,17 @@ pub mod yaml_validator_mod {
         validate_paths(&contents.busco.lineages_path, "BUSCO");
 
         validate_paths(&contents.assem_reads.pacbio, "PACBIO");
-        validate_data(&contents.assem_reads.pacbio, "pacbio", sep);
+        validate_data(&contents.assem_reads.pacbio, "pacbio");
 
         validate_paths(&contents.assem_reads.hic, "HIC");
-        validate_data(&contents.assem_reads.hic, "hic", sep);
+        validate_data(&contents.assem_reads.hic, "hic");
 
         println!("{}", "CHECKING GENESET DIRECTORY RESOLVES".blue());
         let genesets = contents.alignment.geneset.split(',');
         for set in genesets {
             let gene_alignment_path = contents.alignment.data_dir.clone()
                 + &contents.assembly.classT
-                + sep
-                + "csv_data"
-                + sep
+                + "/csv_data/"
                 + set
                 + "-data.csv";
             validate_paths(&gene_alignment_path, "GENESET-CSV");
@@ -252,13 +250,13 @@ pub mod yaml_validator_mod {
 
         println!("{}", "CHECKING SYNTENY DIRECTORY RESOLVES".blue());
         let synteny_full =
-            contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + sep;
+            contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + "/";
         validate_paths(&synteny_full, "SYNTENY-FASTA");
-        validate_data(&synteny_full, "synteny", sep);
+        validate_data(&synteny_full, "synteny");
 
         println!("{}", "CHECKING BUSCO DIRECTORY RESOLVES".blue());
         let busco_path =
-            contents.busco.lineages_path.clone() + sep + "lineages" + sep + &contents.busco.lineage;
+            contents.busco.lineages_path.clone() + "/lineages/" + &contents.busco.lineage;
         validate_paths(&busco_path, "BUSCO-DB");
         // NOW CHECK FOR FILES IN DIRECTORY?
 

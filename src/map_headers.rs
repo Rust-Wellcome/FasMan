@@ -1,12 +1,15 @@
 pub mod mapping_headers {
+
     use clap::ArgMatches;
     use colored::Colorize;
-    use noodles::fasta;
     use std::error::Error;
     use std::fmt;
     use std::fs::File;
     use std::io::{BufRead, BufReader, BufWriter, Write};
     use std::iter::Zip;
+
+    use crate::generics::validate_fasta;
+    use crate::generics::only_keys;
 
     #[derive(Debug, Clone)]
     struct EmptyVec;
@@ -16,23 +19,6 @@ pub mod mapping_headers {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "Can't Display Empty Vec")
         }
-    }
-
-    pub fn validate_fasta(path: &str) -> Result<Vec<std::string::String>, Box<dyn Error>> {
-        // Simply validate the fasta is valid by reading though and ensure there are
-        // valid record formats through out the file
-        let reader: Result<fasta::Reader<Box<dyn BufRead>>, std::io::Error> =
-            fasta::reader::Builder.build_from_path(path);
-        match &reader {
-            Ok(_names) => {
-                let mut binding: fasta::Reader<Box<dyn BufRead>> =
-                    reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
-                let result: fasta::reader::Records<'_, Box<dyn BufRead>> = binding.records();
-                let names: Vec<_> = result.flatten().map(|res| res.name().to_owned()).collect();
-                return Ok(names);
-            }
-            Err(_) => return Err("Error...".into()),
-        };
     }
 
     pub fn create_mapping(
@@ -106,7 +92,10 @@ pub mod mapping_headers {
     pub fn map_fasta_head(
         arguments: std::option::Option<&ArgMatches>,
     ) -> Result<(), Box<dyn Error>> {
-        let file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
+        let file: &String = arguments
+            .unwrap()
+            .get_one::<String>("fasta-file")
+            .unwrap();
         let replacer: &String = arguments
             .unwrap()
             .get_one::<String>("replace-with")
@@ -119,33 +108,36 @@ pub mod mapping_headers {
         println!("Mapping headers for file: {}", file);
         println!("Replace headers with string: {:?}", &replacer);
 
-        let name_vec: Result<Vec<String>, Box<dyn Error>> = validate_fasta(file);
+        match validate_fasta(file) {
+            Ok(names) => {
+                let new_names = Vec::from_iter(only_keys(names));
 
-        let names: Vec<String> = match name_vec {
-            Ok(names) => names,
-            Err(_e) => return Err(EmptyVec.into()),
+                let new_map: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
+                    create_mapping(new_names, replacer);
+
+                let map_to_save: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
+                    new_map.clone();
+                let output_file = format!("{}mapped-heads.tsv", output);
+
+                save_mapping(&output_file, map_to_save);
+
+                let new_fasta: String = format!("{output}mapped.fasta");
+
+                create_mapped_fasta(file, &new_fasta, new_map);
+
+                println!(
+                    "{}\n{}\n\t{}\n\t{}",
+                    "FASTA HAS BEEN MAPPED AND REWRITTEN".green(),
+                    "FOUND HERE:".green(),
+                    &new_fasta.green(),
+                    &output_file.green()
+                );
+            }
+
+            Err(e) => panic!("Something is wrong with the file! | {}", e),
         };
 
-        let new_map: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
-            create_mapping(names, replacer);
 
-        let map_to_save: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
-            new_map.clone();
-        let output_file = format!("{}mapped-heads.tsv", output);
-
-        save_mapping(&output_file, map_to_save);
-
-        let new_fasta: String = format!("{output}mapped.fasta");
-
-        create_mapped_fasta(file, &new_fasta, new_map);
-
-        println!(
-            "{}\n{}\n\t{}\n\t{}",
-            "FASTA HAS BEEN MAPPED AND REWRITTEN".green(),
-            "FOUND HERE:".green(),
-            &new_fasta.green(),
-            &output_file.green()
-        );
         Ok(())
     }
 }

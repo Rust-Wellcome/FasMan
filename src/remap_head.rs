@@ -2,9 +2,11 @@ pub mod remapping_headers {
     use crate::map_headers;
     use clap::ArgMatches;
     use colored::Colorize;
+    use std::fs::File;
     use std::io::{BufRead, BufReader};
     use std::iter::Zip;
-    use std::{error::Error, fs::File};
+
+    use crate::generics::validate_fasta;
 
     pub fn pull_map_from_tsv(
         map_file: &str,
@@ -47,29 +49,25 @@ pub mod remapping_headers {
         println!("Mapping headers for file: {}", file);
         println!("Replace headers with string: {}", map_file);
 
-        let valid: Result<Vec<String>, Box<dyn Error>> =
-            map_headers::mapping_headers::validate_fasta(file);
-        match &valid {
+        match validate_fasta(file) {
             Ok(_thing) => {
-                println!("Fasta is Valid!")
+                let new_map: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
+                    pull_map_from_tsv(map_file);
+
+                let new_fasta: String = format!("{output}_OH.fasta");
+
+                map_headers::mapping_headers::create_mapped_fasta(file, &new_fasta, new_map);
+
+                println!(
+                    "{}\n{}\n\t{}\n",
+                    "FASTA HAS BEEN RE-APPED AND REWRITTEN".green(),
+                    "FOUND HERE:".green(),
+                    &new_fasta.green()
+                );
             }
             Err(_) => {
                 println!("NOT A VALID FASTA")
             }
         };
-
-        let new_map: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
-            pull_map_from_tsv(map_file);
-
-        let new_fasta: String = format!("{output}_OH.fasta");
-
-        map_headers::mapping_headers::create_mapped_fasta(file, &new_fasta, new_map);
-
-        println!(
-            "{}\n{}\n\t{}\n",
-            "FASTA HAS BEEN RE-APPED AND REWRITTEN".green(),
-            "FOUND HERE:".green(),
-            &new_fasta.green()
-        );
     }
 }

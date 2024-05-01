@@ -9,7 +9,9 @@ edition = "2021"
 clap = { version = "4.4.4", features = ["cargo"] }
 colored = "2.0.4"
 csv = "1.3.0"
-noodles = { version = "0.52.0", features = ["fasta", "cram", "csi"] }
+io = "0.0.2"
+noodles = { version = "0.52.0", features = ["fasta", "cram", "csi", "core"] }
 regex = "1.9.5"
 serde = { version = "1.0.188", features = ["derive"] }
 serde_yaml = "0.9.25"
+stacker = "0.1.15"

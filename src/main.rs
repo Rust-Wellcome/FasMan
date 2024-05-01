@@ -20,6 +20,15 @@ use crate::split_by_size::split_by_size_mod::split_file_by_size;
 mod split_by_count;
 use crate::split_by_count::split_by_count_mod::split_file_by_count;
 
+mod generics;
+//use crate::generics::validate_fasta;
+
+mod tpf_fasta;
+use crate::tpf_fasta::tpf_fasta_mod::curate_fasta;
+
+mod exclude_seq;
+use crate::exclude_seq::exclude_seq_mod::filter_fasta;
+
 fn main() -> Result<(), Error> {
     let match_result = command!()
     .about("A program for fasta manipulation and yaml validation ~ Used in TreeVal project")
@@ -165,29 +174,36 @@ fn main() -> Result<(), Error> {
                 .required(true)
                 .help("The input fasta file for profiling")
         )
+        .arg(
+            Arg::new("output-dir")
+                .short('o')
+                .aliases(["outdir"])
+                .default_value("FASTMAN-out")
+                .help("The input fasta file for profiling")
+        )
     )
     .subcommand(
-        Command::new("agp-to-fasta")
-        .about("Convert an agp file and original fasta file into a fasta file - useful for curation")
+        Command::new("curate")
+        .about("Convert an tpf file and original fasta file into a fasta file - useful for curation")
         .arg(
-            Arg::new("original-fasta-file")
+            Arg::new("fasta")
                 .short('f')
-                .aliases(["original-fasta"])
+                .aliases(["fasta"])
                 .required(true)
                 .help("The input fasta file for re-organising")
         )
         .arg(
-            Arg::new("agp")
-                .short('a')
-                .aliases(["agp file"])
+            Arg::new("tpf")
+                .short('t')
+                .aliases(["tpf file"])
                 .required(true)
-                .help("The AGP file used to re-organise the input fasta")
+                .help("The TPF file used to re-organise the input fasta")
         )
         .arg(
             Arg::new("sort")
                 .short('s')
                 .required(false)
-                .value_parser(clap::value_parser!(u16))
+                .value_parser(clap::value_parser!(bool))
                 .default_value("false")
                 .help("Size sort the output or leave as order in AGP")
         )
@@ -196,7 +212,7 @@ fn main() -> Result<(), Error> {
                 .short('o')
                 .aliases(["out"])
                 .required(false)
-                .default_value("./new.fasta")
+                .default_value("new.fasta")
                 .help("The output name of the new fasta file")
         )
     )
@@ -224,53 +240,93 @@ fn main() -> Result<(), Error> {
                 .value_parser(clap::value_parser!(u16))
                 .default_value("50")
                 .aliases(["proportion"])
-                .required(true)
                 .help("Percentage of the original file entries that should be retained")
+        )
+    )
+    .subcommand(
+        Command::new("filterfasta")
+            .about("Filter a given list of sequences from fasta file")
+            .arg(
+                Arg::new("fasta")
+                    .short('f')
+                    .required(true)
+                    .help("A fasta file for processing")
+            )
+            .arg(
+                Arg::new("output")
+                    .short('o')
+                    .required(false)
+                    .default_value("FiilteredFasta.fa")
+                    .help("The outfile naming")
+            )
+            .arg(
+                Arg::new("filter_list")
+                    .short('l')
+                    .required(false)
+                    .help("A string comma-separated list of sequence names to exclude from the final fasta")
+            )
+    )
+    .subcommand(
+    Command::new("mergehapsONGOING")
+        .about("Merge haplotypes / multi fasta files together")
+        .arg(
+            Arg::new("fasta-1")
+                .short('p')
+                .aliases(["primary-fasta"])
+                .required(true)
+                .help("The input fasta file for re-organising")
+        )
+        .arg(
+            Arg::new("fasta-2")
+                .short('s')
+                .aliases(["secondary-fasta"])
+                .required(true)
+                .help("The second input fasta file")
+        )
+        .arg(
+            Arg::new("naming")
+                .short('s')
+                .aliases(["naming"])
+                .required(false)
+                .default_value("PRI/HAP")
+                .help("A '/' separated list with an item per file, these are the namings of the new scaffolds in the merged output")
+        )
+        .arg(
+            Arg::new("output")
+                .short('o')
+                .aliases(["output"])
+                .required(false)
+                .default_value("merged")
+                .help("Output file prefix")
         )
     )
     .get_matches();
 
     println! {
         "{}\n{}\n{}",
-        "WELLCOME TO TreeVal Data Prepper".bold().purple(),
+        "WELCOME TO Fasta Manipulator".bold(),
         "This has been made to help prep data for use in the Treeval and curationpretext pipelines".bold(),
         "ONLY THE yamlvalidator IS SPECIFIC TO TREEVAL, THE OTHER COMMANDS CAN BE USED FOR ANY OTHER PURPOSE YOU WANT".purple()
     };
 
-    println!("OPERATING SYSTEM: {}", env::consts::OS.purple()); // Prints the current OS.
-
-    let mut path_sep = "/";
-    match env::consts::OS {
-        "windows" => {
-            path_sep = "\\";
-            println!("Changing path separators, because windows...")
-        }
-        "macos" => println!("Supported:  macos is basically linux"),
-        "linux" => println!("Supported: linux is Linux!"),
-        _ => (),
-    };
-
     println!(
-        "RUNNING : {:?} : SUBCOMMAND",
-        match_result.subcommand_name().unwrap()
+        "RUNNING : {:?} : SUBCOMMAND\nRUNNING ON: {:?}",
+        match_result.subcommand_name().unwrap(),
+        env::consts::OS
     );
 
     match match_result.subcommand_name() {
+        Some("splitbysize") => split_file_by_size(match_result.subcommand_matches("splitbysize")),
         Some("splitbycount") => {
-            split_file_by_count(match_result.subcommand_matches("splitbycount"), path_sep);
-        }
-        Some("splitbysize") => {
-            split_file_by_size(match_result.subcommand_matches("splitbysize"), path_sep);
+            split_file_by_count(match_result.subcommand_matches("splitbycount"))
         }
         Some("mapheaders") => {
             _ = map_fasta_head(match_result.subcommand_matches("mapheaders"));
         }
-        Some("validateyaml") => {
-            validate_yaml(match_result.subcommand_matches("validateyaml"), path_sep);
-        }
-        Some("remapheaders") => {
-            remapping_head(match_result.subcommand_matches("remapheaders"));
-        }
+        Some("validateyaml") => validate_yaml(match_result.subcommand_matches("validateyaml")),
+        Some("remapheaders") => remapping_head(match_result.subcommand_matches("remapheaders")),
+        Some("curate") => curate_fasta(match_result.subcommand_matches("curate")),
+        Some("filterfasta") => filter_fasta(match_result.subcommand_matches("filterfasta")),
         _ => {
             unreachable!()
         }
