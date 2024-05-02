@@ -35,6 +35,7 @@ pub fn validate_fasta(
     }
 }
 
+#[allow(clippy::iter_kv_map)]
 pub fn only_keys<K, V>(map: HashMap<K, V>) -> impl Iterator<Item = K> {
     // Take a HashMap and return a Key only Vec
     map.into_iter().map(|(k, _v)| k)

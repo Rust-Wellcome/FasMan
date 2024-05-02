@@ -11,6 +11,7 @@ pub mod mapping_headers {
     use crate::generics::only_keys;
     use crate::generics::validate_fasta;
 
+    #[allow(dead_code)]
     #[derive(Debug, Clone)]
     struct EmptyVec;
     impl Error for EmptyVec {}
@@ -21,6 +22,7 @@ pub mod mapping_headers {
         }
     }
 
+    #[allow(clippy::explicit_counter_loop)]
     pub fn create_mapping(
         name_vec: Vec<std::string::String>,
         new_name: &str,
@@ -58,6 +60,7 @@ pub mod mapping_headers {
         }
     }
 
+    #[allow(unused_mut)]
     pub fn create_mapped_fasta(
         input: &str,
         output: &str,

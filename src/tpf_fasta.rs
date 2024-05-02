@@ -175,11 +175,11 @@ pub mod tpf_fasta_mod {
             };
 
             no_more.push(x.to_owned());
-            data.name = x.to_owned();
+            x.clone_into(&mut data.name);
             for tpf in &tpf_data {
                 if tpf.new_scaffold == x {
                     for fasta in &fasta_data {
-                        if fasta.tpf == tpf.to_owned() {
+                        if fasta.tpf == *tpf {
                             let stringy = format!("\t{}\n", tpf);
                             file2
                                 .write_all(stringy.as_bytes())
@@ -209,6 +209,7 @@ pub mod tpf_fasta_mod {
         }
     }
 
+    #[warn(clippy::let_and_return)]
     pub fn curate_fasta(arguments: std::option::Option<&ArgMatches>) {
         //
         // Generate a curated fasta file based on the input TPF file
@@ -222,7 +223,7 @@ pub mod tpf_fasta_mod {
         let output: &String = arguments.unwrap().get_one::<String>("output").unwrap();
         println!("LET'S GET CURATING THAT FASTA!");
         stacker::maybe_grow(32 * 1024, 1024 * 5120, || {
-            match validate_fasta(&fasta_file) {
+            match validate_fasta(fasta_file) {
                 Ok(fasta_d) => {
                     let tpf_data = parse_tpf(&tpf_file);
                     //let _validated = varify_validity(&tpf_data, &fasta_d);
