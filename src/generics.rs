@@ -3,6 +3,7 @@ use std::error::Error;
 use std::{collections::HashMap, fmt, io::BufRead, result, str};
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct EmptyVec;
 impl Error for EmptyVec {}
 

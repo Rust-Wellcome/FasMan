@@ -209,7 +209,8 @@ pub mod tpf_fasta_mod {
         }
     }
 
-    #[warn(clippy::let_and_return)]
+    #[allow(clippy::needless_borrow)]
+    #[allow(clippy::let_and_return)]
     pub fn curate_fasta(arguments: std::option::Option<&ArgMatches>) {
         //
         // Generate a curated fasta file based on the input TPF file
@@ -233,7 +234,7 @@ pub mod tpf_fasta_mod {
                     // if valid then use the data
                     //
                     let reader =
-                        fasta::indexed_reader::Builder::default().build_from_path(&fasta_file);
+                        fasta::indexed_reader::Builder::default().build_from_path(fasta_file);
                     let fasta_repo = match reader {
                         Ok(data) => {
                             let adapter = IndexedReader::new(data);
