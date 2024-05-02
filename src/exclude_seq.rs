@@ -22,9 +22,10 @@ pub mod exclude_seq_mod {
                 let mut binding = fasta;
                 for result in binding.records() {
                     let record = result?;
-                    println!("Found record to exclude: {:?}", &record.name());
                     if !exclusions.contains(&record.name()) {
                         writer.write_record(&record)?;
+                    } else {
+                        println!("Found record to exclude: {:?}", &record.name());
                     }
                 }
                 Ok("Removed Exclusionary List")
