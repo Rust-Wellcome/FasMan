@@ -35,7 +35,7 @@ pub mod remapping_headers {
         let mapped_heads: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
             new_head.into_iter().zip(old_head);
 
-        return mapped_heads;
+        mapped_heads
     }
 
     pub fn remapping_head(arguments: std::option::Option<&ArgMatches>) {

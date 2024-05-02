@@ -1,12 +1,6 @@
 use noodles::fasta;
 use std::error::Error;
-use std::{
-    fmt,
-    io::BufRead,
-    str,
-    collections::HashMap,
-    result,
-};
+use std::{collections::HashMap, fmt, io::BufRead, result, str};
 
 #[derive(Debug, Clone)]
 struct EmptyVec;
@@ -18,10 +12,13 @@ impl fmt::Display for EmptyVec {
     }
 }
 
-pub fn validate_fasta(path: &str) -> result::Result<HashMap<std::string::String, usize>, Box<dyn Error>> {
+pub fn validate_fasta(
+    path: &str,
+) -> result::Result<HashMap<std::string::String, usize>, Box<dyn Error>> {
     // Simply validate the fasta is valid by reading though and ensure there are
     // valid record formats through out the file
-    let reader: Result<fasta::Reader<Box<dyn BufRead>>, std::io::Error> = fasta::reader::Builder.build_from_path(path);
+    let reader: Result<fasta::Reader<Box<dyn BufRead>>, std::io::Error> =
+        fasta::reader::Builder.build_from_path(path);
     let mut fasta_map = HashMap::new();
 
     match &reader {
@@ -32,9 +29,9 @@ pub fn validate_fasta(path: &str) -> result::Result<HashMap<std::string::String,
                 let record = result?;
                 fasta_map.insert(record.name().to_owned(), record.sequence().len());
             }
-            return Ok(fasta_map)
+            Ok(fasta_map)
         }
-        Err(_) => return Err("Error: Fasta is not valid check file!".into()),
+        Err(_) => Err("Error: Fasta is not valid check file!".into()),
     }
 }
 
