@@ -8,9 +8,10 @@ pub mod mapping_headers {
     use std::io::{BufRead, BufReader, BufWriter, Write};
     use std::iter::Zip;
 
-    use crate::generics::validate_fasta;
     use crate::generics::only_keys;
+    use crate::generics::validate_fasta;
 
+    #[allow(dead_code)]
     #[derive(Debug, Clone)]
     struct EmptyVec;
     impl Error for EmptyVec {}
@@ -21,6 +22,7 @@ pub mod mapping_headers {
         }
     }
 
+    #[allow(clippy::explicit_counter_loop)]
     pub fn create_mapping(
         name_vec: Vec<std::string::String>,
         new_name: &str,
@@ -31,7 +33,7 @@ pub mod mapping_headers {
         let mut head_counter: i32 = 0;
         let name_vec_clone = name_vec.clone();
 
-        for x in name_vec {
+        for _x in name_vec {
             new_heads.push(format!("{}_{}", new_name, head_counter));
             head_counter += 1;
         }
@@ -39,7 +41,7 @@ pub mod mapping_headers {
         let mapped_heads: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
             name_vec_clone.into_iter().zip(new_heads);
 
-        return mapped_heads;
+        mapped_heads
     }
 
     pub fn save_mapping(
@@ -58,6 +60,7 @@ pub mod mapping_headers {
         }
     }
 
+    #[allow(unused_mut)]
     pub fn create_mapped_fasta(
         input: &str,
         output: &str,
@@ -92,10 +95,7 @@ pub mod mapping_headers {
     pub fn map_fasta_head(
         arguments: std::option::Option<&ArgMatches>,
     ) -> Result<(), Box<dyn Error>> {
-        let file: &String = arguments
-            .unwrap()
-            .get_one::<String>("fasta-file")
-            .unwrap();
+        let file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let replacer: &String = arguments
             .unwrap()
             .get_one::<String>("replace-with")
@@ -136,7 +136,6 @@ pub mod mapping_headers {
 
             Err(e) => panic!("Something is wrong with the file! | {}", e),
         };
-
 
         Ok(())
     }

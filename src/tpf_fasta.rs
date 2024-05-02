@@ -1,17 +1,17 @@
 pub mod tpf_fasta_mod {
     use clap::ArgMatches;
     use noodles::core::Position;
-    use noodles::fasta::record::{Definition, Sequence};
+    use noodles::fasta;
+    use noodles::fasta::record::Sequence;
     use noodles::fasta::repository::adapters::IndexedReader;
-    use noodles::fasta::{self, Record};
     use std::fs::OpenOptions;
     use std::io::Write;
-    use std::{collections::HashMap, fs::read_to_string, fs::File, str};
+    use std::{fs::read_to_string, fs::File, str};
 
     use crate::generics::validate_fasta;
 
     #[derive(Debug, Clone, PartialEq, Eq)]
-    struct TPF {
+    struct Tpf {
         ori_scaffold: String,
         start_coord: usize,
         end_coord: usize,
@@ -19,7 +19,7 @@ pub mod tpf_fasta_mod {
         orientation: String,
     }
 
-    impl std::fmt::Display for TPF {
+    impl std::fmt::Display for Tpf {
         fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
             write!(
                 fmt,
@@ -31,7 +31,7 @@ pub mod tpf_fasta_mod {
 
     #[derive(Debug, PartialEq, Eq)]
     struct NewFasta {
-        tpf: TPF,
+        tpf: Tpf,
         sequence: String,
     }
 
@@ -41,15 +41,15 @@ pub mod tpf_fasta_mod {
         sequence: Vec<String>,
     }
 
-    fn parse_tpf(path: &String) -> Vec<TPF> {
-        let mut all_tpf: Vec<TPF> = Vec::new();
+    fn parse_tpf(path: &String) -> Vec<Tpf> {
+        let mut all_tpf: Vec<Tpf> = Vec::new();
         for line in read_to_string(path).unwrap().lines() {
-            if line.starts_with("?") {
-                let line_replaced = line.replace("\t", " ");
+            if line.starts_with('?') {
+                let line_replaced = line.replace('\t', " ");
                 let line_list: Vec<&str> = line_replaced.split_whitespace().collect();
-                let scaff_data: Vec<&str> = line_list[1].split(":").collect();
-                let scaff_coords: Vec<&str> = scaff_data[1].split("-").collect();
-                let data = TPF {
+                let scaff_data: Vec<&str> = line_list[1].split(':').collect();
+                let scaff_coords: Vec<&str> = scaff_data[1].split('-').collect();
+                let data = Tpf {
                     ori_scaffold: scaff_data[0].to_owned(),
                     start_coord: scaff_coords[0].to_owned().parse::<usize>().unwrap(),
                     end_coord: scaff_coords[1].to_owned().parse::<usize>().unwrap(),
@@ -59,23 +59,23 @@ pub mod tpf_fasta_mod {
                 all_tpf.push(data);
             }
         }
-        return all_tpf;
+        all_tpf
     }
 
     fn subset_vec_tpf<'a>(
-        tpf: &'a Vec<TPF>,
+        tpf: &'a Vec<Tpf>,
         fasta: (&std::string::String, &usize),
-    ) -> Vec<&'a TPF> {
+    ) -> Vec<&'a Tpf> {
         //
         // Subset the Vec<TPF> based on a search through the fasta
         //
-        let mut subset_tpf: Vec<&TPF> = Vec::new();
+        let mut subset_tpf: Vec<&Tpf> = Vec::new();
         for i in tpf {
-            if i.ori_scaffold == fasta.0.to_owned() {
+            if i.ori_scaffold == *fasta.0 {
                 subset_tpf.push(i)
             }
         }
-        return subset_tpf;
+        subset_tpf
     }
 
     fn check_orientation(
@@ -90,20 +90,18 @@ pub mod tpf_fasta_mod {
                 .collect::<Result<_, _>>()
                 .unwrap();
             let seq = compliment.get(start..).unwrap();
-            let new_seq: String = str::from_utf8(seq).unwrap().chars().rev().collect();
-            return new_seq;
+            str::from_utf8(seq).unwrap().chars().rev().collect()
         } else {
             let start = Position::try_from(1).unwrap();
             let parse_orientation = parsed.unwrap();
             let seq = parse_orientation.get(start..).unwrap();
-            let new_seq: String = str::from_utf8(seq).unwrap().chars().collect();
-            return new_seq;
+            str::from_utf8(seq).unwrap().chars().collect()
         }
     }
 
     fn parse_seq(
         sequence: std::option::Option<noodles::fasta::record::Sequence>,
-        tpf: Vec<&TPF>,
+        tpf: Vec<&Tpf>,
     ) -> Vec<NewFasta> {
         let mut subset_tpf: Vec<NewFasta> = Vec::new();
         //
@@ -125,10 +123,10 @@ pub mod tpf_fasta_mod {
             };
             subset_tpf.push(data);
         }
-        return subset_tpf;
+        subset_tpf
     }
 
-    fn get_uniques(tpf_list: &Vec<TPF>) -> Vec<String> {
+    fn get_uniques(tpf_list: &Vec<Tpf>) -> Vec<String> {
         let mut uniques: Vec<String> = Vec::new();
 
         for i in tpf_list {
@@ -136,13 +134,13 @@ pub mod tpf_fasta_mod {
                 uniques.push(i.new_scaffold.to_owned())
             }
         }
-        return uniques;
+        uniques
     }
 
-    fn save_to_fasta(fasta_data: Vec<NewFasta>, tpf_data: Vec<TPF>, output: &String) -> () {
+    fn save_to_fasta(fasta_data: Vec<NewFasta>, tpf_data: Vec<Tpf>, output: &String) {
         //
         // TPF is in the input TPF order, this will continue to be the case until
-        // the script is modified and the TPF struct gets modified in place for some reason
+        // the script is modified and the Tpf struct gets modified in place for some reason
         //
         let _data_file = File::create(output);
         let mut file = OpenOptions::new()
@@ -177,11 +175,11 @@ pub mod tpf_fasta_mod {
             };
 
             no_more.push(x.to_owned());
-            data.name = x.to_owned();
+            x.clone_into(&mut data.name);
             for tpf in &tpf_data {
                 if tpf.new_scaffold == x {
                     for fasta in &fasta_data {
-                        if fasta.tpf == tpf.to_owned() {
+                        if fasta.tpf == *tpf {
                             let stringy = format!("\t{}\n", tpf);
                             file2
                                 .write_all(stringy.as_bytes())
@@ -211,6 +209,8 @@ pub mod tpf_fasta_mod {
         }
     }
 
+    #[allow(clippy::needless_borrow)]
+    #[allow(clippy::let_and_return)]
     pub fn curate_fasta(arguments: std::option::Option<&ArgMatches>) {
         //
         // Generate a curated fasta file based on the input TPF file
@@ -224,7 +224,7 @@ pub mod tpf_fasta_mod {
         let output: &String = arguments.unwrap().get_one::<String>("output").unwrap();
         println!("LET'S GET CURATING THAT FASTA!");
         stacker::maybe_grow(32 * 1024, 1024 * 5120, || {
-            match validate_fasta(&fasta_file) {
+            match validate_fasta(fasta_file) {
                 Ok(fasta_d) => {
                     let tpf_data = parse_tpf(&tpf_file);
                     //let _validated = varify_validity(&tpf_data, &fasta_d);
@@ -234,7 +234,7 @@ pub mod tpf_fasta_mod {
                     // if valid then use the data
                     //
                     let reader =
-                        fasta::indexed_reader::Builder::default().build_from_path(&fasta_file);
+                        fasta::indexed_reader::Builder::default().build_from_path(fasta_file);
                     let fasta_repo = match reader {
                         Ok(data) => {
                             let adapter = IndexedReader::new(data);
