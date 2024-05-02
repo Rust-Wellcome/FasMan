@@ -1,100 +1,92 @@
 name: Rust
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    push:
+        branches: ["main", "hotfix", "dev"]
+    pull_request:
 
 env:
-  CARGO_TERM_COLOR: always
+    CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+    build:
+        runs-on: ubuntu-latest
 
-    runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Build
+              run: cargo build --verbose
+            - name: Run tests
+              run: cargo test --verbose
 
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
-    - name: "Test"
-      on:
-        pull_request:
-      
-      jobs:
-        check:
-          name: "Cargo check"
-          runs-on: "ubuntu-latest"
-          steps:
+    check:
+        name: "Cargo check"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Check out the repo"
+              uses: actions/checkout@v3
+              with:
+                  profile: "minimal"
+                  toolchain: "stable"
+                  override: true
+
+            - uses: "actions-rs/cargo@v1"
+              with:
+                  command: "check"
+
+    test:
+        name: "Cargo test"
+        runs-on: "ubuntu-latest"
+        steps:
             - name: "Check out the repo"
               uses: actions/checkout@v3
 
-      - uses: "actions-rs/toolchain@v1"
-        with:
-          profile: "minimal"
-          toolchain: "stable"
-          override: true
+            - uses: "actions-rs/toolchain@v1"
+              with:
+                  profile: "minimal"
+                  toolchain: "stable"
+                  override: true
 
-      - uses: "actions-rs/cargo@v1"
-        with:
-          command: "check"
+            - uses: "actions-rs/cargo@v1"
+              with:
+                  command: "test"
 
-  test:
-    name: "Cargo test"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "Check out the repo"
-        uses: actions/checkout@v3
+    fmt:
+        name: "Cargo format"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Check out the repo"
+              uses: actions/checkout@v3
 
-      - uses: "actions-rs/toolchain@v1"
-        with:
-          profile: "minimal"
-          toolchain: "stable"
-          override: true
+            - uses: "actions-rs/toolchain@v1"
+              with:
+                  profile: "minimal"
+                  toolchain: "stable"
+                  override: true
 
-      - uses: "actions-rs/cargo@v1"
-        with:
-          command: "test"
+            - run: "rustup component add rustfmt"
 
-  fmt:
-    name: "Cargo format"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "Check out the repo"
-        uses: actions/checkout@v3
+            - uses: "actions-rs/cargo@v1"
+              with:
+                  command: "fmt"
+                  args: "--all -- --check"
 
-      - uses: "actions-rs/toolchain@v1"
-        with:
-          profile: "minimal"
-          toolchain: "stable"
-          override: true
-          
-      - run: "rustup component add rustfmt"
+    clippy:
+        name: "Cargo clippy"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Check out the repo"
+              uses: actions/checkout@v3
 
-      - uses: "actions-rs/cargo@v1"
-        with:
-          command: "fmt"
-          args: "--all -- --check"
+            - uses: "actions-rs/toolchain@v1"
+              with:
+                  profile: "minimal"
+                  toolchain: "stable"
+                  override: true
 
-  clippy:
-    name: "Cargo clippy"
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: "Check out the repo"
-        uses: actions/checkout@v3
+            - run: "rustup component add clippy"
 
-      - uses: "actions-rs/toolchain@v1"
-        with:
-          profile: "minimal"
-          toolchain: "stable"
-          override: true
-
-      - run: "rustup component add clippy"
-
-      - uses: "actions-rs/cargo@v1"
-        with:
-          command: "clippy"
-          args: "-- -D warnings"
+            - uses: "actions-rs/cargo@v1"
+              with:
+                  command: "clippy"
+                  args: "-- -D warnings"
