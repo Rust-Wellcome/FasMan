@@ -165,7 +165,7 @@ fn main() -> Result<(), Error> {
             )
     )
     .subcommand(
-        Command::new("profileONGOING")
+        Command::new("profile")
         .about("Profile an input fasta file and return various statistics")
         .arg(
             Arg::new("fasta-file")
@@ -215,9 +215,16 @@ fn main() -> Result<(), Error> {
                 .default_value("new.fasta")
                 .help("The output name of the new fasta file")
         )
+        .arg(
+            Arg::new("n_length")
+                .aliases(["n_len"])
+                .value_parser(clap::value_parser!(usize))
+                .default_value("200")
+                .help("Length that the N (gap) string should be.")
+        )
     )
     .subcommand(
-        Command::new("subsetONGOING")
+        Command::new("subset")
         .about("Subset a fasta file in a random manner by percentage of file")
         .arg(
             Arg::new("fasta-file")
@@ -267,7 +274,7 @@ fn main() -> Result<(), Error> {
             )
     )
     .subcommand(
-    Command::new("mergehapsONGOING")
+        Command::new("mergehaps")
         .about("Merge haplotypes / multi fasta files together")
         .arg(
             Arg::new("fasta-1")
