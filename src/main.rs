@@ -217,7 +217,7 @@ fn main() -> Result<(), Error> {
         )
     )
     .subcommand(
-        Command::new("subsetONGOING")
+        Command::new("subset")
         .about("Subset a fasta file in a random manner by percentage of file")
         .arg(
             Arg::new("fasta-file")
@@ -267,7 +267,7 @@ fn main() -> Result<(), Error> {
             )
     )
     .subcommand(
-    Command::new("mergehapsONGOING")
+    Command::new("mergehaps")
         .about("Merge haplotypes / multi fasta files together")
         .arg(
             Arg::new("fasta-1")
