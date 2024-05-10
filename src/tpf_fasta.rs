@@ -137,7 +137,12 @@ pub mod tpf_fasta_mod {
         uniques
     }
 
-    fn save_to_fasta(fasta_data: Vec<NewFasta>, tpf_data: Vec<Tpf>, output: &String) {
+    fn save_to_fasta(
+        fasta_data: Vec<NewFasta>,
+        tpf_data: Vec<Tpf>,
+        output: &String,
+        n_length: usize,
+    ) {
         //
         // TPF is in the input TPF order, this will continue to be the case until
         // the script is modified and the Tpf struct gets modified in place for some reason
@@ -191,9 +196,9 @@ pub mod tpf_fasta_mod {
             }
 
             let line_len: usize = 60;
-
             let fixed = data.sequence;
-            let fixed2 = fixed.join("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+            let n_string = "N".repeat(n_length);
+            let fixed2 = fixed.join(&n_string); //.join required a borrowed str
             let fixed3 = fixed2
                 .as_bytes()
                 .chunks(line_len)
@@ -221,6 +226,7 @@ pub mod tpf_fasta_mod {
         //
         let fasta_file: &String = arguments.unwrap().get_one::<String>("fasta").unwrap();
         let tpf_file: &String = arguments.unwrap().get_one::<String>("tpf").unwrap();
+        let n_length: &usize = arguments.unwrap().get_one::<usize>("n_length").unwrap();
         let output: &String = arguments.unwrap().get_one::<String>("output").unwrap();
         println!("LET'S GET CURATING THAT FASTA!");
         stacker::maybe_grow(32 * 1024, 1024 * 5120, || {
@@ -262,7 +268,7 @@ pub mod tpf_fasta_mod {
                             Err(e) => panic!("{:?}", e),
                         };
                     }
-                    save_to_fasta(new_fasta_data, tpf_data, output)
+                    save_to_fasta(new_fasta_data, tpf_data, output, n_length.to_owned())
                 }
                 Err(e) => panic!("Something is wrong with the file! | {}", e),
             }
