@@ -83,6 +83,13 @@ fn main() -> Result<(), Error> {
                     .help("The data type of the input data")
             )
             .arg(
+                Arg::new("sanitise")
+                    .short('s')
+                    .value_parser(clap::value_parser!(bool))
+                    .default_value("false")
+                    .help("Do we need to sanitise the headers of the input fasta")
+            )
+            .arg(
                 Arg::new("count")
                     .short('c')
                     .long("file-count")

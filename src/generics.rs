@@ -1,4 +1,5 @@
 use noodles::fasta;
+use noodles::fasta::record::Definition;
 use std::error::Error;
 use std::{collections::HashMap, fmt, io::BufRead, result, str};
 
@@ -40,4 +41,8 @@ pub fn validate_fasta(
 pub fn only_keys<K, V>(map: HashMap<K, V>) -> impl Iterator<Item = K> {
     // Take a HashMap and return a Key only Vec
     map.into_iter().map(|(k, _v)| k)
+}
+
+pub fn sanitise_header(old_header: &Definition) -> std::string::String {
+    return "THIS".to_string();
 }

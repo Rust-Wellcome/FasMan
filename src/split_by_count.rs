@@ -1,4 +1,5 @@
 pub mod split_by_count_mod {
+    use crate::generics::sanitise_header;
     use clap::ArgMatches;
     use compare::{natural, Compare};
     use noodles::fasta::record::Definition;
@@ -11,14 +12,10 @@ pub mod split_by_count_mod {
         path::Path,
     };
 
-    fn sanitise_headers(head: &Definition) -> String {
-        return head.to_string();
-    }
-
     fn fix_head(records: Record, sanitise: bool) -> Record {
         let clean_headers = true;
         if clean_headers {
-            let header = sanitise_headers(records.definition());
+            let header = sanitise_header(records.definition());
 
             let definition = fasta::record::Definition::new(header, None);
             let seq = records.sequence().to_owned();
@@ -45,6 +42,7 @@ pub mod split_by_count_mod {
     }
 
     pub fn split_file_by_count(arguments: std::option::Option<&ArgMatches>) {
+        let sanitise: &bool = arguments.unwrap().get_one::<bool>("sanitise").unwrap();
         let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let path_obj = Path::new(fasta_file);
         let grab_name = path_obj.file_name().unwrap();
@@ -70,7 +68,6 @@ pub mod split_by_count_mod {
 
         let mut counter: u16 = 0;
         let mut file_counter = 1;
-        let clean_headers = true;
 
         let file_name: Vec<&str> = actual_name.split(".").collect();
 
@@ -84,7 +81,7 @@ pub mod split_by_count_mod {
             let record = result.unwrap();
             counter += 1;
 
-            let final_rec = fix_head(record, clean_headers);
+            let final_rec = fix_head(record, *sanitise);
             record_list.push(final_rec);
 
             let cmp = natural();
