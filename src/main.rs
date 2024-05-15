@@ -30,6 +30,7 @@ mod exclude_seq;
 use crate::exclude_seq::exclude_seq_mod::filter_fasta;
 
 fn main() -> Result<(), Error> {
+    let split_options = ["pep", "cds", "cdna", "rna", "other"];
     let match_result = command!()
     .about("A program for fasta manipulation and yaml validation ~ Used in TreeVal project")
     .subcommand(
@@ -73,7 +74,13 @@ fn main() -> Result<(), Error> {
                     .aliases(["out"])
                     .required(false)
                     .default_value("./")
-                    .help("The output directory that files will be placed in")
+                    .help("The output directory that files will be placed in | outfile will be formatted like {input_file_prefix}_f{file_count}_c{requested_chunk_count}-a{actual_chunk_count}.fa")
+            )
+            .arg(
+                Arg::new("data_type")
+                    .short('d')
+                    .value_parser(clap::builder::PossibleValuesParser::new(&split_options))
+                    .help("The data type of the input data")
             )
             .arg(
                 Arg::new("count")
