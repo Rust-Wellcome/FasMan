@@ -2,21 +2,18 @@ pub mod split_by_count_mod {
     use crate::generics::sanitise_header;
     use clap::ArgMatches;
     use compare::{natural, Compare};
-    use noodles::fasta::record::Definition;
     use noodles::fasta::{self, Record};
-    use std::cmp::Ordering::{self, Equal};
+    use std::cmp::Ordering;
     use std::fs::OpenOptions;
     use std::{
         fs::{create_dir_all, File},
-        io::{stdout, BufRead, BufReader, Write},
+        io::BufReader,
         path::Path,
     };
 
     fn fix_head(records: Record, sanitise: bool) -> Record {
-        let clean_headers = true;
-        if clean_headers {
+        if sanitise {
             let header = sanitise_header(records.definition());
-
             let definition = fasta::record::Definition::new(header, None);
             let seq = records.sequence().to_owned();
             return fasta::Record::new(definition, seq);
@@ -29,7 +26,7 @@ pub mod split_by_count_mod {
         println!("{}", outdir);
 
         let _data_file = File::create(&outdir);
-        let mut file = OpenOptions::new()
+        let file = OpenOptions::new()
             .write(true)
             .append(true)
             .open(outdir)
@@ -59,15 +56,13 @@ pub mod split_by_count_mod {
         let new_outpath = format!("{}/{}/{}/", outpath, actual_name, data_type);
         create_dir_all(new_outpath.clone()).unwrap();
         let fasta_count = arguments.unwrap().get_one::<u16>("count").unwrap();
-        println!("Fasta file for processing: {:?}", fasta_file);
-        println!("{:?}", &fasta_count);
         println!(
-            "Number of sequence-header pairs per file: {:?}",
-            fasta_count
+            "Fasta file for processing: {:?}\nNumber of records per file: {:?}",
+            fasta_file, fasta_count
         );
 
         let mut counter: u16 = 0;
-        let mut file_counter = 1;
+        let mut file_counter: u16 = 1;
 
         let file_name: Vec<&str> = actual_name.split(".").collect();
 

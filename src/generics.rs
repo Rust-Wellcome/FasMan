@@ -1,5 +1,6 @@
 use noodles::fasta;
 use noodles::fasta::record::Definition;
+use regex::{Captures, Regex};
 use std::error::Error;
 use std::{collections::HashMap, fmt, io::BufRead, result, str};
 
@@ -43,6 +44,47 @@ pub fn only_keys<K, V>(map: HashMap<K, V>) -> impl Iterator<Item = K> {
     map.into_iter().map(|(k, _v)| k)
 }
 
-pub fn sanitise_header(old_header: &Definition) -> std::string::String {
-    return "THIS".to_string();
+fn get_gene_symbol(header: String) -> Result<String, Box<dyn std::error::Error>> {
+    let re = Regex::new(r"gene=([A-Z]\w+)").unwrap();
+
+    let first_run = re.captures(&header).ok_or("None")?;
+
+    if first_run[0] == "None".to_owned() {
+        let re = Regex::new(r"symbol:(\S+)").unwrap();
+        let second_run = re.captures(&header).ok_or("None")?;
+        if second_run[0] == "None".to_owned() {
+            let re = Regex::new(r"(\(\S+\)) gene").unwrap();
+            let third_run = re.captures(&header).ok_or("None")?;
+            if third_run[0] == "None".to_owned() {
+                Ok("NOCAPTUREDRESULT".to_string())
+            } else {
+                Ok(third_run[0].to_string())
+            }
+        } else {
+            Ok(second_run[0].to_string())
+        }
+    } else {
+        Ok(first_run[0].to_string())
+    }
+}
+
+fn get_ens_code(header: String) {
+    // Dont know if we will even need this one as our curators want minimal
+    // information for the jbrowse instance
+    let re = Regex::new(r"GeneID:([1-9])\w+").unwrap();
+
+    let matches = re.captures(&header).unwrap();
+}
+
+pub fn sanitise_header(old_header: &Definition) -> String {
+    let x = get_gene_symbol(old_header.to_string());
+
+    // Yeah i dont know either...
+    match x {
+        Ok(c) => c,
+        Err(e) => {
+            format!("Regex isnt good enough to capture header id: {}", e)
+        }
+    }
+    //let ens_code = get_ens_code(old_header.to_string());
 }
