@@ -97,6 +97,7 @@ pub mod split_by_count_mod {
                 record_list = Vec::new();
             }
         }
+
         let full_outpath = format!(
             "{}{}_f{}_c{}-a{}.fa",
             new_outpath,
