@@ -26,7 +26,9 @@ Currently, this program has the following arguments:
     This command will generate a directory of files made up of a user given number of sequences from the input fasta. This is useful when generating geneset data for TreeVal use or sub-setting data in a non-random manner.
     The count will be the upper limit, as there will be a left over number of records.
 
-    `splitbycount --fasta-file ${PATH TO FASTA} --output-directory ${OUTPUT LOCATION} --count {NUMBER OF FASTA RECORDS PER FILE}`
+    This will generate files in `{outdir}/{fasta-file.prefix}/{data_type}/{input_file_prefix}_f{file_count}_c{requested_chunk_count}-a{actual_chunk_count}.fa`
+
+    `splitbycount --fasta-file ${PATH TO FASTA} --output-directory ${OUTPUT LOCATION} --count {NUMBER OF FASTA RECORDS PER FILE} --data_type ['pep','cdna', 'cds', 'rna', 'other']`
 
 -   split_by_size (NOT YET WRITTEN)
 
@@ -59,5 +61,10 @@ Currently, this program has the following arguments:
 
     -   GC percentage per scaffold + counts
     -   GC percentage whole genome
+    -   N50 and N90
+    -   L50
+    -   GAP count and length (summary with average length)
+
+    `profile -f input.fasta -o outdir`
 
 If there are other options that would be useful to any other teams, leave a message or issue.
