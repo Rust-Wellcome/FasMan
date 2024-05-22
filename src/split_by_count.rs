@@ -11,6 +11,7 @@ pub mod split_by_count_mod {
         path::Path,
     };
 
+    #[allow(clippy::needless_return)]
     fn fix_head(records: Record, sanitise: bool) -> Record {
         if sanitise {
             let header = sanitise_header(records.definition());
