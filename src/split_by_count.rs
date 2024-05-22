@@ -25,16 +25,15 @@ pub mod split_by_count_mod {
     fn write_fasta(outdir: &String, fasta_record: &Vec<Record>) {
         println!("{}", outdir);
 
-        let _data_file = File::create(&outdir);
+        let _data_file = File::create(outdir);
         let file = OpenOptions::new()
-            .write(true)
             .append(true)
             .open(outdir)
             .expect("creation failed");
 
         let mut writer = fasta::Writer::new(file);
         for i in fasta_record {
-            writer.write_record(&i).unwrap();
+            writer.write_record(i).unwrap();
         }
     }
 
@@ -64,7 +63,7 @@ pub mod split_by_count_mod {
         let mut counter: u16 = 0;
         let mut file_counter: u16 = 1;
 
-        let file_name: Vec<&str> = actual_name.split(".").collect();
+        let file_name: Vec<&str> = actual_name.split('.').collect();
 
         let mut reader = File::open(fasta_file)
             .map(BufReader::new)

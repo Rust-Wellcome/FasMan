@@ -44,7 +44,7 @@ pub fn only_keys<K, V>(map: HashMap<K, V>) -> impl Iterator<Item = K> {
 }
 
 fn get_gene_symbol(header: String) -> Result<String, Box<dyn std::error::Error>> {
-    let header_list: Vec<&str> = header.split(" ").collect();
+    let header_list: Vec<&str> = header.split(' ').collect();
     let record_header = header_list[0];
     Ok(record_header[1..].to_owned())
     // let re = Regex::new(r"gene=([A-Z]\w+)").unwrap();

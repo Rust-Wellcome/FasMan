@@ -73,7 +73,7 @@ fn main() -> Result<(), Error> {
             .arg(
                 Arg::new("data_type")
                     .short('d')
-                    .value_parser(clap::builder::PossibleValuesParser::new(&split_options))
+                    .value_parser(clap::builder::PossibleValuesParser::new(split_options))
                     .help("The data type of the input data")
             )
             .arg(
@@ -299,13 +299,11 @@ fn main() -> Result<(), Error> {
     .get_matches();
 
     println! {
-        "{}\n{}\n{}\n{}\n-- {}\n{}\n-- {}",
+        "{}\n{}\n{}\nRUNNING SUBCOMMAND: |\n-- {}\nRUNNING ON: |\n-- {}",
         "WELCOME TO Fasta Manipulator".bold(),
         "This has been made to help prep data for use in the Treeval and curationpretext pipelines".bold(),
         "ONLY THE yamlvalidator IS SPECIFIC TO TREEVAL, THE OTHER COMMANDS CAN BE USED FOR ANY OTHER PURPOSE YOU WANT".purple(),
-        "RUNNING SUBCOMMAND:",
         match_result.subcommand_name().unwrap(),
-        "RUNNING ON:",
         env::consts::OS
     };
 
