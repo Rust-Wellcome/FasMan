@@ -13,6 +13,8 @@ pub mod split_by_count_mod {
 
     #[allow(clippy::needless_return)]
     fn fix_head(records: Record, sanitise: bool) -> Record {
+        // Taker a Record and sanitise the header
+        // recombine into a new Record
         if sanitise {
             let header = sanitise_header(records.definition());
             let definition = fasta::record::Definition::new(header, None);
@@ -24,6 +26,7 @@ pub mod split_by_count_mod {
     }
 
     fn write_fasta(outdir: &String, fasta_record: &Vec<Record>) {
+        // Take fasta Record and append to output file
         println!("{}", outdir);
 
         let _data_file = File::create(outdir);
@@ -61,16 +64,20 @@ pub mod split_by_count_mod {
             fasta_file, fasta_count
         );
 
+        // Header counter
         let mut counter: u16 = 0;
         let mut file_counter: u16 = 1;
 
+        // Remove the file suffix from the file name
         let file_name: Vec<&str> = actual_name.split('.').collect();
 
+        // Open the fasta file
         let mut reader = File::open(fasta_file)
             .map(BufReader::new)
             .map(fasta::Reader::new)
             .unwrap();
 
+        // Create a Record List
         let mut record_list: Vec<Record> = Vec::new();
         for result in reader.records() {
             let record = result.unwrap();
