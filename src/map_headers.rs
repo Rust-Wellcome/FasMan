@@ -1,5 +1,4 @@
 pub mod mapping_headers {
-
     use clap::ArgMatches;
     use colored::Colorize;
     use std::error::Error;
@@ -51,6 +50,7 @@ pub mod mapping_headers {
             std::vec::IntoIter<std::string::String>,
         >,
     ) {
+        // Save the header mapping to file
         let f: File = File::create(output).expect("Unable to create file");
         let mut f: BufWriter<File> = BufWriter::new(f);
         for map_pair in mapped {
@@ -69,6 +69,9 @@ pub mod mapping_headers {
             std::vec::IntoIter<std::string::String>,
         >,
     ) {
+        // Swap out the old with the new
+        // skip all else.
+        // This could be re-written now that I know more about noodles
         let file_reader: File = File::open(input).expect("CAN'T OPEN FILE");
         let buff_reader: BufReader<File> = BufReader::new(file_reader);
         let mut new_fasta: File = File::create(output).unwrap();
@@ -95,6 +98,8 @@ pub mod mapping_headers {
     pub fn map_fasta_head(
         arguments: std::option::Option<&ArgMatches>,
     ) -> Result<(), Box<dyn Error>> {
+        // Generate a mapped.txt with the old and new headers
+        // Generate a mapped.fasta with the new headers
         let file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let replacer: &String = arguments
             .unwrap()
@@ -110,19 +115,22 @@ pub mod mapping_headers {
 
         match validate_fasta(file) {
             Ok(names) => {
+                // Vec of scaffold names from validate_fasta
+                // return only the headers, not the lengths
                 let new_names = Vec::from_iter(only_keys(names));
 
+                // Generate a Zip of the a=old and new names
                 let new_map: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
                     create_mapping(new_names, replacer);
 
+                // Save the mapping to file
                 let map_to_save: Zip<std::vec::IntoIter<String>, std::vec::IntoIter<String>> =
                     new_map.clone();
                 let output_file = format!("{}mapped-heads.tsv", output);
-
                 save_mapping(&output_file, map_to_save);
 
+                // Generate a new fasta with the mapped headers
                 let new_fasta: String = format!("{output}mapped.fasta");
-
                 create_mapped_fasta(file, &new_fasta, new_map);
 
                 println!(
