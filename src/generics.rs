@@ -45,6 +45,7 @@ pub fn only_keys<K, V>(map: HashMap<K, V>) -> impl Iterator<Item = K> {
 }
 
 fn get_gene_symbol(header: String) -> Result<String, Box<dyn std::error::Error>> {
+    // Take a string and return first segment of it
     let header_list: Vec<&str> = header.split(' ').collect();
     let record_header = header_list[0];
     Ok(record_header[1..].to_owned())
@@ -72,13 +73,16 @@ fn get_gene_symbol(header: String) -> Result<String, Box<dyn std::error::Error>>
 }
 
 pub fn sanitise_header(old_header: &Definition) -> String {
+    // Clean the header
+    // This is overly complex for historical reasons
+    // It is still here incase those reasons come back to haunt me
+    // ...again
     let x = get_gene_symbol(old_header.to_string());
 
-    // Yeah i dont know either...
     match x {
         Ok(c) => c,
         Err(e) => {
-            format!("Regex isnt good enough to capture header id: {}", e)
+            format!("Split didn't work: {}", e)
         }
     }
 }
