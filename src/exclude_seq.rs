@@ -9,8 +9,11 @@ pub mod exclude_seq_mod {
         fasta: &'a str,
         out_file: &str,
     ) -> std::result::Result<&'a str, Box<dyn Error>> {
+        // Open and read fasta
         let reader: Result<fasta::Reader<Box<dyn BufRead>>, std::io::Error> =
             fasta::reader::Builder.build_from_path(fasta);
+
+        // Create new file
         let file = fs::OpenOptions::new()
             .create(true)
             .append(true)
@@ -19,6 +22,8 @@ pub mod exclude_seq_mod {
 
         match reader {
             Ok(fasta) => {
+                // on Ok reading append record to new fasta if
+                // not in user given list of headers
                 let mut binding = fasta;
                 for result in binding.records() {
                     let record = result?;
