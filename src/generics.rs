@@ -19,6 +19,7 @@ pub fn validate_fasta(
 ) -> result::Result<HashMap<std::string::String, usize>, Box<dyn Error>> {
     // Simply validate the fasta is valid by reading though and ensure there are
     // valid record formats through out the file
+    // Return a Dict of header and length
     let reader: Result<fasta::Reader<Box<dyn BufRead>>, std::io::Error> =
         fasta::reader::Builder.build_from_path(path);
     let mut fasta_map = HashMap::new();
