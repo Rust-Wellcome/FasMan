@@ -38,7 +38,6 @@ pub fn pull_map_from_tsv(
 }
 
 pub fn remapping_head(file: &String, output: &String, map_file: &String) {
-
     println!("Mapping headers for file: {}", file);
     println!("Replace headers with string: {}", map_file);
 

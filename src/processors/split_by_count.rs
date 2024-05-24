@@ -37,7 +37,13 @@ fn write_fasta(outdir: &String, fasta_record: &Vec<Record>) {
     }
 }
 
-pub fn split_file_by_count(fasta_file: &String, output_directory: &String, data_type: &String, sanitise: &bool, fasta_count: &u16) {
+pub fn split_file_by_count(
+    fasta_file: &String,
+    output_directory: &String,
+    data_type: &String,
+    sanitise: &bool,
+    fasta_count: &u16,
+) {
     let path_obj = Path::new(fasta_file);
     let grab_name = path_obj.file_name().unwrap();
     let actual_list: Vec<&str> = grab_name.to_str().unwrap().split('.').collect();
@@ -108,4 +114,3 @@ mod tests {
         assert_eq!(result, 4);
     }
 }
-

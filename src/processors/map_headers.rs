@@ -44,10 +44,7 @@ pub fn create_mapping(
 
 pub fn save_mapping(
     output: &str,
-    mapped: Zip<
-        std::vec::IntoIter<std::string::String>,
-        std::vec::IntoIter<std::string::String>,
-    >,
+    mapped: Zip<std::vec::IntoIter<std::string::String>, std::vec::IntoIter<std::string::String>>,
 ) {
     let f: File = File::create(output).expect("Unable to create file");
     let mut f: BufWriter<File> = BufWriter::new(f);
@@ -62,10 +59,7 @@ pub fn save_mapping(
 pub fn create_mapped_fasta(
     input: &str,
     output: &str,
-    mapped: Zip<
-        std::vec::IntoIter<std::string::String>,
-        std::vec::IntoIter<std::string::String>,
-    >,
+    mapped: Zip<std::vec::IntoIter<std::string::String>, std::vec::IntoIter<std::string::String>>,
 ) {
     let file_reader: File = File::open(input).expect("CAN'T OPEN FILE");
     let buff_reader: BufReader<File> = BufReader::new(file_reader);
@@ -91,9 +85,10 @@ pub fn create_mapped_fasta(
 }
 
 pub fn map_fasta_head(
-    file: &String, output: &String, replacer: &String
+    file: &String,
+    output: &String,
+    replacer: &String,
 ) -> Result<(), Box<dyn Error>> {
-
     println!("Mapping headers for file: {}", file);
     println!("Replace headers with string: {:?}", &replacer);
 
@@ -139,4 +134,3 @@ mod tests {
         assert_eq!(result, 4);
     }
 }
-

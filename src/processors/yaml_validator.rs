@@ -208,12 +208,10 @@ pub fn validate_data(path: &str, dtype: &str) {
 }
 
 pub fn validate_yaml(file: &String, verbose: &bool, output: &String) {
-
     println! {"Validating Yaml: {}", file.purple()};
 
     let input = fs::File::open(file).expect("Unable to read from file");
-    let contents: TreeValYaml =
-        serde_yaml::from_reader(input).expect("Unable to read from file");
+    let contents: TreeValYaml = serde_yaml::from_reader(input).expect("Unable to read from file");
 
     println!(
         "RUNNING VALIDATE-YAML FOR SAMPLE: {}",
@@ -249,8 +247,7 @@ pub fn validate_yaml(file: &String, verbose: &bool, output: &String) {
     validate_data(&synteny_full, "synteny");
 
     println!("{}", "CHECKING BUSCO DIRECTORY RESOLVES".blue());
-    let busco_path =
-        contents.busco.lineages_path.clone() + "/lineages/" + &contents.busco.lineage;
+    let busco_path = contents.busco.lineages_path.clone() + "/lineages/" + &contents.busco.lineage;
     validate_paths(&busco_path, "BUSCO-DB");
     // NOW CHECK FOR FILES IN DIRECTORY?
 

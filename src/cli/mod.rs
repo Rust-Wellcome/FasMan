@@ -1,5 +1,5 @@
-use clap::{Parser, Subcommand};
 use clap::builder::Str;
+use clap::{Parser, Subcommand};
 
 const SPLIT_OPTIONS: [&str; 5] = ["pep", "cds", "cdna", "rna", "other"];
 
@@ -10,7 +10,7 @@ pub struct Cli {
     // command is optional (TODO: Make this not optional)
     // Reference: https://docs.rs/clap/latest/clap/_derive/_tutorial/chapter_2/index.html#defaults
     #[command(subcommand)]
-    pub command: Option<Commands>
+    pub command: Option<Commands>,
 }
 
 // Reference: https://docs.rs/clap/latest/clap/_derive/_tutorial/chapter_2/index.html
@@ -27,11 +27,10 @@ pub enum Commands {
 
         // Output the log to file
         #[arg(short = 'o', long, default_value_t=String::from("./"))]
-        output: String
+        output: String,
     },
 
     SplitByCount {
-
         // A path to a valid fasta file.
         #[arg(short = 'f', long)]
         fasta_file: String,
@@ -42,7 +41,7 @@ pub enum Commands {
 
         // The data type of the input data
         #[arg(short = 'd', value_parser = clap::builder::PossibleValuesParser::new(SPLIT_OPTIONS))]
-        data_type: String ,
+        data_type: String,
 
         // Do we need to sanitise the headers of the input fasta
         #[arg(short = 's', value_parser = clap::value_parser!(bool))]
@@ -87,7 +86,7 @@ pub enum Commands {
         output_directory: String,
 
         #[arg(short = 'r', default_value_t = String::from("FMMH"))]
-        replace_with: String
+        replace_with: String,
     },
 
     ReMapHeaders {
@@ -101,7 +100,7 @@ pub enum Commands {
 
         // "The original mapped header field, a TSV of old-header, new-header
         #[arg(short = 'm', default_value_t = String::from("FMMH"))]
-        map_file: String
+        map_file: String,
     },
 
     #[command(version, about="Profile an input fasta file and return various statistics", long_about = None)]
@@ -112,7 +111,7 @@ pub enum Commands {
 
         // The input fasta file for profiling
         #[arg(short = 'o', long, default_value_t = String::from("FasMan-out"))]
-        output_dir: String
+        output_dir: String,
     },
 
     Curate {
@@ -133,7 +132,7 @@ pub enum Commands {
 
         // Length that the N (gap) string should be.
         #[arg(short, long, default_value_t = 200)]
-        n_length: usize
+        n_length: usize,
     },
 
     Subset {
@@ -147,7 +146,7 @@ pub enum Commands {
 
         // Percentage of the original file entries that should be retained
         #[arg(short = 'p', long, default_value_t = 50)]
-        percent: u16
+        percent: u16,
     },
 
     FilterFasta {
@@ -160,11 +159,10 @@ pub enum Commands {
         output: String,
 
         #[arg(short = 'l', long = "filter_list")]
-        filter_list: String
+        filter_list: String,
     },
 
     Mergehaps {
-
         // The input fasta file for re-organising
         #[arg(short = 'p', long)]
         fasta_1: String,
@@ -180,5 +178,5 @@ pub enum Commands {
         // Output file prefix
         #[arg(short = 'o', default_value_t = String::from("merged"))]
         output: String,
-    }
+    },
 }
