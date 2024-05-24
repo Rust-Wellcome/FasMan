@@ -210,7 +210,7 @@ fn save_to_fasta(fasta_data: Vec<NewFasta>, tpf_data: Vec<Tpf>, output: &String,
 pub fn curate_fasta(
     fasta_file: &String,
     tpf_file: &String,
-    sort: &bool,
+    _sort: &bool,
     output: &String,
     n_length: &usize,
 ) {
@@ -269,7 +269,6 @@ pub fn curate_fasta(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn it_works() {

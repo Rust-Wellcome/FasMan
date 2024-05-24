@@ -3,7 +3,6 @@
 use std::io::Error;
 
 use clap::Parser;
-use colored::Colorize;
 
 use cli::{Cli, Commands};
 

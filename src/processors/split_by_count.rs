@@ -1,5 +1,5 @@
 use crate::generics::sanitise_header;
-use clap::ArgMatches;
+
 use compare::{natural, Compare};
 use noodles::fasta::{self, Record};
 use std::cmp::Ordering;
@@ -106,7 +106,6 @@ pub fn split_file_by_count(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn it_works() {

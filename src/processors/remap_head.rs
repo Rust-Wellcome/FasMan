@@ -65,7 +65,6 @@ pub fn remapping_head(file: &String, output: &String, map_file: &String) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn it_works() {

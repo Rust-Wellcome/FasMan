@@ -1,4 +1,3 @@
-use clap::ArgMatches;
 use noodles::fasta;
 use std::error::Error;
 use std::{fs, io::BufRead, str};
@@ -40,7 +39,6 @@ pub fn filter_fasta(fasta: &String, outfile: &String, exclude: &String) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn it_works() {

@@ -207,7 +207,7 @@ pub fn validate_data(path: &str, dtype: &str) {
     };
 }
 
-pub fn validate_yaml(file: &String, verbose: &bool, output: &String) {
+pub fn validate_yaml(file: &String, _verbose: &bool, _output: &String) {
     println! {"Validating Yaml: {}", file.purple()};
 
     let input = fs::File::open(file).expect("Unable to read from file");
@@ -263,7 +263,6 @@ pub fn validate_yaml(file: &String, verbose: &bool, output: &String) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn it_works() {

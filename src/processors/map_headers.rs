@@ -1,4 +1,3 @@
-use clap::ArgMatches;
 use colored::Colorize;
 use std::error::Error;
 use std::fmt;
@@ -126,7 +125,6 @@ pub fn map_fasta_head(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn it_works() {

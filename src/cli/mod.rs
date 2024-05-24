@@ -1,5 +1,4 @@
 use clap::{Parser, Subcommand};
-use clap::builder::Str;
 
 const SPLIT_OPTIONS: [&str; 5] = ["pep", "cds", "cdna", "rna", "other"];
 
