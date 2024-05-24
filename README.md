@@ -1,5 +1,7 @@
 # FastaManipulator
 
+![img](https://github.com/Rust-Wellcome/FasMan/actions/workflows/release-repo.yml/badge.svg)
+
 This is a re-write of the current fasta manipulation scripts I've written whilst at ToL, as well as adding some functionality needed for future projects.
 
 Currently, this program has the following arguments:
