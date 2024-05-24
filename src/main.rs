@@ -1,15 +1,11 @@
 #![allow(non_snake_case)]
 
-use clap::{command, Arg, Command, Parser};
-use colored::Colorize;
-use std::env;
 use std::io::Error;
 
-mod cli;
-use cli::{Cli, Commands};
+use clap::Parser;
+use colored::Colorize;
 
-mod generics;
-//use crate::generics::validate_fasta;
+use cli::{Cli, Commands};
 
 // Reference: https://doc.rust-lang.org/book/ch07-02-defining-modules-to-control-scope-and-privacy.html
 use crate::processors::exclude_seq::filter_fasta;
@@ -19,6 +15,11 @@ use crate::processors::split_by_count::split_file_by_count;
 use crate::processors::split_by_size::split_file_by_size;
 use crate::processors::tpf_fasta::curate_fasta;
 use crate::processors::yaml_validator::validate_yaml;
+
+mod cli;
+mod generics;
+//use crate::generics::validate_fasta;
+
 mod processors;
 
 fn main() -> Result<(), Error> {
