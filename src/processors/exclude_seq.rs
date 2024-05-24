@@ -32,7 +32,7 @@ fn open_fasta<'a>(
     }
 }
 
-pub fn filter_fasta(fasta: &String, outfile: &String, exclude: &String) {
+pub fn filter_fasta(fasta: &str, outfile: &str, exclude: &str) {
     let list_to_exclude = exclude.split(',').collect::<Vec<&str>>();
     let _x = open_fasta(list_to_exclude, fasta, outfile);
 }
