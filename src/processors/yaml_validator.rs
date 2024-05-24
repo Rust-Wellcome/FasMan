@@ -263,3 +263,14 @@ pub fn validate_yaml(file: &String, verbose: &bool, output: &String) {
         "RAPID: geneset, busco and synteny fails are permitted".purple()
     );
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
+}

@@ -98,3 +98,14 @@ pub fn split_file_by_count(fasta_file: &String, output_directory: &String, data_
     write_fasta(&full_outpath, &record_list);
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
+}
+

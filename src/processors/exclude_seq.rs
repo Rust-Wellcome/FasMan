@@ -38,3 +38,14 @@ pub fn filter_fasta(fasta: &String, outfile: &String, exclude: &String) {
     let _x = open_fasta(list_to_exclude, fasta, outfile);
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
+}
+
