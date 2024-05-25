@@ -34,6 +34,7 @@ impl FileReader {
 
     /*
      * Reads a specific number of lines from a file
+     * TODO: Propogate errors: https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#propagating-errors 
      */
     pub fn read_file(&mut self, file_path: &str, num_lines: usize) -> Result<Records, Error> {
         let file = File::open(file_path)?;
