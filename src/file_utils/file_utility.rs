@@ -11,8 +11,8 @@ struct Records {
 #[allow(dead_code)]
 struct FileReader {
     buffer: Vec<String>, // TODO: Make use of this internal buffer.
-    startPtr: u16,       // TODO: Use these pointers to read data chunks
-    endPtr: u16,
+    startPtr: usize,       // TODO: Use these pointers to read data chunks
+    endPtr: usize,
 }
 
 #[allow(dead_code)]
