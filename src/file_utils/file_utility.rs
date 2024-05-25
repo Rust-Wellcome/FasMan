@@ -3,14 +3,19 @@ use std::io::{BufRead, BufReader};
 
 use clap::Error;
 
+#[allow(dead_code)]
 struct Records {
     lines: Vec<String>
 }
 
+#[allow(dead_code)]
 struct FileReader {
-    buffer: Vec<String> // TODO: Make use of this internal buffer.
+    buffer: Vec<String>, // TODO: Make use of this internal buffer.
+    startPtr: u16,       // TODO: Use these pointers to read data chunks
+    endPtr: u16,
 }
 
+#[allow(dead_code)]
 pub trait Default {
     fn default() -> Self;
 }
@@ -18,7 +23,9 @@ pub trait Default {
 impl Default for FileReader {
     fn default() -> Self {
         FileReader {
-            buffer: Vec::<String>::new()
+            buffer: Vec::<String>::new(),
+            startPtr: 0,
+            endPtr: 0,
         }
     }
 }
