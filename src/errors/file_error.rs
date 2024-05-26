@@ -7,6 +7,7 @@ use std::io::Error;
 // implementation, or do something in between.
 // Resource: https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/define_error_type.html
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct FileError {
     message: String,
 }
