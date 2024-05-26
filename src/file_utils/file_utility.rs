@@ -1,4 +1,4 @@
-use log::{info};
+use log::info;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
