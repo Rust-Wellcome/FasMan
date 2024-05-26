@@ -1,7 +1,8 @@
+use log::{info};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-use clap::Error;
+use crate::errors::file_error::FileError;
 use itertools::Itertools;
 
 #[allow(dead_code)]
@@ -42,9 +43,19 @@ impl BatchFileReader {
         &mut self,
         file_path: &str,
         num_lines: usize,
-    ) -> Result<Records<String>, Error> {
-        let file = File::open(file_path)?;
-        let reader = BufReader::new(file);
+    ) -> Result<Records<String>, FileError> {
+        info!("Reading lines in file.");
+        let file = File::open(file_path);
+
+        let result = match file {
+            Ok(file) => file,
+            Err(error) => {
+                info!("Error in file handler: {:?}", error);
+                return Err(error.into());
+            }
+        };
+
+        let reader = BufReader::new(result);
         let mut internal_buffer = Vec::<String>::new();
 
         // Error unwrapping: https://tinyurl.com/brt9fphk
@@ -69,9 +80,20 @@ impl BatchFileReader {
         file_path: &str,
         batch_size: usize,
         f: &dyn Fn(Records<String>),
-    ) -> Result<(), Error> {
-        let file = File::open(file_path)?;
-        let reader = BufReader::new(file);
+    ) -> Result<(), FileError> {
+        info!("Reading file by chunk.");
+
+        let file = File::open(file_path);
+
+        let result = match file {
+            Ok(file) => file,
+            Err(error) => {
+                info!("Error in file handler: {:?}", error);
+                return Err(error.into());
+            }
+        };
+
+        let reader = BufReader::new(result);
 
         // map_while() Creates an iterator that both yields elements based on a predicate and maps.
         // https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map_while
@@ -101,7 +123,7 @@ mod tests {
 
     // You can create the closure in one place and then call the closure elsewhere to evaluate it in a different context.
     // Reference: https://doc.rust-lang.org/book/ch13-01-closures.html
-    fn print_function(input: Records<String>) {
+    fn assert_function(input: Records<String>) {
         assert!(input.size() <= 3);
     }
 
@@ -109,7 +131,7 @@ mod tests {
     fn read_file_batch() {
         let mut BatchFileReader = BatchFileReader::default();
         BatchFileReader
-            .read_file_by_batch(TEST_FILE_PATH, 3, &print_function)
+            .read_file_by_batch(TEST_FILE_PATH, 3, &assert_function)
             .unwrap();
     }
 }

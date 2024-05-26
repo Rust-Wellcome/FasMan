@@ -16,6 +16,7 @@ use crate::processors::tpf_fasta::curate_fasta;
 use crate::processors::yaml_validator::validate_yaml;
 
 mod cli;
+mod errors;
 mod file_utils;
 mod generics;
 //use crate::generics::validate_fasta;
