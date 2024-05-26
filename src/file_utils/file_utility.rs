@@ -65,7 +65,7 @@ impl BatchFileReader {
         &mut self,
         file_path: &str,
         batch_size: usize,
-        f: &dyn Fn(Records<String>) -> (),
+        f: &dyn Fn(Records<String>),
     ) -> Result<(), Error> {
         let file = File::open(file_path)?;
         let reader = BufReader::new(file);
@@ -98,8 +98,8 @@ mod tests {
 
     // You can create the closure in one place and then call the closure elsewhere to evaluate it in a different context.
     // Reference: https://doc.rust-lang.org/book/ch13-01-closures.html
-    fn print_function(input: Records<String>) -> () {
-        assert_eq!(true, input.size() <= 3);
+    fn print_function(input: Records<String>) {
+        assert!(input.size() <= 3);
     }
 
     #[test]
