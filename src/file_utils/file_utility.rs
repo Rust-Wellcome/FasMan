@@ -4,6 +4,7 @@ use std::io::{BufRead, BufReader};
 use clap::Error;
 use itertools::Itertools;
 
+#[allow(dead_code)] 
 struct RecordLine(String);
 
 #[allow(dead_code)]
@@ -11,6 +12,7 @@ struct Records<T> {
     lines: Vec<T>,
 }
 
+#[allow(dead_code)] 
 impl Records<String> {
     pub fn size(&self) -> usize {
         self.lines.len()
@@ -31,6 +33,7 @@ impl DefaultReader for BatchFileReader {
     }
 }
 
+#[allow(dead_code)] 
 impl BatchFileReader {
     /*
      * Reads a specific number of lines from a file from the top
