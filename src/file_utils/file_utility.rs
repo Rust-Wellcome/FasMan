@@ -4,6 +4,8 @@ use std::io::{BufRead, BufReader};
 use clap::Error;
 use itertools::Itertools;
 
+struct RecordLine(String);
+
 #[allow(dead_code)]
 struct Records<T> {
     lines: Vec<T>,
