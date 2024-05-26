@@ -56,6 +56,8 @@ impl BatchFileReader {
 
     /**
      * Reads a file batch by batch, and applies a function Fn for each chunk
+     * Function pointers documentation: https://doc.rust-lang.org/book/ch19-05-advanced-functions-and-closures.html#function-pointers
+     * f is a closure pushed into the stack of read_file_by_batch that is similar to an anonymous function in Java/JavaScript/C#
      */
     pub fn read_file_by_batch(
         &mut self,
@@ -66,6 +68,8 @@ impl BatchFileReader {
         let file = File::open(file_path)?;
         let reader = BufReader::new(file);
 
+        // map_while() Creates an iterator that both yields elements based on a predicate and maps.
+        // https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map_while
         for chunk in &reader.lines().map_while(Result::ok).chunks(batch_size) {
             f(Records {
                 lines: chunk.collect(),
@@ -90,6 +94,8 @@ mod tests {
         assert_eq!(3, records.lines.len());
     }
 
+    // You can create the closure in one place and then call the closure elsewhere to evaluate it in a different context.
+    // Reference: https://doc.rust-lang.org/book/ch13-01-closures.html
     fn print_function(input: Records<String>) -> () {
         assert_eq!(true, input.size() <= 3);
     }
