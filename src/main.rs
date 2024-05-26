@@ -15,8 +15,8 @@ use crate::processors::split_by_size::split_file_by_size;
 use crate::processors::tpf_fasta::curate_fasta;
 use crate::processors::yaml_validator::validate_yaml;
 
-mod file_utils;
 mod cli;
+mod file_utils;
 mod generics;
 //use crate::generics::validate_fasta;
 
