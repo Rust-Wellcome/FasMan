@@ -10,13 +10,13 @@ struct RecordLine(String);
 
 #[allow(dead_code)]
 struct Records<T> {
-    lines: Vec<T>,
+    items: Vec<T>,
 }
 
 #[allow(dead_code)]
 impl Records<String> {
     pub fn size(&self) -> usize {
-        self.lines.len()
+        self.items.len()
     }
 }
 
@@ -66,7 +66,7 @@ impl BatchFileReader {
         }
 
         Ok(Records {
-            lines: internal_buffer,
+            items: internal_buffer,
         })
     }
 
@@ -99,7 +99,7 @@ impl BatchFileReader {
         // https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.map_while
         for chunk in &reader.lines().map_while(Result::ok).chunks(batch_size) {
             f(Records {
-                lines: chunk.collect(),
+                items: chunk.collect(),
             });
         }
 
@@ -118,7 +118,7 @@ mod tests {
     fn read_lines() {
         let mut BatchFileReader = BatchFileReader::default();
         let records = BatchFileReader.read_lines(TEST_FILE_PATH, 3).unwrap();
-        assert_eq!(3, records.lines.len());
+        assert_eq!(3, records.items.len());
     }
 
     // You can create the closure in one place and then call the closure elsewhere to evaluate it in a different context.
