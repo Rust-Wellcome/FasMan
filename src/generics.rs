@@ -1,6 +1,7 @@
 use noodles::fasta;
 use noodles::fasta::record::Definition;
 use std::error::Error;
+use std::fs::{self, File, OpenOptions};
 use std::{collections::HashMap, fmt, io::BufRead, result, str};
 
 #[derive(Debug, Clone)]
@@ -85,4 +86,27 @@ pub fn sanitise_header(old_header: &Definition) -> String {
             format!("Split didn't work: {}", e)
         }
     }
+}
+
+pub fn write_fasta(
+    outdir: &String,
+    file_name: String,
+    fasta_record: Vec<noodles::fasta::Record>,
+) -> std::io::Result<()> {
+    // Create file
+    fs::create_dir_all(&outdir)?;
+    let file_path = format!("{}/{}", outdir, file_name);
+    let _data_file = File::create(&file_path);
+
+    // Append to file
+    let file = OpenOptions::new()
+        .append(true)
+        .open(file_path)
+        .expect("creation failed");
+
+    let mut writer = fasta::Writer::new(file);
+    for i in fasta_record {
+        writer.write_record(&i).unwrap();
+    }
+    Ok(())
 }

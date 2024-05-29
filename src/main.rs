@@ -100,10 +100,22 @@ fn main() -> Result<(), Error> {
             )
             .arg(
                 Arg::new("mem-size")
-                    .short('s')
+                    .short('m')
                     .required(true)
-                    .value_parser(clap::value_parser!(u16))
+                    .value_parser(clap::value_parser!(usize))
                     .help("Size in MB that a fasta file is to be chunked into")
+            )
+            .arg(
+                Arg::new("data_type")
+                    .short('d')
+                    .value_parser(clap::builder::PossibleValuesParser::new(split_options))
+                    .help("The data type of the input data")
+            )
+            .arg(
+                Arg::new("sanitise")
+                    .short('s')
+                    .value_parser(clap::value_parser!(bool))
+                    .help("Do we need to sanitise the headers of the input fasta")
             )
             .arg(
                 Arg::new("output-directory")

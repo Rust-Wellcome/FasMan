@@ -1,5 +1,5 @@
 pub mod split_by_count_mod {
-    use crate::generics::sanitise_header;
+    use crate::generics::{sanitise_header, write_fasta};
     use clap::ArgMatches;
     use compare::{natural, Compare};
     use noodles::fasta::{self, Record};
@@ -25,22 +25,6 @@ pub mod split_by_count_mod {
         };
     }
 
-    fn write_fasta(outdir: &String, fasta_record: &Vec<Record>) {
-        // Take fasta Record and append to output file
-        println!("{}", outdir);
-
-        let _data_file = File::create(outdir);
-        let file = OpenOptions::new()
-            .append(true)
-            .open(outdir)
-            .expect("creation failed");
-
-        let mut writer = fasta::Writer::new(file);
-        for i in fasta_record {
-            writer.write_record(i).unwrap();
-        }
-    }
-
     pub fn split_file_by_count(arguments: std::option::Option<&ArgMatches>) {
         let sanitise: &bool = arguments.unwrap().get_one::<bool>("sanitise").unwrap();
         let fasta_file = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
@@ -57,7 +41,6 @@ pub mod split_by_count_mod {
             .unwrap();
 
         let new_outpath = format!("{}/{}/{}/", outpath, actual_name, data_type);
-        create_dir_all(new_outpath.clone()).unwrap();
         let fasta_count = arguments.unwrap().get_one::<u16>("count").unwrap();
         println!(
             "Fasta file for processing: {:?}\nNumber of records per file: {:?}",
@@ -89,30 +72,28 @@ pub mod split_by_count_mod {
             let cmp = natural();
             let compared = cmp.compare(&counter, fasta_count);
             if compared == Ordering::Equal {
-                let full_outpath = format!(
-                    "{}{}_f{}_c{}-a{}.fa",
-                    new_outpath,
+                let file_name = format!(
+                    "{}_f{}_c{}-a{}.fa",
                     file_name[0],
                     file_counter,
                     &fasta_count,
                     &record_list.len()
                 );
 
-                write_fasta(&full_outpath, &record_list);
+                write_fasta(&new_outpath, file_name, record_list);
                 file_counter += 1;
                 counter = 0;
                 record_list = Vec::new();
             }
         }
 
-        let full_outpath = format!(
-            "{}{}_f{}_c{}-a{}.fa",
-            new_outpath,
+        let file_name = format!(
+            "{}_f{}_c{}-a{}.fa",
             file_name[0],
             file_counter,
             &fasta_count,
             &record_list.len()
         );
-        write_fasta(&full_outpath, &record_list);
+        write_fasta(&new_outpath, file_name, record_list);
     }
 }
