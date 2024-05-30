@@ -1,7 +1,7 @@
 use noodles::fasta;
 use noodles::fasta::record::Definition;
 use std::error::Error;
-use std::fs::{self, File, OpenOptions};
+use std::fs::{self, File, OpenOptions, ReadDir};
 use std::{collections::HashMap, fmt, io::BufRead, result, str};
 
 #[derive(Debug, Clone)]
@@ -109,4 +109,13 @@ pub fn write_fasta(
         writer.write_record(&i).unwrap();
     }
     Ok(())
+}
+
+pub fn get_folder_list(path: &String) -> Result<ReadDir, std::io::Error> {
+    let dirs = fs::read_dir(path);
+
+    match dirs {
+        Ok(data) => Ok(data),
+        Err(e) => Err(e),
+    }
 }
