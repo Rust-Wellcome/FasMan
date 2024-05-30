@@ -94,7 +94,7 @@ pub fn write_fasta(
     fasta_record: Vec<noodles::fasta::Record>,
 ) -> std::io::Result<()> {
     // Create file
-    fs::create_dir_all(&outdir)?;
+    fs::create_dir_all(outdir)?;
     let file_path = format!("{}/{}", outdir, file_name);
     let _data_file = File::create(&file_path);
 

@@ -4,12 +4,7 @@ pub mod split_by_count_mod {
     use compare::{natural, Compare};
     use noodles::fasta::{self, Record};
     use std::cmp::Ordering;
-    use std::fs::OpenOptions;
-    use std::{
-        fs::{create_dir_all, File},
-        io::BufReader,
-        path::Path,
-    };
+    use std::{fs::File, io::BufReader, path::Path};
 
     #[allow(clippy::needless_return)]
     fn fix_head(records: Record, sanitise: bool) -> Record {
@@ -80,7 +75,7 @@ pub mod split_by_count_mod {
                     &record_list.len()
                 );
 
-                write_fasta(&new_outpath, file_name, record_list);
+                let _ = write_fasta(&new_outpath, file_name, record_list);
                 file_counter += 1;
                 counter = 0;
                 record_list = Vec::new();
@@ -94,6 +89,6 @@ pub mod split_by_count_mod {
             &fasta_count,
             &record_list.len()
         );
-        write_fasta(&new_outpath, file_name, record_list);
+        let _ = write_fasta(&new_outpath, file_name, record_list);
     }
 }

@@ -42,10 +42,10 @@ pub mod split_by_size_mod {
                 // chunking
                 if subset_map.len() > 1 {
                     let summed: usize = subset_map.values().copied().sum();
-                    if summed > size.to_owned() {
+                    if summed > *size {
                         subset_map.remove(scaff_name);
                         let summed: usize = subset_map.values().copied().sum();
-                        if summed < size.to_owned() {
+                        if summed < *size {
                             new_map.insert(chunk, subset_map);
                             chunk += 1;
                         } else {
@@ -87,7 +87,7 @@ pub mod split_by_size_mod {
         let results = validation.unwrap();
 
         // Returns only the HashMap< usize, Hashmap<String, usize>>
-        let split_hash = find_chunks(&results, &chunk_size);
+        let split_hash = find_chunks(&results, chunk_size);
 
         // Duplicated from TPF_FASTA
         // Should be abstracted into generics
@@ -97,8 +97,7 @@ pub mod split_by_size_mod {
                 let adapter = IndexedReader::new(data);
 
                 // Now read the fasta and return is as a queryable object
-                let repository = fasta::Repository::new(adapter);
-                repository
+                fasta::Repository::new(adapter)
             }
             Err(_) => todo!(), // Probably just panic!
         };
