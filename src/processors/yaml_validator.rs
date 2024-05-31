@@ -29,9 +29,9 @@ struct Assembly {
     level: String,
     sample_id: String,
     latin_name: String,
-    classT: String,
-    asmVersion: u16,
-    gevalType: String,
+    class_t: String,
+    asm_version: u16,
+    geval_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -233,7 +233,7 @@ pub fn validate_yaml(file: &String, _verbose: &bool, _output: &str) {
     let genesets = contents.alignment.geneset.split(',');
     for set in genesets {
         let gene_alignment_path = contents.alignment.data_dir.clone()
-            + &contents.assembly.classT
+            + &contents.assembly.class_t
             + "/csv_data/"
             + set
             + "-data.csv";
@@ -242,7 +242,7 @@ pub fn validate_yaml(file: &String, _verbose: &bool, _output: &str) {
 
     println!("{}", "CHECKING SYNTENY DIRECTORY RESOLVES".blue());
     let synteny_full =
-        contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + "/";
+        contents.synteny.synteny_genome_path.clone() + &contents.assembly.class_t + "/";
     validate_paths(&synteny_full, "SYNTENY-FASTA");
     validate_data(&synteny_full, "synteny");
 

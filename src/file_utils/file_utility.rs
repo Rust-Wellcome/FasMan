@@ -115,8 +115,8 @@ mod tests {
 
     #[test]
     fn read_lines() {
-        let mut BatchFileReader = BatchFileReader::default();
-        let records = BatchFileReader.read_lines(TEST_FILE_PATH, 3).unwrap();
+        let mut batch_file_reader = BatchFileReader::default();
+        let records = batch_file_reader.read_lines(TEST_FILE_PATH, 3).unwrap();
         assert_eq!(3, records.items.len());
     }
 
@@ -128,8 +128,8 @@ mod tests {
 
     #[test]
     fn read_file_batch() {
-        let mut BatchFileReader = BatchFileReader::default();
-        BatchFileReader
+        let mut batch_file_reader = BatchFileReader::default();
+        batch_file_reader
             .read_file_by_batch(TEST_FILE_PATH, 3, &assert_function)
             .unwrap_or_else(|e| panic!("Error: {:?}", e));
     }
