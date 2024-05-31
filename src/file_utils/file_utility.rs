@@ -71,6 +71,8 @@ impl BatchFileReader {
      * Reads a file batch by batch, and applies a function Fn for each chunk
      * Function pointers documentation: https://doc.rust-lang.org/book/ch19-05-advanced-functions-and-closures.html#function-pointers
      * f is a closure pushed into the stack of read_file_by_batch that is similar to an anonymous function in Java/JavaScript/C#
+     * https://doc.rust-lang.org/book/ch13-01-closures.html#moving-captured-values-out-of-closures-and-the-fn-traits
+     * Note that f is not intended to mutate the captured Records value, and should not return anything (i.e., move the captured Record value out of the closure).
      */
     pub fn read_file_by_batch(
         &mut self,
@@ -129,6 +131,6 @@ mod tests {
         let mut BatchFileReader = BatchFileReader::default();
         BatchFileReader
             .read_file_by_batch(TEST_FILE_PATH, 3, &assert_function)
-            .unwrap();
+            .unwrap_or_else(|e| panic!("Error: {:?}", e));
     }
 }
