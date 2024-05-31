@@ -6,9 +6,6 @@ use crate::errors::file_error::FileError;
 use itertools::Itertools;
 
 #[allow(dead_code)]
-struct RecordLine(String);
-
-#[allow(dead_code)]
 struct Records<T> {
     items: Vec<T>,
 }
