@@ -16,7 +16,6 @@ mod cli;
 mod errors;
 mod file_utils;
 mod generics;
-//use crate::generics::validate_fasta;
 
 mod processors;
 
@@ -76,7 +75,7 @@ pub fn run() -> Result<(), Error> {
             todo!()
         }
         None => {
-            panic!("No command given!")
+            println!("No command provided");
         }
     }
     Ok(())
