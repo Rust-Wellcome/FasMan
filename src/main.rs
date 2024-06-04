@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
-use human_panic::setup_panic;
 use fasta_manipulation::run;
+use human_panic::setup_panic;
 
 // https://doc.rust-lang.org/book/ch12-03-improving-error-handling-and-modularity.html#separation-of-concerns-for-binary-projects
 fn main() {
