@@ -18,3 +18,4 @@ serde = { version = "1.0.188", features = ["derive"] }
 serde_yaml = "0.9.25"
 stacker = "0.1.15"
 log = "0.4.21"
+human-panic = "2.0.0"
