@@ -1,18 +1,15 @@
 pub mod split_by_count_mod {
-    use crate::generics::sanitise_header;
+    use crate::generics::{sanitise_header, write_fasta};
     use clap::ArgMatches;
     use compare::{natural, Compare};
     use noodles::fasta::{self, Record};
     use std::cmp::Ordering;
-    use std::fs::OpenOptions;
-    use std::{
-        fs::{create_dir_all, File},
-        io::BufReader,
-        path::Path,
-    };
+    use std::{fs::File, io::BufReader, path::Path};
 
     #[allow(clippy::needless_return)]
     fn fix_head(records: Record, sanitise: bool) -> Record {
+        // Taker a Record and sanitise the header
+        // recombine into a new Record
         if sanitise {
             let header = sanitise_header(records.definition());
             let definition = fasta::record::Definition::new(header, None);
@@ -21,21 +18,6 @@ pub mod split_by_count_mod {
         } else {
             return records.to_owned();
         };
-    }
-
-    fn write_fasta(outdir: &String, fasta_record: &Vec<Record>) {
-        println!("{}", outdir);
-
-        let _data_file = File::create(outdir);
-        let file = OpenOptions::new()
-            .append(true)
-            .open(outdir)
-            .expect("creation failed");
-
-        let mut writer = fasta::Writer::new(file);
-        for i in fasta_record {
-            writer.write_record(i).unwrap();
-        }
     }
 
     pub fn split_file_by_count(arguments: std::option::Option<&ArgMatches>) {
@@ -54,23 +36,26 @@ pub mod split_by_count_mod {
             .unwrap();
 
         let new_outpath = format!("{}/{}/{}/", outpath, actual_name, data_type);
-        create_dir_all(new_outpath.clone()).unwrap();
         let fasta_count = arguments.unwrap().get_one::<u16>("count").unwrap();
         println!(
             "Fasta file for processing: {:?}\nNumber of records per file: {:?}",
             fasta_file, fasta_count
         );
 
+        // Header counter
         let mut counter: u16 = 0;
         let mut file_counter: u16 = 1;
 
+        // Remove the file suffix from the file name
         let file_name: Vec<&str> = actual_name.split('.').collect();
 
+        // Open the fasta file
         let mut reader = File::open(fasta_file)
             .map(BufReader::new)
             .map(fasta::Reader::new)
             .unwrap();
 
+        // Create a Record List
         let mut record_list: Vec<Record> = Vec::new();
         for result in reader.records() {
             let record = result.unwrap();
@@ -82,30 +67,28 @@ pub mod split_by_count_mod {
             let cmp = natural();
             let compared = cmp.compare(&counter, fasta_count);
             if compared == Ordering::Equal {
-                let full_outpath = format!(
-                    "{}{}_f{}_c{}-a{}.fa",
-                    new_outpath,
+                let file_name = format!(
+                    "{}_f{}_c{}-a{}.fa",
                     file_name[0],
                     file_counter,
                     &fasta_count,
                     &record_list.len()
                 );
 
-                write_fasta(&full_outpath, &record_list);
+                let _ = write_fasta(&new_outpath, file_name, record_list);
                 file_counter += 1;
                 counter = 0;
                 record_list = Vec::new();
             }
         }
 
-        let full_outpath = format!(
-            "{}{}_f{}_c{}-a{}.fa",
-            new_outpath,
+        let file_name = format!(
+            "{}_f{}_c{}-a{}.fa",
             file_name[0],
             file_counter,
             &fasta_count,
             &record_list.len()
         );
-        write_fasta(&full_outpath, &record_list);
+        let _ = write_fasta(&new_outpath, file_name, record_list);
     }
 }
