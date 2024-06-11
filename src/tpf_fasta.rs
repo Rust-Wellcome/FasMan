@@ -11,6 +11,7 @@ pub mod tpf_fasta_mod {
     use crate::generics::validate_fasta;
 
     #[derive(Debug, Clone, PartialEq, Eq)]
+    /// STRUCT: Tpf Struct creates a simple object which descibes each line of an input TPF.
     struct Tpf {
         ori_scaffold: String,
         start_coord: usize,
@@ -19,8 +20,8 @@ pub mod tpf_fasta_mod {
         orientation: String,
     }
 
+    /// Implementing a Disaplay method for Tpf - This was used for printing the original scaffold as well as the original start and end co-ords.
     impl std::fmt::Display for Tpf {
-        // This is how we want to print a Tpf object
         fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
             write!(
                 fmt,
@@ -31,17 +32,20 @@ pub mod tpf_fasta_mod {
     }
 
     #[derive(Debug, PartialEq, Eq)]
+    /// STRUCT: NewFasta is a struct that wraps around struct-Tpf as well as the corresponding sequence for that new segment.
     struct NewFasta {
         tpf: Tpf,
         sequence: String,
     }
 
     #[derive(Debug)]
+    /// STRUCT: MyRecord is a Fasta record Struct - Should be replaced by the much better Noodles::record
     struct MyRecord {
         name: String,
         sequence: Vec<String>,
     }
 
+    /// FUNCTION: parse_tpf generates a Vector (akin to a list in python) of Tpf structs which descibes the changes made to a genomic assembly from a program called PretextView and agp-tpf-utils
     fn parse_tpf(path: &String) -> Vec<Tpf> {
         // Instantiate a List of Tpf objects
         let mut all_tpf: Vec<Tpf> = Vec::new();
@@ -67,13 +71,11 @@ pub mod tpf_fasta_mod {
         all_tpf
     }
 
+    /// FUNCTION: subset_vec_tpf subsets the Vector of Tpf dependant on the tuple of scaffold and size of scaffold. Tpf coords must be inside the size..
     fn subset_vec_tpf<'a>(
         tpf: &'a Vec<Tpf>,
         fasta: (&std::string::String, &usize),
     ) -> Vec<&'a Tpf> {
-        //
-        // Subset the Vec<TPF> based on a search through the fasta
-        //
         let mut subset_tpf: Vec<&Tpf> = Vec::new();
         for i in tpf {
             if i.ori_scaffold == *fasta.0 {
@@ -83,14 +85,11 @@ pub mod tpf_fasta_mod {
         subset_tpf
     }
 
+    /// FUNCTION: check_orientation ensures that the orientation of an input sequence is always in the PLUS orientation. If in MINUS, then the sequence is complemented and reversed.
     fn check_orientation(
         parsed: std::option::Option<noodles::fasta::record::Sequence>,
         orientation: String,
     ) -> String {
-        // The TPF will contain data in both PLUS (normal) and
-        // MINUS (inverted), if MINUS then we need to invert again
-        // and get thr complement sequence
-        // We then return the sequence of the record.
         if orientation == "MINUS" {
             let start = Position::try_from(1).unwrap();
             let parse_orientation = parsed.unwrap();
@@ -108,20 +107,11 @@ pub mod tpf_fasta_mod {
         }
     }
 
+    /// FUNCTION: parse_seq takes an input sequence from the input fasa file and parses it based on a subset Vector of Tpf (e.g scaffold_1)
     fn parse_seq(
         sequence: std::option::Option<noodles::fasta::record::Sequence>,
         tpf: Vec<&Tpf>,
     ) -> Vec<NewFasta> {
-        //
-        // Take the input sequence and scaffold name
-        // Parse the input sequence based on the data contained in
-        // the TPF. Which is already a subset based on scaff name.
-        //
-        // for instance this Vec may only contain SCAFFOLD_1 TPF records
-        // if the sequence is from a SCAFFOLD_1 component
-        // as we move through the list, we are cutting the sequence at the
-        // recorded positions and outputting the new sequence.
-        //
         let mut subset_tpf: Vec<NewFasta> = Vec::new();
 
         let new_seq = sequence.unwrap(); // Option(Sequence ()) -> Sequence ()
@@ -139,10 +129,9 @@ pub mod tpf_fasta_mod {
         subset_tpf
     }
 
+    /// FUNCTION: get_uniques takes the Vec<Tpf> and moves through it to collect a Vector of unique new_scaffold names
     fn get_uniques(tpf_list: &Vec<Tpf>) -> Vec<String> {
-        // Get a Vec of the uniques names in the TPF Vec
         let mut uniques: Vec<String> = Vec::new();
-
         for i in tpf_list {
             if !uniques.contains(&i.new_scaffold) {
                 uniques.push(i.new_scaffold.to_owned())
@@ -151,18 +140,17 @@ pub mod tpf_fasta_mod {
         uniques
     }
 
+    /// FUNCTION: save_to_fasta saved the now parsed data, Vec<Tpf> is in the order of the original TPF as we do not directly modify this Vec
+    /// The unique list from get_uniques is used at the iterator and output data per unique at a time. This is wholey inefficient however,
+    /// If uniques is 10 long and fasta is 100, then this is 1000 scans through the list in total.
+    /// There is a file1 and file2 as output, file2 is a human readable file detailing what Tpf records (scaffold5:1000-100000,scaffold1,+) were output to each new scaffold (scaffold1)
+    /// The MyRecord struct collects these trimmings per unique header and they are saved to file by being joined by a user definable length of N's
     fn save_to_fasta(
         fasta_data: Vec<NewFasta>,
         tpf_data: Vec<Tpf>,
         output: &String,
         n_length: usize,
     ) {
-        //
-        // TPF is in the input TPF order, this will continue to be the case until
-        // such time that the script starts modifying the TPF in place which
-        // we don't want to happen. Once this happens the order will no
-        // longer be guaranteed.
-        //
         let _data_file = File::create(output);
         let mut file = OpenOptions::new()
             .write(true)
@@ -177,18 +165,12 @@ pub mod tpf_fasta_mod {
 
         let uniques = get_uniques(&tpf_data);
 
-        // This is inefficient as we are scanning through the fasta_data, uniques
-        // ( equal to number of scaffolds) number of times
-        // If uniques is 10 long and fasta is 100, then this is 1000 scans through in total.
         for x in uniques {
             println!("NOW WRITING DATA FOR: {:?}", &x);
-            // X = "SUPER_1"
             let stringy = format!(">{x}\n");
             file.write_all(stringy.as_bytes())
                 .expect("Unable to write to file");
 
-            // file2 will collect what went where
-            // no sequence data
             file2
                 .write_all(stringy.as_bytes())
                 .expect("Unable to write to file");
@@ -213,11 +195,6 @@ pub mod tpf_fasta_mod {
                 }
             }
 
-            // Should be it's own function really
-            // This actually writes the new fasta file
-            // Joining the data together with user (default = 200)
-            // N's (gap)
-
             let line_len: usize = 60;
             let fixed = data.sequence;
             let n_string = "N".repeat(n_length);
@@ -238,62 +215,42 @@ pub mod tpf_fasta_mod {
 
     #[allow(clippy::needless_borrow)]
     #[allow(clippy::let_and_return)]
+    /// PUB FUNCTION: curate_fasta is the main of this module/
+    /// First a fasta file is validated and returns a list of scaffold header and length of scaffold
+    /// Stacker is used to increase the size of the stack incase we run out of memory
+    /// The input fasta is then converted into an indexed_reader and returns as a queryable object
+    /// For each header in the input fasta, subset the Vec<Tpf>
+    /// Query for the sequence in that header and parse it per subset Vec<Tpf> If this doesn't exist then exit program,
+    /// one or both files are wrong.
+    /// Now collect all data and output to file.
     pub fn curate_fasta(arguments: std::option::Option<&ArgMatches>) {
-        //
-        // Generate a curated fasta file based on the input TPF file
-        // which was generated by Pretext and the agp_to_tpf scripts.
-        // This new fasta file contains a new scaffold naming as well
-        // as pieced together sequences generated by the splitting of
-        // data in Pretext.
-        //
         let fasta_file: &String = arguments.unwrap().get_one::<String>("fasta").unwrap();
         let tpf_file: &String = arguments.unwrap().get_one::<String>("tpf").unwrap();
         let n_length: &usize = arguments.unwrap().get_one::<usize>("n_length").unwrap();
         let output: &String = arguments.unwrap().get_one::<String>("output").unwrap();
         println!("LET'S GET CURATING THAT FASTA!");
 
-        // Stacker is supposed to increase the stack size
-        // once memory runs out
         stacker::maybe_grow(32 * 1024, 1024 * 5120, || {
             match validate_fasta(fasta_file) {
-                // validate returns Vec of headers - basically indexes it
                 Ok(fasta_d) => {
                     let tpf_data = parse_tpf(&tpf_file);
 
-                    //
-                    // Start indexed reader of the input fasta
-                    // if valid then use the data
-                    //
                     let reader =
                         fasta::indexed_reader::Builder::default().build_from_path(fasta_file);
                     let fasta_repo = match reader {
                         Ok(data) => {
                             let adapter = IndexedReader::new(data);
-
-                            // Now read the fasta and return is as a queryable object
                             let repository = fasta::Repository::new(adapter);
                             repository
                         }
                         Err(_) => todo!(), // Probably just panic!
                     };
 
-                    //
-                    // For unique scaffold in the fasta file iter through and
-                    // parse sequence for each line in the tpf
-                    // The tpf will contain multiple enteries for each scaffold, minimum of one entry.
-                    //
                     let mut new_fasta_data: Vec<NewFasta> = Vec::new();
                     for i in fasta_d {
-                        // for header in fasta_d
-                        // subset the tpf on header and length
-                        // cross referencing with fasta_d
                         let subset_tpf = subset_vec_tpf(&tpf_data, (&i.0, &i.1));
-
-                        // Query the fasta for scaffold = header
                         let sequence = fasta_repo.get(&i.0).transpose();
 
-                        // if exists then get the seqeuence, return a tpf object
-                        // containing the trimmed sequence
                         match sequence {
                             Ok(data) => {
                                 let subset_results = parse_seq(data, subset_tpf);
@@ -302,7 +259,6 @@ pub mod tpf_fasta_mod {
                             Err(e) => panic!("{:?}", e),
                         };
                     }
-                    // Write it all out to fasta
                     save_to_fasta(new_fasta_data, tpf_data, output, n_length.to_owned())
                 }
                 Err(e) => panic!("Something is wrong with the file! | {}", e),
