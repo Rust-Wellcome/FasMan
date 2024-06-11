@@ -99,7 +99,7 @@ pub mod split_by_size_mod {
                 // Now read the fasta and return is as a queryable object
                 fasta::Repository::new(adapter)
             }
-            Err(_) => todo!(), // Probably just panic!
+            Err(e) => panic!("{:?}", e),
         };
 
         for i in split_hash {
@@ -120,6 +120,5 @@ pub mod split_by_size_mod {
 
             let _ = write_fasta(&new_outpath, file_name, record_list);
         }
-        //println!("{:?}", split_hash)
     }
 }
