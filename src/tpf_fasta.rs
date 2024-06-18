@@ -11,12 +11,12 @@ pub mod tpf_fasta_mod {
     use crate::generics::validate_fasta;
 
     #[derive(Debug, Clone, PartialEq, Eq)]
-    struct Tpf {
-        ori_scaffold: String,
-        start_coord: usize,
-        end_coord: usize,
-        new_scaffold: String,
-        orientation: String,
+    pub struct Tpf {
+        pub ori_scaffold: String,
+        pub start_coord: usize,
+        pub end_coord: usize,
+        pub new_scaffold: String,
+        pub orientation: String,
     }
 
     impl std::fmt::Display for Tpf {
@@ -67,7 +67,7 @@ pub mod tpf_fasta_mod {
         all_tpf
     }
 
-    fn subset_vec_tpf<'a>(
+    pub fn subset_vec_tpf<'a>(
         tpf: &'a Vec<Tpf>,
         fasta: (&std::string::String, &usize),
     ) -> Vec<&'a Tpf> {
@@ -83,14 +83,14 @@ pub mod tpf_fasta_mod {
         subset_tpf
     }
 
-    fn check_orientation(
+    // The TPF will contain data in both PLUS (normal) and
+    // MINUS (inverted), if MINUS then we need to invert again
+    // and get the complement sequence
+    // We then return the sequence of the record.
+    pub fn check_orientation(
         parsed: std::option::Option<noodles::fasta::record::Sequence>,
         orientation: String,
     ) -> String {
-        // The TPF will contain data in both PLUS (normal) and
-        // MINUS (inverted), if MINUS then we need to invert again
-        // and get thr complement sequence
-        // We then return the sequence of the record.
         if orientation == "MINUS" {
             let start = Position::try_from(1).unwrap();
             let parse_orientation = parsed.unwrap();
@@ -139,7 +139,7 @@ pub mod tpf_fasta_mod {
         subset_tpf
     }
 
-    fn get_uniques(tpf_list: &Vec<Tpf>) -> Vec<String> {
+    pub fn get_uniques(tpf_list: &Vec<Tpf>) -> Vec<String> {
         // Get a Vec of the uniques names in the TPF Vec
         let mut uniques: Vec<String> = Vec::new();
 
