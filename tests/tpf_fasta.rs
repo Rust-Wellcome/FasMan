@@ -30,27 +30,26 @@ fn get_uniques_returns_unique_scaffold_names() {
         start_coord: 1,
         end_coord: 100,
         new_scaffold: "newScaffold1".to_string(),
-        orientation: "PLUS".to_string()
+        orientation: "PLUS".to_string(),
     };
     let tpf2 = Tpf {
         ori_scaffold: "scaffold2".to_string(),
         start_coord: 1,
         end_coord: 100,
         new_scaffold: "newScaffold2".to_string(),
-        orientation: "PLUS".to_string()
+        orientation: "PLUS".to_string(),
     };
     let tpf3 = Tpf {
         ori_scaffold: "scaffold1".to_string(),
         start_coord: 1,
         end_coord: 100,
         new_scaffold: "newScaffold1".to_string(),
-        orientation: "PLUS".to_string()
+        orientation: "PLUS".to_string(),
     };
     let tpfs = vec![tpf1, tpf2, tpf3];
     let result = get_uniques(&tpfs);
-    assert_eq!(result, vec!["newScaffold1".to_string(), "newScaffold2".to_string()]);
+    assert_eq!(
+        result,
+        vec!["newScaffold1".to_string(), "newScaffold2".to_string()]
+    );
 }
-
-
-
-
