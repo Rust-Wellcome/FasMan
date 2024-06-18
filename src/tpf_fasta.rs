@@ -67,7 +67,7 @@ pub mod tpf_fasta_mod {
         all_tpf
     }
 
-    fn subset_vec_tpf<'a>(
+    pub fn subset_vec_tpf<'a>(
         tpf: &'a Vec<Tpf>,
         fasta: (&std::string::String, &usize),
     ) -> Vec<&'a Tpf> {

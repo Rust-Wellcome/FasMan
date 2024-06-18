@@ -1,5 +1,5 @@
 // pub use fasta_manipulation::tpf_fasta::*;
-use fasta_manipulation::tpf_fasta_mod::{check_orientation, get_uniques, Tpf};
+use fasta_manipulation::tpf_fasta_mod::{check_orientation, get_uniques, subset_vec_tpf, Tpf};
 use noodles::fasta::record::Sequence;
 
 // To test the check orientation function we need to publicly expose it
@@ -52,4 +52,35 @@ fn get_uniques_returns_unique_scaffold_names() {
         result,
         vec!["newScaffold1".to_string(), "newScaffold2".to_string()]
     );
+}
+
+// Need to add some docs for function
+// as we were not entirely sure what it was doing
+#[test]
+fn get_subset_of_tpfs() {
+    let tpf1 = Tpf {
+        ori_scaffold: "scaffold1".to_string(),
+        start_coord: 1,
+        end_coord: 100,
+        new_scaffold: "newScaffold1".to_string(),
+        orientation: "PLUS".to_string(),
+    };
+    let tpf2 = Tpf {
+        ori_scaffold: "scaffold2".to_string(),
+        start_coord: 1,
+        end_coord: 100,
+        new_scaffold: "newScaffold2".to_string(),
+        orientation: "PLUS".to_string(),
+    };
+    let tpf3 = Tpf {
+        ori_scaffold: "scaffold1".to_string(),
+        start_coord: 1,
+        end_coord: 100,
+        new_scaffold: "newScaffold1".to_string(),
+        orientation: "PLUS".to_string(),
+    };
+    let tpfs = vec![tpf1, tpf2, tpf3];
+    let fasta = (&"scaffold1".to_string(), &(1 as usize));
+    let result = subset_vec_tpf(&tpfs, fasta);
+    assert_eq!(result.len(), 2);
 }
