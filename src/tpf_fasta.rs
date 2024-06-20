@@ -74,13 +74,7 @@ pub mod tpf_fasta_mod {
         //
         // Subset the Vec<TPF> based on a search through the fasta
         //
-        let mut subset_tpf: Vec<&Tpf> = Vec::new();
-        for i in tpf {
-            if i.ori_scaffold == *fasta.0 {
-                subset_tpf.push(i)
-            }
-        }
-        subset_tpf
+        tpf.iter().filter(|&i| i.ori_scaffold == *fasta.0).collect()
     }
 
     // The TPF will contain data in both PLUS (normal) and
