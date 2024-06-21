@@ -4,6 +4,7 @@ pub mod tpf_fasta_mod {
     use noodles::fasta;
     use noodles::fasta::record::Sequence;
     use noodles::fasta::repository::adapters::IndexedReader;
+    use std::collections::HashSet;
     use std::fs::OpenOptions;
     use std::io::Write;
     use std::{fs::read_to_string, fs::File, str};
@@ -135,14 +136,12 @@ pub mod tpf_fasta_mod {
 
     pub fn get_uniques(tpf_list: &Vec<Tpf>) -> Vec<String> {
         // Get a Vec of the uniques names in the TPF Vec
-        let mut uniques: Vec<String> = Vec::new();
+        let mut hash_set = HashSet::<String>::new();
 
         for i in tpf_list {
-            if !uniques.contains(&i.new_scaffold) {
-                uniques.push(i.new_scaffold.to_owned())
-            }
+            hash_set.insert(i.new_scaffold.to_owned());
         }
-        uniques
+        Vec::from_iter(hash_set)
     }
 
     fn save_to_fasta(

@@ -47,7 +47,8 @@ fn get_uniques_returns_unique_scaffold_names() {
         orientation: "PLUS".to_string(),
     };
     let tpfs = vec![tpf1, tpf2, tpf3];
-    let result = get_uniques(&tpfs);
+    let mut result = get_uniques(&tpfs);
+    result.sort();
     assert_eq!(
         result,
         vec!["newScaffold1".to_string(), "newScaffold2".to_string()]
