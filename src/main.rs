@@ -29,6 +29,9 @@ use crate::tpf_fasta::tpf_fasta_mod::curate_fasta;
 mod exclude_seq;
 use crate::exclude_seq::exclude_seq_mod::filter_fasta;
 
+mod generate_csv;
+use crate::generate_csv::gencsv_mod::gencsv;
+
 fn main() -> Result<(), Error> {
     let split_options = ["pep", "cds", "cdna", "rna", "other"];
     let match_result = command!()
@@ -132,13 +135,6 @@ fn main() -> Result<(), Error> {
                     .short('d')
                     .required(true)
                     .help("The path to the top level directory of your geneset directory.")
-            )
-            .arg(
-                Arg::new("specifiy_clade")
-                    .short('c')
-                    .required(true)
-                    .default_value("ALL")
-                    .help("Specify the clade folder to refresh")
             )
     )
     .subcommand(
@@ -331,6 +327,7 @@ fn main() -> Result<(), Error> {
         Some("remapheaders") => remapping_head(match_result.subcommand_matches("remapheaders")),
         Some("curate") => curate_fasta(match_result.subcommand_matches("curate")),
         Some("filterfasta") => filter_fasta(match_result.subcommand_matches("filterfasta")),
+        Some("geneset_csvs") => gencsv(match_result.subcommand_matches("geneset_csvs")),
         _ => {
             unreachable!()
         }
