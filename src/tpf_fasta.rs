@@ -1,4 +1,6 @@
 pub mod tpf_fasta_mod {
+    /// TPF_FASTA_MOD encapsulates the `curate` command functrions
+    /// fasta_manipulation curate -f test_data/iyAndFlav1/iyAndFlav1.20231011.decontaminated.fa -t test_data/iyAndFlav1/iyAndFlav1.20231011.decontaminated.fa.tpf -o testy.fasta`
     use clap::ArgMatches;
     use noodles::core::Position;
     use noodles::fasta;
@@ -11,7 +13,7 @@ pub mod tpf_fasta_mod {
     use crate::generics::validate_fasta;
 
     #[derive(Debug, Clone, PartialEq, Eq)]
-    /// STRUCT: Tpf Struct creates a simple object which descibes each line of an input TPF.
+    /// Tpf Struct creates a simple object which descibes each line of an input TPF.
     struct Tpf {
         ori_scaffold: String,
         start_coord: usize,
@@ -25,21 +27,25 @@ pub mod tpf_fasta_mod {
         fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
             write!(
                 fmt,
-                "\t{} -- {} -- {}",
-                self.ori_scaffold, self.start_coord, self.end_coord
+                "\tOs-{} -- Os-{} -- Oe-{} -- Ns-{} -- Or{}",
+                self.ori_scaffold,
+                self.start_coord,
+                self.end_coord,
+                self.new_scaffold,
+                self.orientation
             )
         }
     }
 
     #[derive(Debug, PartialEq, Eq)]
-    /// STRUCT: NewFasta is a struct that wraps around struct-Tpf as well as the corresponding sequence for that new segment.
+    /// NewFasta is a struct that wraps around struct-Tpf as well as the corresponding sequence for that new segment.
     struct NewFasta {
         tpf: Tpf,
         sequence: String,
     }
 
     #[derive(Debug)]
-    /// STRUCT: MyRecord is a Fasta record Struct - Should be replaced by the much better Noodles::record
+    /// MyRecord is a Fasta record Struct - Should be replaced by the much better Noodles::record
     struct MyRecord {
         name: String,
         sequence: Vec<String>,
@@ -215,7 +221,7 @@ pub mod tpf_fasta_mod {
 
     #[allow(clippy::needless_borrow)]
     #[allow(clippy::let_and_return)]
-    /// PUB FUNCTION: curate_fasta is the main of this module/
+    /// RO_1: curate_fasta is the main of this module/
     /// First a fasta file is validated and returns a list of scaffold header and length of scaffold
     /// Stacker is used to increase the size of the stack incase we run out of memory
     /// The input fasta is then converted into an indexed_reader and returns as a queryable object
@@ -234,7 +240,7 @@ pub mod tpf_fasta_mod {
             match validate_fasta(fasta_file) {
                 Ok(fasta_d) => {
                     let tpf_data = parse_tpf(&tpf_file);
-
+                    println!("{:?}", tpf_data);
                     let reader =
                         fasta::indexed_reader::Builder::default().build_from_path(fasta_file);
                     let fasta_repo = match reader {
