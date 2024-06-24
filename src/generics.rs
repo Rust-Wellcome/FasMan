@@ -2,6 +2,7 @@ use noodles::fasta;
 use noodles::fasta::record::Definition;
 use std::error::Error;
 use std::fs::{self, File, OpenOptions};
+use std::path::PathBuf;
 use std::{collections::HashMap, fmt, io::BufRead, result, str};
 
 #[derive(Debug, Clone)]
@@ -109,4 +110,19 @@ pub fn write_fasta(
         writer.write_record(&i).unwrap();
     }
     Ok(())
+}
+
+// Function to list directories
+pub fn get_folder_list(dir_loc: &str) -> Vec<PathBuf> {
+    fs::read_dir(dir_loc)
+        .unwrap()
+        .filter_map(|entry| {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect()
 }
