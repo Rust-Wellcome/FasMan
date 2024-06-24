@@ -1,0 +1,16 @@
+>NP_001269741.1 glutamate receptor 1 precursor [Columba livia]
+>lcl|NC_088602.1_cds_XP_064912806.1_2 [gene=FHIP1B] [db_xref=GeneID:135579039] [protein=FHF complex subunit HOOK-interacting protein 1B isoform X1] [protein_id=XP_064912806.1] [location=complement(join(46487..46610,48556..49160,49837..49974))] [gbkey=CDS]
+>NM_001282809.1 Columba livia myostatin (MSTN), mRNA
+>NC_088602.1 Columba livia isolate bColLiv1 breed racing homer chromosome 1, bColLiv1.pat.W.v2, whole genome shotgun sequence
+>NC_037638.1 Apis mellifera strain DH4 linkage group LG1, Amel_HAv3.1, whole genome shotgun sequence
+>lcl|NC_037638.1_cds_XP_623975.1_1 [gene=LOC551580] [db_xref=GeneID:551580] [protein=ubiquitin-related modifier 1] [protein_id=XP_623975.1] [location=complement(join(9478..9546,9779..9827,10913..10994,11054..11121,11201..11244))] [gbkey=CDS]
+>NP_001010975.1 ADP/ATP translocase [Apis mellifera]
+>ENSMUST00000196221.2 cdna chromosome:GRCm39:14:54350925:54350933:1 gene:ENSMUSG00000096749.3 gene_biotype:TR_D_gene transcript_biotype:TR_D_gene gene_symbol:Trdd1 description:T cell receptor delta diversity 1 [Source:MGI Symbol;Acc:MGI:4439547]
+>ENSMUST00000196221.2 cds chromosome:GRCm39:14:54350925:54350933:1 gene:ENSMUSG00000096749.3 gene_biotype:TR_D_gene transcript_biotype:TR_D_gene gene_symbol:Trdd1 description:T cell receptor delta diversity 1 [Source:MGI Symbol;Acc:MGI:4439547]
+>ENSMUST00000104605.4 ncrna chromosome:GRCm39:Y:1308273:1308377:-1 gene:ENSMUSG00000077793.4 gene_biotype:snRNA transcript_biotype:snRNA gene_symbol:Gm25565 description:predicted gene, 25565 [Source:MGI Symbol;Acc:MGI:5455342]
+>ENSMUSP00000142546.2 pep chromosome:GRCm39:14:54350925:54350933:1 gene:ENSMUSG00000096749.3 transcript:ENSMUST00000196221.2 gene_biotype:TR_D_gene transcript_biotype:TR_D_gene gene_symbol:Trdd1 description:T cell receptor delta diversity 1 [Source:MGI Symbol;Acc:MGI:4439547]
+>NM_001010975.1 Apis mellifera ADP/ATP translocase (Ant), mRNA
+>ENSDNOT00000032457.1 cdna scaffold:Dasnov3.0:JH570932.1:12383:24031:1 gene:ENSDNOG00000032386.1 gene_biotype:protein_coding transcript_biotype:protein_coding gene_symbol:RNF139 description:ring finger protein 139 [Source:HGNC Symbol;Acc:HGNC:17023]
+>ENSDNOT00000032457.1 cds scaffold:Dasnov3.0:JH570932.1:12383:24031:1 gene:ENSDNOG00000032386.1 gene_biotype:protein_coding transcript_biotype:protein_coding gene_symbol:RNF139 description:ring finger protein 139 [Source:HGNC Symbol;Acc:HGNC:17023]
+>ENSDNOT00000051567.1 ncrna scaffold:Dasnov3.0:JH568269.1:267608:267711:-1 gene:ENSDNOG00000036012.1 gene_biotype:snRNA transcript_biotype:snRNA gene_symbol:U6 description:U6 spliceosomal RNA [Source:RFAM;Acc:RF00026]
+>ENSDNOP00000032997.1 pep scaffold:Dasnov3.0:JH570932.1:12383:24031:1 gene:ENSDNOG00000032386.1 transcript:ENSDNOT00000032457.1 gene_biotype:protein_coding transcript_biotype:protein_coding gene_symbol:RNF139 description:ring finger protein 139 [Source:HGNC Symbol;Acc:HGNC:17023]
