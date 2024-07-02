@@ -146,3 +146,20 @@ fn check_parse_seq_bounds_error() {
 
     parse_seq(input_sequence, tpfs);
 }
+
+#[ignore = "We need to have some test data"]
+#[test]
+fn check_parse_tpf() {
+    assert!(true);
+}
+
+#[ignore = "Work in progress (Still figuring out what it does)"]
+#[test]
+fn check_save_to_fasta() {
+    // Inputs: Vector of NewFasta types, vector of Tpf types, output path, and n_length
+    // 1. Creates a data file based on the output path, and open the created file using OpenOption
+    // 2. Creates a debug.txt file, and open that file.
+    // 3. Retrieving unique scaffolds based on the initial tpf types
+
+    assert!(true);
+}
