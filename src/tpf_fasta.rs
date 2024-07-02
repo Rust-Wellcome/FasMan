@@ -31,9 +31,9 @@ pub mod tpf_fasta_mod {
     }
 
     #[derive(Debug, PartialEq, Eq)]
-    struct NewFasta {
-        tpf: Tpf,
-        sequence: String,
+    pub struct NewFasta {
+        pub tpf: Tpf,
+        pub sequence: String,
     }
 
     #[derive(Debug)]
@@ -108,7 +108,7 @@ pub mod tpf_fasta_mod {
         }
     }
 
-    fn parse_seq(
+    pub fn parse_seq(
         sequence: std::option::Option<noodles::fasta::record::Sequence>,
         tpf: Vec<&Tpf>,
     ) -> Vec<NewFasta> {

@@ -1,5 +1,7 @@
 // pub use fasta_manipulation::tpf_fasta::*;
-use fasta_manipulation::tpf_fasta_mod::{check_orientation, get_uniques, subset_vec_tpf, Tpf};
+use fasta_manipulation::tpf_fasta_mod::{
+    check_orientation, get_uniques, parse_seq, subset_vec_tpf, Tpf,
+};
 use noodles::fasta::record::Sequence;
 
 // To test the check orientation function we need to publicly expose it
@@ -83,4 +85,64 @@ fn get_subset_of_tpfs() {
     let fasta = (&"scaffold1".to_string(), &(1 as usize));
     let result = subset_vec_tpf(&tpfs, fasta);
     assert_eq!(result.len(), 2);
+}
+
+#[test]
+fn check_parse_seq() {
+    let sequence =
+        Sequence::from(b"AATGGCCGGCGCGTTAAACCCAATGCCCCGGTTAANNGCTCGTCGCTTGCTTCGCAAAA".to_vec());
+    let tpf1 = Tpf {
+        ori_scaffold: "scaffold1".to_string(),
+        start_coord: 3,
+        end_coord: 5,
+        new_scaffold: "newScaffold1".to_string(),
+        orientation: "PLUS".to_string(),
+    };
+    let tpf2 = Tpf {
+        ori_scaffold: "scaffold2".to_string(),
+        start_coord: 10,
+        end_coord: 20,
+        new_scaffold: "newScaffold2".to_string(),
+        orientation: "MINUS".to_string(),
+    };
+    let tpf3 = Tpf {
+        ori_scaffold: "scaffold1".to_string(),
+        start_coord: 1,
+        end_coord: 58,
+        new_scaffold: "newScaffold1".to_string(),
+        orientation: "PLUS".to_string(),
+    };
+
+    let tpfs = vec![&tpf1, &tpf2, &tpf3];
+    let input_sequence = Some(sequence);
+
+    let new_fasta = parse_seq(input_sequence, tpfs);
+
+    assert_eq!(new_fasta.len(), 3);
+    assert_eq!(new_fasta.first().unwrap().sequence, "TGG");
+    assert_eq!(new_fasta.get(1).unwrap().sequence, "GGTTTAACGCG");
+    assert_eq!(
+        new_fasta.get(2).unwrap().sequence,
+        "AATGGCCGGCGCGTTAAACCCAATGCCCCGGTTAANNGCTCGTCGCTTGCTTCGCAAA"
+    );
+}
+
+// This should panic with a end_coord > sequence.length
+#[test]
+#[should_panic]
+fn check_parse_seq_bounds_error() {
+    let sequence =
+        Sequence::from(b"AATGGCCGGCGCGTTAAACCCAATGCCCCGGTTAANNGCTCGTCGCTTGCTTCGCAAAA".to_vec());
+    let tpf = Tpf {
+        ori_scaffold: "scaffold1".to_string(),
+        start_coord: 10,
+        end_coord: 60,
+        new_scaffold: "newScaffold1".to_string(),
+        orientation: "PLUS".to_string(),
+    };
+    let tpfs = vec![&tpf];
+
+    let input_sequence = Some(sequence);
+
+    parse_seq(input_sequence, tpfs);
 }
