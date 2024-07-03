@@ -15,7 +15,10 @@ pub mod yaml_validator_mod {
     struct TreeValYaml {
         assembly: Assembly,
         reference_file: String,
+        map_order: String,
         assem_reads: AssemReads,
+        hic_data: HicReads,
+        kmer_profile: KmerProfile,
         alignment: Alignment,
         self_comp: SelfComp,
         intron: Intron,
@@ -24,28 +27,86 @@ pub mod yaml_validator_mod {
         busco: Busco,
     }
 
+    impl TreeValYaml {
+        fn validate_fasta(&self) -> String {
+            let reader = fasta::reader::Builder.build_from_path(&self.reference_file);
+
+            let mut binding = reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
+            let result = binding.records();
+            let counter = result.count();
+            if counter >= 1 {
+                format!(
+                    "{} {} {}",
+                    ">- VALID REFERENCE H/S PAIRS:".green(),
+                    counter,
+                    "H/S PAIRS".green()
+                )
+            } else {
+                format!("{}", "NO HEADER/SEQ PAIRS".red())
+            }
+        }
+
+        fn validate_busco_path(&self) -> String {
+            let full_busco_path = format!(
+                "{}/lineage/{}",
+                self.busco.lineages_path, self.busco.lineage
+            );
+            full_busco_path
+        }
+
+        fn validate_data(&self) {
+            // list_dir(self.hic_reads.dir)
+            // if i in list == .cram {validate_cram} elif i == .fasta.gz { do i need to validate pacbio? }
+        }
+
+        fn validate_cram() {}
+
+        fn validate_genesets(&self) {}
+
+        fn validate_synteny(&self) {}
+
+        fn validate_kmer_prof(&self) {}
+
+        fn validate_telomere(&self) {
+            // make sure only AlphaNumeric
+            // and longer than 3
+        }
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct KmerProfile {
+        kmer_length: u16,
+        dir: String,
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct HicReads {
+        hic_cram: String,
+        hic_aligner: String,
+    }
+
     #[derive(Debug, Serialize, Deserialize)]
     struct Assembly {
-        level: String,
+        assem_level: String,
         sample_id: String,
         latin_name: String,
-        classT: String,
-        asmVersion: u16,
-        gevalType: String,
+        defined_class: String,
+        assem_version: u16,
+        project_id: String,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
     struct AssemReads {
-        pacbio: String,
-        hic: String,
-        supplementary: String,
+        read_type: String,
+        read_data: String,
+        supplementary_data: String,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
     struct Alignment {
         data_dir: String,
         common_name: String,
-        geneset: String,
+        geneset_id: String,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -66,7 +127,8 @@ pub mod yaml_validator_mod {
 
     #[derive(Debug, Serialize, Deserialize)]
     struct Synteny {
-        synteny_genome_path: String,
+        synteny_path: String,
+        synteny_genomes: String,
     }
 
     #[derive(Debug, Serialize, Deserialize)]
@@ -209,10 +271,7 @@ pub mod yaml_validator_mod {
 
     pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
-        let _output: &String = arguments
-            .unwrap()
-            .get_one::<String>("output-directory")
-            .unwrap();
+        let _output: &String = arguments.unwrap().get_one::<String>("output").unwrap();
         let _verbose_flag: &bool = arguments.unwrap().get_one::<bool>("verbose").unwrap();
 
         println! {"Validating Yaml: {}", file.purple()};
@@ -228,20 +287,20 @@ pub mod yaml_validator_mod {
 
         validate_paths(&contents.reference_file, "REFERENCE");
         validate_paths(&contents.alignment.data_dir, "GENESET");
-        validate_paths(&contents.synteny.synteny_genome_path, "SYNTENY");
+        validate_paths(&contents.synteny.synteny_path, "SYNTENY");
         validate_paths(&contents.busco.lineages_path, "BUSCO");
 
-        validate_paths(&contents.assem_reads.pacbio, "PACBIO");
-        validate_data(&contents.assem_reads.pacbio, "pacbio");
+        validate_paths(&contents.assem_reads.read_data, "PACBIO");
+        validate_data(&contents.assem_reads.read_type, "pacbio");
 
-        validate_paths(&contents.assem_reads.hic, "HIC");
-        validate_data(&contents.assem_reads.hic, "hic");
+        validate_paths(&contents.hic_data.hic_cram, "HIC");
+        validate_data(&contents.hic_data.hic_aligner, "hic");
 
         println!("{}", "CHECKING GENESET DIRECTORY RESOLVES".blue());
-        let genesets = contents.alignment.geneset.split(',');
+        let genesets = contents.alignment.geneset_id.split(',');
         for set in genesets {
             let gene_alignment_path = contents.alignment.data_dir.clone()
-                + &contents.assembly.classT
+                + &contents.assembly.defined_class
                 + "/csv_data/"
                 + set
                 + "-data.csv";
@@ -250,7 +309,7 @@ pub mod yaml_validator_mod {
 
         println!("{}", "CHECKING SYNTENY DIRECTORY RESOLVES".blue());
         let synteny_full =
-            contents.synteny.synteny_genome_path.clone() + &contents.assembly.classT + "/";
+            contents.synteny.synteny_path.clone() + &contents.assembly.defined_class + "/";
         validate_paths(&synteny_full, "SYNTENY-FASTA");
         validate_data(&synteny_full, "synteny");
 
