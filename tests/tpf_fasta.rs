@@ -128,6 +128,7 @@ fn check_parse_seq() {
 }
 
 // This should panic with a end_coord > sequence.length
+// Should the exception be handled in a more graceful way?
 #[test]
 #[should_panic]
 fn check_parse_seq_bounds_error() {
