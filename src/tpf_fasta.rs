@@ -270,11 +270,11 @@ pub mod tpf_fasta_mod {
                         Ok(data) => {
                             let adapter = IndexedReader::new(data);
 
-                            // Now read the fasta and return is as a queryable object
+                            // Now read the fasta and return as a queryable object
                             let repository = fasta::Repository::new(adapter);
                             repository
                         }
-                        Err(_) => todo!(), // Probably just panic!
+                        Err(e) => panic!("NOODLES/STD::IO ERROR: {:?}\n Likely no fai!", e),
                     };
 
                     //
