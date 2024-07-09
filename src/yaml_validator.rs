@@ -85,7 +85,6 @@ pub mod yaml_validator_mod {
     //    data_file: String
     //}
 
-    #[allow(dead_code)]
     pub fn validate_paths(path: &str, field_id: &str) {
         match fs::metadata(path) {
             Ok(_) => {
@@ -115,7 +114,6 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[allow(dead_code)]
     pub fn validate_fasta(path: &str) {
         let reader = fasta::reader::Builder.build_from_path(path);
 
@@ -130,7 +128,6 @@ pub mod yaml_validator_mod {
         )
     }
 
-    #[allow(dead_code)]
     pub fn validate_csv(path: &str) -> Result<(), Error> {
         let file = File::open(path)?;
 
@@ -155,7 +152,6 @@ pub mod yaml_validator_mod {
     //           could make this much easier and consise by passing in a list of file types to check
     //           validatedata(path, [fa, fna, fasta])
     //
-    #[allow(dead_code)]
     pub fn validate_data(path: &str, dtype: &str) {
         match fs::read_dir(path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {}
@@ -211,7 +207,6 @@ pub mod yaml_validator_mod {
         };
     }
 
-    #[allow(dead_code)]
     pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
         let _output: &String = arguments
