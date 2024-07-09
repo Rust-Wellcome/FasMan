@@ -42,7 +42,7 @@ pub mod tpf_fasta_mod {
         sequence: Vec<String>,
     }
 
-    fn parse_tpf(path: &String) -> Vec<Tpf> {
+    pub fn parse_tpf(path: &String) -> Vec<Tpf> {
         // Instantiate a List of Tpf objects
         let mut all_tpf: Vec<Tpf> = Vec::new();
         for line in read_to_string(path).unwrap().lines() {
@@ -180,6 +180,7 @@ pub mod tpf_fasta_mod {
         // This is inefficient as we are scanning through the fasta_data, uniques
         // ( equal to number of scaffolds) number of times
         // If uniques is 10 long and fasta is 100, then this is 1000 scans through in total.
+        // we need to change x to something more descriptive
         for x in uniques {
             println!("NOW WRITING DATA FOR: {:?}", &x);
             // X = "SUPER_1"
@@ -194,12 +195,14 @@ pub mod tpf_fasta_mod {
                 .expect("Unable to write to file");
 
             let mut data: MyRecord = MyRecord {
+                // would it be better to use x.clone()
                 name: "".to_string(),
                 sequence: Vec::new(),
             };
 
             x.clone_into(&mut data.name);
             for tpf in &tpf_data {
+                // x should be data.name and we should probably transfer ownership?
                 if tpf.new_scaffold == x {
                     for fasta in &fasta_data {
                         if fasta.tpf == *tpf {
