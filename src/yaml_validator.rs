@@ -28,6 +28,7 @@ pub mod yaml_validator_mod {
     }
 
     impl TreeValYaml {
+        #[allow(dead_code)]
         fn validate_fasta(&self) -> String {
             let reader = fasta::reader::Builder.build_from_path(&self.reference_file);
 
@@ -46,6 +47,7 @@ pub mod yaml_validator_mod {
             }
         }
 
+        #[allow(dead_code)]
         fn validate_busco_path(&self) -> String {
             let full_busco_path = format!(
                 "{}/lineage/{}",
@@ -54,19 +56,25 @@ pub mod yaml_validator_mod {
             full_busco_path
         }
 
+        #[allow(dead_code)]
         fn validate_data(&self) {
             // list_dir(self.hic_reads.dir)
             // if i in list == .cram {validate_cram} elif i == .fasta.gz { do i need to validate pacbio? }
         }
 
+        #[allow(dead_code)]
         fn validate_cram() {}
 
+        #[allow(dead_code)]
         fn validate_genesets(&self) {}
 
+        #[allow(dead_code)]
         fn validate_synteny(&self) {}
 
+        #[allow(dead_code)]
         fn validate_kmer_prof(&self) {}
 
+        #[allow(dead_code)]
         fn validate_telomere(&self) {
             // make sure only AlphaNumeric
             // and longer than 3
