@@ -3,7 +3,7 @@ assembly:
     assem_version: 1
     sample_id: pxPlaOval8
     latin_name: to_provide_taxonomic_rank
-    defined_class: protist
+    defined_class: fungi
     project_id: DTOL
 reference_file: /Users/dp24/Documents/FastaManipulator/TreeValTinyData/assembly/draft/grTriPseu1.fa
 map_order: unsorted
@@ -27,7 +27,7 @@ self_comp:
     motif_len: 0
     mummer_chunk: 20
 synteny:
-    synteny_path: /Users/dp24/Documents/FastaManipulator/TreeValTinyData/synteny
+    synteny_path: /Users/dp24/Documents/FastaManipulator/TreeValTinyData/synteny/
     synteny_genomes: ""
 intron:
     size: "50k"
