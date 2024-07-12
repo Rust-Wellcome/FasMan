@@ -9,6 +9,12 @@ Currently, this program has the following arguments:
     This validates a given yaml against the TreeVal yaml standard. This is specific to the TreeVal pipeline.
     This command will go through the yaml and validate file and directory paths as well as files are in the expected format.
 
+    This has been tested by downloading the TreeValTinyTest data set:
+
+    ```bash
+    curl https://tolit.cog.sanger.ac.uk/test-data/resources/treeval/TreeValTinyData.tar.gz | tar xzf -
+    ```
+
     `validateyaml ${PATH TO YAML} --verbose {DEFAULT FALSE} --output ${OUTPUT LOCATION OF LOGS}`
 
 -   map_headers

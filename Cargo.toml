@@ -16,3 +16,4 @@ regex = "1.9.5"
 serde = { version = "1.0.188", features = ["derive"] }
 serde_yaml = "0.9.25"
 stacker = "0.1.15"
+walkdir = "2.5.0"
