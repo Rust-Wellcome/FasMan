@@ -2,11 +2,14 @@ pub mod yaml_validator_mod {
     use clap::ArgMatches;
     use colored::ColoredString;
     use colored::Colorize;
-    use csv::Error;
-    use csv::ReaderBuilder;
+
+    // Not in use yet
+    //use csv::Error;
+    //use csv::ReaderBuilder;
+
     use noodles::fasta;
     use serde::{Deserialize, Serialize};
-    use std::fs::{self, File};
+    use std::fs;
     use std::path::PathBuf;
     use walkdir::WalkDir;
     // Would be nice if there was a simple format_check
@@ -97,7 +100,7 @@ pub mod yaml_validator_mod {
                 .filter(|f| !f.ends_with(".fasta.gz"))
                 .collect::<Vec<PathBuf>>();
 
-            if fasta_reads.len() > 0 {
+            if !fasta_reads.is_empty() {
                 format!(
                     "PASS ({}) FASTA.GZ = {}",
                     &self.assem_reads.read_data,
@@ -213,7 +216,7 @@ pub mod yaml_validator_mod {
 
             // Fall towards more pythonic style here
             if count_provided_syntenics <= 1 {
-                exist_tuple.push(format!("NO SYNTENICS PROVIDED").yellow());
+                exist_tuple.push("NO SYNTENICS PROVIDED".to_string().yellow());
                 exist_tuple
             } else {
                 // This is pretty cool, reformat the string into the required path and then run and return a function on each.
@@ -252,8 +255,8 @@ pub mod yaml_validator_mod {
         /// Validate whether the telomere motif is ALPHABETICAL
         /// No upper bound as motifs can be large.
         fn validate_telomere(&self) -> ColoredString {
-            if *&self.telomere.teloseq.chars().all(char::is_alphabetic) == true
-                && *&self.telomere.teloseq.chars().collect::<Vec<_>>().len() > 3
+            if self.telomere.teloseq.chars().all(char::is_alphabetic)
+                && self.telomere.teloseq.chars().collect::<Vec<_>>().len() > 3
             {
                 format!("PASS ({})", &self.telomere.teloseq).green()
             } else {
@@ -327,28 +330,27 @@ pub mod yaml_validator_mod {
         lineage: String,
     }
 
-    #[warn(dead_code)]
-    pub fn validate_csv(path: &str) -> Result<(), Error> {
-        // TODO: This should get included in the validate geneset function
-        let file = File::open(path)?;
+    // pub fn validate_csv(path: &str) -> Result<(), Error> {
+    //     // TODO: This should get included in the validate geneset function
+    //     let file = File::open(path)?;
 
-        let mut reader = ReaderBuilder::new()
-            .has_headers(true)
-            .delimiter(b',')
-            .from_reader(file);
+    //     let mut reader = ReaderBuilder::new()
+    //         .has_headers(true)
+    //         .delimiter(b',')
+    //         .from_reader(file);
 
-        let record = reader.records().count();
-        println!(
-            "{} {} {}",
-            ">-GENESET-RECORD-COUNT: >".green(),
-            record,
-            "<".green()
-        );
+    //     let record = reader.records().count();
+    //     println!(
+    //         "{} {} {}",
+    //         ">-GENESET-RECORD-COUNT: >".green(),
+    //         record,
+    //         "<".green()
+    //     );
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
-    fn print_pretty(input: Vec<ColoredString>) -> () {
+    fn print_pretty(input: Vec<ColoredString>) {
         for i in input {
             println!("\t--{}", i);
         }
