@@ -3,7 +3,7 @@
 ## A FastaManipulator script that is slowly doing more...
 
 Originally written by @DLBPointon
-Now a collaborative programming project for the Rust@Wellcome group (Sanger)
+Now a collaborative programming project for the Rust@Wellcome group (Sanger).
 
 Collaborators and contributors:
 
