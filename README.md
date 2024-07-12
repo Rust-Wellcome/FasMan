@@ -1,10 +1,24 @@
-# FastaManipulator
+# FasMan
+
+## A FastaManipulator script that is slowly doing more...
+
+Originally written by @DLBPointon
+Now a collaborative programming project for the Rust@Wellcome group (Sanger)
+
+Collaborators and contributors:
+
+-   figueroakl - Genome Profiling
+-   stevieing - Adding tests, optimisations & CI/CD
+-   dasunpubudumal- Adding tests, optimisations & CI/CD
+
+---
 
 This is a re-write of the current fasta manipulation scripts I've written whilst at ToL, as well as adding some functionality needed for future projects.
 
 Currently, this program has the following arguments:
 
--   yaml_validator
+-   yaml_validator (v2)
+    Updated for new yaml style and now uses struct methods.
 
     This validates a given yaml against the TreeVal yaml standard. This is specific to the TreeVal pipeline.
     This command will go through the yaml and validate file and directory paths as well as files are in the expected format.
@@ -15,7 +29,19 @@ Currently, this program has the following arguments:
     curl https://tolit.cog.sanger.ac.uk/test-data/resources/treeval/TreeValTinyData.tar.gz | tar xzf -
     ```
 
-    `validateyaml ${PATH TO YAML} --verbose {DEFAULT FALSE} --output ${OUTPUT LOCATION OF LOGS}`
+    `validateyaml ${PATH TO YAML}`
+
+    TODO:
+
+    -   Add CRAM validator to the module
+        -   Scan for SQ records in the header - this indicates a mapped cram - BAD for pipelines that implement mapping internally - TreeVal
+        -   Check for sorting order
+            -   SO record or
+            -   Take first 100 records and determine whether they are paired reads
+        -   Find equiv to `samtools quickcheck -vvv` for a report on completeness of cram.
+            -   if not then it will be a secondary process (external to FasMan)
+    -   Better report
+        -   Report should complete and if there are fails then panic! or std::process::exit("FAILED DUE TO: ...") this is so that it can be added to the Nextflow pipelines and cause them to error out at the right place, e.g, not rely on scanning the report.log throught functions in NF.
 
 -   map_headers
 
