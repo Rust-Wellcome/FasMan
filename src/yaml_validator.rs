@@ -1,32 +1,35 @@
 pub mod yaml_validator_mod {
     use clap::ArgMatches;
-    use colored::ColoredString;
-    use colored::Colorize;
-
-    // Not in use yet
-    //use csv::Error;
-    //use csv::ReaderBuilder;
-
-    use noodles::fasta;
+    use colored::{ColoredString, Colorize};
+    use csv::ReaderBuilder;
+    use noodles::{cram, fasta};
     use serde::{Deserialize, Serialize};
-    use std::fs;
+    use std::fs::{self, File};
     use std::path::PathBuf;
     use walkdir::WalkDir;
-    // Would be nice if there was a simple format_check
-    // use noodles::cram as cram;
-    //
+
+    struct CRAMtags<'a> {
+        header_sort_order: &'a str,
+        other_header_fields: &'a str,
+        reference_sequence: &'a usize,
+        header_read_groups: &'a Vec<&'a str>,
+    }
+
+    // let mut reader = File::open("sample.cram").map(cram::io::Reader::new)?;
+    // let header = reader.read_header()?;
+
+    // for result in reader.records(&header) {
+    //     let record = result?;
+    //     // ...
+    // }
+
     // Really each of the methods described below would be under their own struct,
     // however, many of them have cross overs so I have chosen to keep them all in
     // one place rather than split out some
-
-    /// A function to validate a path given as a &str
-    pub fn validate_paths(path: &str) -> ColoredString {
-        match fs::metadata(path) {
-            Ok(_) => "PASS".green(),
-            Err(_) => format!("FAIL ({:?} <-- doesn't exist)", path).red(),
-        }
-    }
-
+    //
+    // The methods here should be changing the values in the struct,
+    // this would make reporting much easier as we could implement our own
+    // fmt::display
     #[derive(Debug, Serialize, Deserialize)]
     struct TreeValYaml {
         assembly: Assembly,
@@ -45,6 +48,14 @@ pub mod yaml_validator_mod {
 
     /// Struct functions
     impl TreeValYaml {
+        /// A function to validate a path given as a &str
+        fn validate_paths(&self, path: &str) -> ColoredString {
+            match fs::metadata(path) {
+                Ok(_) => format!("PASS : {}", &path).green(),
+                Err(_) => format!("FAIL : {:?} <-- doesn't exist", &path).red(),
+            }
+        }
+
         // Replicate function from generate_csv
         fn get_file_list(&self, root: &str) -> Vec<PathBuf> {
             WalkDir::new(root)
@@ -56,22 +67,16 @@ pub mod yaml_validator_mod {
         }
 
         /// Validate that the input fasta is infact a fasta format and count records.
-        fn validate_fasta(&self) -> String {
+        fn validate_fasta(&self) -> ColoredString {
             let reader = fasta::reader::Builder.build_from_path(&self.reference_file);
 
             let mut binding = reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
             let result = binding.records();
             let counter = result.count();
             if counter >= 1 {
-                format!(
-                    "{} ({} {} {})",
-                    "PASS".green(),
-                    "FASTA CONTAINS:".green(),
-                    counter,
-                    "H/S PAIRS".green()
-                )
+                format!("PASS : FASTA CONTAINS - {} {}", counter, "H/S PAIRS").green()
             } else {
-                format!("FAIL ({})", "NO HEADER/SEQ PAIRS".red())
+                format!("FAIL : NO HEADER/SEQ PAIRS").red()
             }
         }
 
@@ -81,12 +86,12 @@ pub mod yaml_validator_mod {
                 "{}/lineages/{}",
                 self.busco.lineages_path, self.busco.lineage
             );
-            validate_paths(&full_busco_path)
+            self.validate_paths(&full_busco_path)
         }
 
         /// Validate the location of the FASTA.GZ long read files
         fn validate_longread(&self) -> ColoredString {
-            let main_path_check = validate_paths(&self.assem_reads.read_data);
+            let main_path_check = self.validate_paths(&self.assem_reads.read_data);
 
             if main_path_check.contains("FAIL") {
                 // Check that the above top level dir is valid and if fail break function
@@ -112,17 +117,38 @@ pub mod yaml_validator_mod {
             }
         }
 
+        fn get_cram_head(&self, cram_files: &Vec<PathBuf>) -> Result<(), std::io::Error> {
+            for i in cram_files {
+                let mut reader = File::open(i).map(cram::Reader::new)?;
+                let head = reader.read_header()?;
+                let cram_obj = CRAMtags {
+                    header_sort_order: &head.header().unwrap().sort_order().unwrap().to_string(),
+                    other_header_fields: &head.header().unwrap().other_fields().shrink_to_fit(),
+                    header_read_groups: &head.read_groups().keys().map(|x| x.to_string()),
+                    reference_sequence: &head.reference_sequences().len(),
+                };
+
+                println!(
+                    "{}",
+                    format!("Confirm EOF (@??): ID WHETHER EOF EXISTS - NOODLES CRAM DOES NOT SUPPORT THE EOF CONTAINER")
+                        .yellow()
+                )
+            }
+
+            Ok(())
+        }
+
         /// Validate the location of the CRAM file as well as whether a CRAI file is with it.
         /// TODO: Validate the contents of the CRAM
-        /// - NO SQ headers
-        /// - first 100 reads and see whether they are sorted or come in pairs
-        /// - samtools quickcheck -vvv - to see whether full file file and not corrupted
+        /// - [x] NO SQ headers
+        /// - [ ] first 100 reads and see whether they are sorted or come in pairs
+        /// - [ ] samtools quickcheck -vvv - to see whether full file file and not corrupted
         fn validate_cram(&self) -> ColoredString {
-            let main_path_check = validate_paths(&self.hic_data.hic_cram);
+            let main_path_check = &self.validate_paths(&self.hic_data.hic_cram);
 
             if main_path_check.contains("FAIL") {
                 // Check that the above top level dir is valid and if fail break function
-                return main_path_check;
+                return main_path_check.clone();
             };
 
             let list_of_files = self.get_file_list(&self.hic_data.hic_cram);
@@ -137,16 +163,18 @@ pub mod yaml_validator_mod {
                 .filter(|f| !f.ends_with(".crai"))
                 .collect::<Vec<PathBuf>>();
 
+            let _ = self.get_cram_head(cram_files);
+
             if cram_files.len().eq(&crai_files.len()) && cram_files.len().ne(&0) {
                 format!(
-                    "PASS ({:?}) cram/crai = {}/{}",
+                    "PASS : {:?} : cram/crai = {}/{}",
                     cram_files,
                     cram_files.len(),
                     crai_files.len()
                 )
                 .green()
             } else {
-                format!("FAIL ({:?}) INCORRECT NUMBER OF CRAM TO CRAI", cram_files).red()
+                format!("FAIL : {:?} : INCORRECT NUMBER OF CRAM TO CRAI", cram_files).red()
             }
         }
 
@@ -155,14 +183,35 @@ pub mod yaml_validator_mod {
             // Should be const
             let aligners = vec!["bwamem2".to_string(), "minimap2".to_string()];
             if aligners.contains(&self.hic_data.hic_aligner.to_string()) {
-                format!("PASS ({})", &self.hic_data.hic_aligner).green()
+                format!("PASS : {}", &self.hic_data.hic_aligner).green()
             } else {
                 format!(
-                    "FAIL ({}) NOT IN {:?}",
+                    "FAIL : {} NOT IN {:?}",
                     &self.hic_data.hic_aligner, aligners
                 )
                 .red()
             }
+        }
+
+        fn validate_csv(&self, csv_path: &String) -> ColoredString {
+            let file = File::open(&csv_path).unwrap();
+            let name = &csv_path.split('/').collect::<Vec<&str>>();
+
+            let mut reader = ReaderBuilder::new()
+                .has_headers(true)
+                .delimiter(b',')
+                .from_reader(file);
+
+            let record = reader.records().count();
+
+            format!(
+                "PASS : {:?} : {} : {} : {}",
+                name.last().unwrap(),
+                "RECORD-COUNT: >",
+                record,
+                "<"
+            )
+            .green()
         }
 
         /// Validate the geneset location, the presence of the csv file
@@ -179,13 +228,15 @@ pub mod yaml_validator_mod {
                     "{}/{}/{}",
                     self.alignment.data_dir, self.assembly.defined_class, species_name[0]
                 );
-                exist_tuple.push(validate_paths(&full_geneset_path));
+                exist_tuple.push(self.validate_paths(&full_geneset_path));
 
                 let full_geneset_csv = format!(
                     "{}/{}/csv_data/{}-data.csv",
                     self.alignment.data_dir, self.assembly.defined_class, i
                 );
-                exist_tuple.push(validate_paths(&full_geneset_csv));
+                exist_tuple.push(self.validate_paths(&full_geneset_csv));
+
+                exist_tuple.push(self.validate_csv(&full_geneset_csv))
             }
             exist_tuple // shouldn't then use .all(|x| validate_paths(x)) to get one value because on fail we want to know which one
         }
@@ -201,7 +252,7 @@ pub mod yaml_validator_mod {
                 self.synteny.synteny_path, self.assembly.defined_class
             );
 
-            let main_path_check = validate_paths(&path_to_genome);
+            let main_path_check = self.validate_paths(&path_to_genome);
             if main_path_check.contains("FAIL") {
                 // Check that the above top level dir is valid and if fail break function
                 exist_tuple.push(main_path_check);
@@ -223,12 +274,12 @@ pub mod yaml_validator_mod {
                 let mut full_paths: Vec<ColoredString> = syntenic_genomes
                     .into_iter()
                     .map(|x| format!("{}{}.fasta", path_to_genome, x))
-                    .map(|x| validate_paths(&x))
+                    .map(|x| self.validate_paths(&x))
                     .collect();
 
                 full_paths.push(
                     format!(
-                        "AVAILABLE: {}|REQUESTED: {}",
+                        "AVAILABLE: {} | REQUESTED: {}",
                         count_found_syntenics,
                         exist_tuple.len()
                     )
@@ -249,7 +300,7 @@ pub mod yaml_validator_mod {
                 &self.kmer_profile.kmer_length.to_string()
             );
 
-            validate_paths(&ktab_path)
+            self.validate_paths(&ktab_path)
         }
 
         /// Validate whether the telomere motif is ALPHABETICAL
@@ -258,9 +309,9 @@ pub mod yaml_validator_mod {
             if self.telomere.teloseq.chars().all(char::is_alphabetic)
                 && self.telomere.teloseq.chars().collect::<Vec<_>>().len() > 3
             {
-                format!("PASS ({})", &self.telomere.teloseq).green()
+                format!("PASS : {}", &self.telomere.teloseq).green()
             } else {
-                format!("FAIL ({})", &self.telomere.teloseq).red()
+                format!("FAIL : {}", &self.telomere.teloseq).red()
             }
         }
     }
@@ -329,26 +380,6 @@ pub mod yaml_validator_mod {
         lineages_path: String,
         lineage: String,
     }
-
-    // pub fn validate_csv(path: &str) -> Result<(), Error> {
-    //     // TODO: This should get included in the validate geneset function
-    //     let file = File::open(path)?;
-
-    //     let mut reader = ReaderBuilder::new()
-    //         .has_headers(true)
-    //         .delimiter(b',')
-    //         .from_reader(file);
-
-    //     let record = reader.records().count();
-    //     println!(
-    //         "{} {} {}",
-    //         ">-GENESET-RECORD-COUNT: >".green(),
-    //         record,
-    //         "<".green()
-    //     );
-
-    //     Ok(())
-    // }
 
     fn print_pretty(input: Vec<ColoredString>) {
         for i in input {
