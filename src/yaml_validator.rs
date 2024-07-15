@@ -8,11 +8,12 @@ pub mod yaml_validator_mod {
     use std::path::PathBuf;
     use walkdir::WalkDir;
 
+    #[derive(Debug)]
     struct CRAMtags<'a> {
         header_sort_order: &'a str,
-        other_header_fields: &'a str,
+        other_header_fields: &'a Vec<String>,
         reference_sequence: &'a usize,
-        header_read_groups: &'a Vec<&'a str>,
+        header_read_groups: &'a Vec<String>,
     }
 
     // let mut reader = File::open("sample.cram").map(cram::io::Reader::new)?;
@@ -121,12 +122,28 @@ pub mod yaml_validator_mod {
             for i in cram_files {
                 let mut reader = File::open(i).map(cram::Reader::new)?;
                 let head = reader.read_header()?;
+
+                // Get read groups into a Vec otherwise you have a 100 long type that you can't do anything with.
+                let readgroups: &Vec<_> = &head
+                    .read_groups()
+                    .keys()
+                    .map(|x| x.to_string())
+                    .collect::<Vec<std::string::String>>();
+                let otherflags: &Vec<_> = &head
+                    .header()
+                    .unwrap()
+                    .other_fields()
+                    .into_iter()
+                    .map(|y| format!("{} -- {}", y.0, y.1))
+                    .collect::<Vec<std::string::String>>();
                 let cram_obj = CRAMtags {
                     header_sort_order: &head.header().unwrap().sort_order().unwrap().to_string(),
-                    other_header_fields: &head.header().unwrap().other_fields().shrink_to_fit(),
-                    header_read_groups: &head.read_groups().keys().map(|x| x.to_string()),
+                    other_header_fields: otherflags,
+                    header_read_groups: readgroups, //.map(|x| x.to_string()),
                     reference_sequence: &head.reference_sequences().len(),
                 };
+
+                println!("{:?}", cram_obj);
 
                 println!(
                     "{}",
