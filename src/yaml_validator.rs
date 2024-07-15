@@ -91,7 +91,7 @@ pub mod yaml_validator_mod {
             if counter >= 1 {
                 format!("PASS : FASTA CONTAINS - {} {}", counter, "H/S PAIRS").green()
             } else {
-                format!("FAIL : NO HEADER/SEQ PAIRS").red()
+                "FAIL : NO HEADER/SEQ PAIRS".to_string().red()
             }
         }
 
@@ -151,6 +151,8 @@ pub mod yaml_validator_mod {
                     .map(|y| format!("{} -- {}", y.0, y.1))
                     .collect::<Vec<std::string::String>>();
 
+                // The bellow is required as to_ref() isn't applicable to the underlying SAM Header obj
+                #[allow(clippy::unnecessary_to_owned)]
                 let cram_obj = CRAMtags {
                     header_sort_order: &head.header().unwrap().sort_order().unwrap().to_string(),
                     other_header_fields: otherflags,
@@ -160,11 +162,8 @@ pub mod yaml_validator_mod {
 
                 println!("{}", cram_obj);
 
-                println!(
-                    "{}",
-                    format!("Confirm EOF (@??): ID WHETHER EOF EXISTS - NOODLES CRAM DOES NOT SUPPORT THE EOF CONTAINER")
-                        .yellow()
-                )
+                let eof_string = "Confirm EOF (@??): ID WHETHER EOF EXISTS - NOODLES CRAM DOES NOT SUPPORT THE EOF CONTAINER".to_string().yellow();
+                println!("{}", eof_string)
             }
 
             Ok(())
@@ -226,7 +225,7 @@ pub mod yaml_validator_mod {
         }
 
         fn validate_csv(&self, csv_path: &String) -> ColoredString {
-            let file = File::open(&csv_path).unwrap();
+            let file = File::open(csv_path).unwrap();
             let name = &csv_path.split('/').collect::<Vec<&str>>();
 
             let mut reader = ReaderBuilder::new()
