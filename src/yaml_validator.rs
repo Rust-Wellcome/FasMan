@@ -16,6 +16,20 @@ pub mod yaml_validator_mod {
         header_read_groups: &'a Vec<String>,
     }
 
+    impl<'a> std::fmt::Display for CRAMtags<'a> {
+        // Pretty Printing CRAMtags
+        fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+            write!(
+                fmt,
+                "CRAMtags:\n\t@SO {:?}\n\t@RG {:?}\n\t@?? {:?} <-- Other Tags\n\t@SQ {:?} Counted",
+                self.header_sort_order,
+                self.header_read_groups,
+                self.other_header_fields,
+                self.reference_sequence
+            )
+        }
+    }
+
     // let mut reader = File::open("sample.cram").map(cram::io::Reader::new)?;
     // let header = reader.read_header()?;
 
@@ -136,6 +150,7 @@ pub mod yaml_validator_mod {
                     .into_iter()
                     .map(|y| format!("{} -- {}", y.0, y.1))
                     .collect::<Vec<std::string::String>>();
+
                 let cram_obj = CRAMtags {
                     header_sort_order: &head.header().unwrap().sort_order().unwrap().to_string(),
                     other_header_fields: otherflags,
@@ -143,7 +158,7 @@ pub mod yaml_validator_mod {
                     reference_sequence: &head.reference_sequences().len(),
                 };
 
-                println!("{:?}", cram_obj);
+                println!("{}", cram_obj);
 
                 println!(
                     "{}",
