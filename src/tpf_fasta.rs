@@ -159,9 +159,12 @@ pub mod tpf_fasta_mod {
     ) {
         //
         // TPF is in the input TPF order, this will continue to be the case until
-        // such time that the script starts modifying the TPF in place which
-        // we don't want to happen. Once this happens the order will no
-        // longer be guaranteed.
+        // such time that the script starts modifying the TPF in place.
+        //
+        // This now happends but this is ok as the order of the final scaffolds
+        // isn't essential as long as the data is correct.
+        //
+        // In the future an optional sort function should be added
         //
         let _data_file = File::create(output);
         let mut file = OpenOptions::new()
@@ -274,7 +277,7 @@ pub mod tpf_fasta_mod {
                             let repository = fasta::Repository::new(adapter);
                             repository
                         }
-                        Err(e) => panic!("NOODLES/STD::IO ERROR: {:?}\n Likely no fai!", e),
+                        Err(e) => panic!("NOODLES/STD::IO ERROR: {:?}\n Likely a malformatted FAI - Check that the seperators are TABS not spaces!!!", e),
                     };
 
                     //
