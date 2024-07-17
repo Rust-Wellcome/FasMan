@@ -30,14 +30,6 @@ pub mod yaml_validator_mod {
         }
     }
 
-    // let mut reader = File::open("sample.cram").map(cram::io::Reader::new)?;
-    // let header = reader.read_header()?;
-
-    // for result in reader.records(&header) {
-    //     let record = result?;
-    //     // ...
-    // }
-
     // Really each of the methods described below would be under their own struct,
     // however, many of them have cross overs so I have chosen to keep them all in
     // one place rather than split out some
@@ -153,7 +145,7 @@ pub mod yaml_validator_mod {
 
                 // The bellow is required as to_ref() isn't applicable to the underlying SAM Header obj
                 #[allow(clippy::unnecessary_to_owned)]
-                let sort_order_key: [u8; 2] = [b'S', b'O']; // Why like this?
+                let sort_order_key: [u8; 2] = [b'S', b'O'];
 
                 let cram_obj = CRAMtags {
                     header_sort_order: &head
@@ -164,7 +156,7 @@ pub mod yaml_validator_mod {
                         .unwrap()
                         .to_string(),
                     other_header_fields: otherflags,
-                    header_read_groups: readgroups, //.map(|x| x.to_string()),
+                    header_read_groups: readgroups,
                     reference_sequence: &head.reference_sequences().len(),
                 };
 
