@@ -290,7 +290,7 @@ pub mod tpf_fasta_mod {
                         let subset_tpf = subset_vec_tpf(&tpf_data, (&i.0, &i.1));
 
                         // Query the fasta for scaffold = header
-                        let sequence = fasta_repo.get(&i.0).transpose();
+                        let sequence = fasta_repo.get(&i.0.as_bytes()).transpose();
 
                         // if exists then get the seqeuence, return a tpf object
                         // containing the trimmed sequence

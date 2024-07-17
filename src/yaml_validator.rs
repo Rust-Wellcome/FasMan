@@ -134,7 +134,7 @@ pub mod yaml_validator_mod {
 
         fn get_cram_head(&self, cram_files: &Vec<PathBuf>) -> Result<(), std::io::Error> {
             for i in cram_files {
-                let mut reader = File::open(i).map(cram::Reader::new)?;
+                let mut reader = File::open(i).map(cram::io::Reader::new)?;
                 let head = reader.read_header()?;
 
                 // Get read groups into a Vec otherwise you have a 100 long type that you can't do anything with.
@@ -153,8 +153,16 @@ pub mod yaml_validator_mod {
 
                 // The bellow is required as to_ref() isn't applicable to the underlying SAM Header obj
                 #[allow(clippy::unnecessary_to_owned)]
+                let sort_order_key: [u8; 2] = [b'S', b'O']; // Why like this?
+
                 let cram_obj = CRAMtags {
-                    header_sort_order: &head.header().unwrap().sort_order().unwrap().to_string(),
+                    header_sort_order: &head
+                        .header()
+                        .unwrap()
+                        .other_fields()
+                        .get(&sort_order_key)
+                        .unwrap()
+                        .to_string(),
                     other_header_fields: otherflags,
                     header_read_groups: readgroups, //.map(|x| x.to_string()),
                     reference_sequence: &head.reference_sequences().len(),
