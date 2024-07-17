@@ -7,9 +7,9 @@ Now a collaborative programming project for the Rust@Wellcome group (Sanger).
 
 Collaborators and contributors:
 
--   figueroakl - Genome Profiling
--   stevieing - Adding tests, optimisations & CI/CD
--   dasunpubudumal- Adding tests, optimisations & CI/CD
+-   @figueroakl - Genome Profiling
+-   @stevieing - Adding tests, optimisations & CI/CD
+-   @dasunpubudumal- Adding tests, optimisations & CI/CD
 
 ---
 
@@ -18,6 +18,9 @@ This is a re-write of the current fasta manipulation scripts I've written whilst
 Currently, this program has the following arguments:
 
 -   yaml_validator (v2)
+
+    THIS FUNCTION IS SPECIFIC TO THE TREEVAL.yaml FILE
+
     Updated for new yaml style and now uses struct methods.
 
     This validates a given yaml against the TreeVal yaml standard. This is specific to the TreeVal pipeline.
@@ -34,9 +37,8 @@ Currently, this program has the following arguments:
     TODO:
 
     -   Add CRAM validator to the module
-        -   Scan for SQ records in the header - this indicates a mapped cram - BAD for pipelines that implement mapping internally - TreeVal
         -   Check for sorting order
-            -   SO record or
+            -   SO record (added now) or
             -   Take first 100 records and determine whether they are paired reads
         -   Find equiv to `samtools quickcheck -vvv` for a report on completeness of cram.
             -   if not then it will be a secondary process (external to FasMan)
@@ -53,7 +55,7 @@ Currently, this program has the following arguments:
 
     This compliments the above function by using the above generated map file to regenerate the original headers.
 
--   split_by_count (NOT YET WRITTEN)
+-   split_by_count
 
     This command will generate a directory of files made up of a user given number of sequences from the input fasta. This is useful when generating geneset data for TreeVal use or sub-setting data in a non-random manner.
     The count will be the upper limit, as there will be a left over number of records.
@@ -62,12 +64,35 @@ Currently, this program has the following arguments:
 
     `splitbycount --fasta-file ${PATH TO FASTA} --output-directory ${OUTPUT LOCATION} --count {NUMBER OF FASTA RECORDS PER FILE} --data_type ['pep','cdna', 'cds', 'rna', 'other']`
 
--   split_by_size (NOT YET WRITTEN)
+-   split_by_size
 
     This command will generate a directory of files, of user given size (in MB), generated from the input fasta. This is useful for consistent sizes of files used in geneset alignments.
     The mem-size will be approximate as some records may exceed the chosen size, inversely, there will be a final file collecting small sequences which do not meet the limit.
 
     `splitbysize --fasta-file ${PATH TO FASTA} --output-directory ${OUTPUT LOCATION} --mem-size ${SIZE OF OUTPUT FILES IN Mega Bytes}`
+
+-   generate_csv
+    THIS IS SPECIFIC TO TREEVAL AND THE STUCTURE OF THE GENESET DATA IN USE FOR IT
+
+    This function generates CSV files summarising the contents of a directory structure like shown below and saves this in csv_data dir:
+
+    ```
+    geneset_data_dir
+        |
+        insect
+            |
+            csv_data
+            |   |
+            |   ApisMellifera.AMel1-data.csv
+            |
+            ApisMellifera
+                |
+                ApisMellifera.AMel1
+                    |
+                    {pep, cdna, cds, rna}
+                        |
+                        split.fasta files
+    ```
 
 -   curate
 
@@ -87,7 +112,7 @@ Currently, this program has the following arguments:
 
     `mergehaps -p primary.fasta -s secondary.fasta -n PRI/HAP -o merged.fasta`
 
--   profile (NOT YET WRITTEN)
+-   profile (IN PROGRESS)
 
     Profile a given fasta file:
 
