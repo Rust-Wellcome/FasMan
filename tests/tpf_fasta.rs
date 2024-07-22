@@ -1,12 +1,15 @@
+use assert_cmd::Command;
 use std::fs;
-use std::io::ErrorKind;
+use std::io::{ErrorKind, Write};
+use std::ptr::write;
+
+use noodles::fasta::record::Sequence;
+use tempfile::NamedTempFile;
 // pub use fasta_manipulation::tpf_fasta::*;
 use fasta_manipulation::tpf_fasta_mod::{
     check_orientation, get_uniques, parse_seq, parse_tpf, save_to_fasta, subset_vec_tpf, NewFasta,
     Tpf,
 };
-
-use noodles::fasta::record::Sequence;
 
 fn are_files_identical(file_path1: &str, file_path2: &str) -> std::io::Result<bool> {
     match (fs::read(file_path1), fs::read(file_path2)) {
@@ -281,4 +284,41 @@ fn check_save_to_fasta() {
         Ok(_) => true,
         Err(_err) => panic!("File cannot be found!"),
     };
+}
+
+#[ignore = "Work in Progress (WIP)"]
+#[test]
+fn check_curate_fasta() {
+    let mut cmd = Command::cargo_bin("fasta_manipulation").unwrap();
+    let mut fasta = NamedTempFile::new().unwrap();
+    let mut tpf = NamedTempFile::new().unwrap();
+    let mut output = NamedTempFile::new().unwrap();
+    write!(
+        fasta,
+        r"
+        >SCAFFOLD_1
+        ATGCATGCCGTATAGA
+        >SCAFFOLD_3
+        AGTGTATTTTTATGCA
+    "
+    )
+    .unwrap();
+    write!(
+        tpf,
+        r"
+        ?	SCAFFOLD_1:1-9	RL_1	MINUS
+        GAP	TYPE-2	200
+        ?   SCAFFOLD_3:1-5  RL_2    PLUS
+        "
+    )
+    .unwrap();
+    cmd.arg("curate")
+        .arg("-f")
+        .arg(fasta.path())
+        .arg("-t")
+        .arg(tpf.path())
+        .arg("-o")
+        .arg(output.path())
+        .assert()
+        .success();
 }
