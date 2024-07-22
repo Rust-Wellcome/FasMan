@@ -21,7 +21,7 @@ kmer_profile:
 alignment:
     data_dir: /Users/dp24/Documents/FastaManipulator/TreeValTinyData/gene_alignment_data/
     common_name: "" # For future implementation (adding bee, wasp, ant etc)
-    geneset_id: "LaetiporusSulphureus.gfLaeSulp1"
+    geneset_id: "LaetiporusSulphureus.gfLaeSulp1,Iam.Fail"
     #Path should end up looking like "{{data_dir}}{{classT}}/{{common_name}}/csv_data/{{geneset}}-data.csv"
 self_comp:
     motif_len: 0
