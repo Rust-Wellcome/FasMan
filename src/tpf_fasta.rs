@@ -151,7 +151,8 @@ pub mod tpf_fasta_mod {
         uniques
     }
 
-    fn save_to_fasta(
+    // The function could take in a path where the output files are stored.
+    pub fn save_to_fasta(
         fasta_data: Vec<NewFasta>,
         tpf_data: Vec<Tpf>,
         output: &String,

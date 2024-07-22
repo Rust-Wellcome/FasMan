@@ -1,9 +1,26 @@
+use std::fs;
+use std::io::ErrorKind;
 // pub use fasta_manipulation::tpf_fasta::*;
 use fasta_manipulation::tpf_fasta_mod::{
-    check_orientation, get_uniques, parse_seq, parse_tpf, subset_vec_tpf, Tpf,
+    check_orientation, get_uniques, parse_seq, parse_tpf, save_to_fasta, subset_vec_tpf, NewFasta,
+    Tpf,
 };
 
 use noodles::fasta::record::Sequence;
+
+fn are_files_identical(file_path1: &str, file_path2: &str) -> std::io::Result<bool> {
+    match (fs::read(file_path1), fs::read(file_path2)) {
+        (Ok(contents1), Ok(contents2)) => Ok(contents1 == contents2),
+        (Err(e), _) | (_, Err(e)) => {
+            if e.kind() == ErrorKind::NotFound {
+                Err(e)
+            } else {
+                // Handle other errors (e.g., permissions issues)
+                Err(e)
+            }
+        }
+    }
+}
 
 // To test the check orientation function we need to publicly expose it
 // Is there a way to test private functions?
@@ -176,7 +193,6 @@ fn check_parse_tpf() {
     assert_eq!(tpf2.orientation, "PLUS".to_string());
 }
 
-#[ignore = "Work in progress (Still figuring out what it does)"]
 #[test]
 fn check_save_to_fasta() {
     // Inputs: Vector of NewFasta types, vector of Tpf types, output path, and n_length
@@ -202,5 +218,67 @@ fn check_save_to_fasta() {
     // - creates fixed2 variable which is fixed joined with n_string
     // - creates a variable called fixed3 which is converted to bytes and chunks it by line_len and converts it to a vector of strings
     // - iterates over the fixed3 variable and writes it to the file
-    assert!(true);
+
+    let new_fasta_items = vec![
+        NewFasta {
+            tpf: Tpf {
+                ori_scaffold: "SCAFFOLD_1".to_string(),
+                start_coord: 1,
+                end_coord: 9,
+                new_scaffold: "SUPER_1".to_string(),
+                orientation: "MINUS".to_string(),
+            },
+            sequence: "GGCATGCAT".to_string(),
+        },
+        NewFasta {
+            tpf: Tpf {
+                ori_scaffold: "SCAFFOLD_3".to_string(),
+                start_coord: 1,
+                end_coord: 5,
+                new_scaffold: "SUPER_2".to_string(),
+                orientation: "PLUS".to_string(),
+            },
+            sequence: "AGTGT".to_string(),
+        },
+    ];
+
+    let tpf_items = vec![
+        Tpf {
+            ori_scaffold: "SCAFFOLD_1".to_string(),
+            start_coord: 1,
+            end_coord: 9,
+            new_scaffold: "SUPER_1".to_string(),
+            orientation: "MINUS".to_string(),
+        },
+        Tpf {
+            ori_scaffold: "SCAFFOLD_3".to_string(),
+            start_coord: 1,
+            end_coord: 5,
+            new_scaffold: "SUPER_2".to_string(),
+            orientation: "PLUS".to_string(),
+        },
+    ];
+
+    let output = &"new.fasta".to_string();
+
+    let n_length: usize = 200;
+
+    save_to_fasta(new_fasta_items, tpf_items, output, n_length);
+
+    assert!(
+        are_files_identical(output, "test_data/iyAndFlav1/tiny/tiny_test.output.fasta").unwrap()
+    );
+
+    assert!(
+        are_files_identical("debug.txt", "test_data/iyAndFlav1/tiny/tiny_test.debug.txt").unwrap()
+    );
+
+    match fs::remove_file(output) {
+        Ok(_) => true,
+        Err(_err) => panic!("File cannot be found!"),
+    };
+    match fs::remove_file("debug.txt") {
+        Ok(_) => true,
+        Err(_err) => panic!("File cannot be found!"),
+    };
 }
