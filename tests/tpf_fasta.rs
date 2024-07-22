@@ -151,7 +151,7 @@ fn check_parse_seq_bounds_error() {
 
 #[test]
 fn check_parse_tpf() {
-    let path = "test_data/iyAndFlav1/iyAndFlav1.curated_subset.tpf".to_string();
+    let path = "test_data/iyAndFlav1/full/iyAndFlav1.curated_subset.tpf".to_string();
     let tpfs = parse_tpf(&path);
     assert_eq!(tpfs.len(), 4);
 
