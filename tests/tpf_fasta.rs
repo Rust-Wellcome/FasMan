@@ -1,7 +1,6 @@
 use assert_cmd::Command;
 use std::fs;
-use std::io::{ErrorKind, Write};
-use std::ptr::write;
+use std::io::Write;
 
 use noodles::fasta::record::Sequence;
 use tempfile::NamedTempFile;
@@ -11,19 +10,9 @@ use fasta_manipulation::tpf_fasta_mod::{
     Tpf,
 };
 
-fn are_files_identical(file_path1: &str, file_path2: &str) -> std::io::Result<bool> {
-    match (fs::read(file_path1), fs::read(file_path2)) {
-        (Ok(contents1), Ok(contents2)) => Ok(contents1 == contents2),
-        (Err(e), _) | (_, Err(e)) => {
-            if e.kind() == ErrorKind::NotFound {
-                Err(e)
-            } else {
-                // Handle other errors (e.g., permissions issues)
-                Err(e)
-            }
-        }
-    }
-}
+mod test_util;
+
+use test_util::are_files_identical;
 
 // To test the check orientation function we need to publicly expose it
 // Is there a way to test private functions?
