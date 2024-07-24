@@ -1,11 +1,11 @@
 pub mod yaml_validator_mod {
     use clap::ArgMatches;
-    use colored::{ColoredString, Colorize};
+    use colored::Colorize;
     use csv::ReaderBuilder;
     use noodles::{cram, fasta};
     use serde::{Deserialize, Serialize};
-    use std::fmt::format;
     use std::fs::{self, File};
+    use std::marker::PhantomData;
     use std::path::PathBuf;
     use walkdir::WalkDir;
 
@@ -28,7 +28,7 @@ pub mod yaml_validator_mod {
     }
 
     #[derive(Debug, Serialize, Deserialize)]
-    struct YamlResults {
+    struct YamlResults<'a> {
         ReferenceResults: String,
         CramResults: CRAMtags,
         AlignerResults: String,
@@ -38,9 +38,10 @@ pub mod yaml_validator_mod {
         KmerProfileResults: String,
         GenesetResults: Vec<String>,
         SyntenicResults: Vec<String>,
+        phantom: PhantomData<&'a String>,
     }
 
-    impl<'a> std::fmt::Display for YamlResults {
+    impl<'a> std::fmt::Display for YamlResults<'a> {
         // Pretty Printing YamlResults
         fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
             write!(
@@ -60,7 +61,7 @@ pub mod yaml_validator_mod {
         }
     }
 
-    impl YamlResults {
+    impl<'a> YamlResults<'a> {
         fn is_cram_valid(&self) -> String {
             // this should add a field to the cramresults struct
             if &self.CramResults.header_read_groups.len() >= &1 {
@@ -100,16 +101,18 @@ pub mod yaml_validator_mod {
             failures
         }
 
-        fn check_secondaries(&self, secondary_list: Vec<&Vec<String>>) -> Vec<String> {
-            let mut failures: Vec<String> = Vec::new();
-            let fails = for i in secondary_list {
-                let fails: Vec<&String> = i
+        fn check_secondaries(&'a self, secondary_list: Vec<&'a Vec<String>>) -> Vec<&String> {
+            let mut failures: Vec<&String> = Vec::new();
+            for i in secondary_list {
+                let collection = i
                     .into_iter()
                     .filter(|j| j.contains("FAIL") || j.contains("NO"))
-                    .collect();
-            };
+                    .collect::<Vec<&String>>();
 
-            for i in fails {}
+                for i in collection {
+                    failures.push(i)
+                }
+            }
 
             failures
         }
@@ -137,9 +140,6 @@ pub mod yaml_validator_mod {
 
             let failed_primary_count = &failed_primaries.len();
             let failed_secondary_count = &failed_secondary.len();
-
-            println!("{:?}", &failed_primaries);
-            println!("{:?}", &failed_secondary);
 
             if &failed_primaries.len() >= &1 {
                 println!(
@@ -212,6 +212,7 @@ pub mod yaml_validator_mod {
                 KmerProfileResults: self.validate_kmer_prof(),
                 GenesetResults: self.validate_genesets(),
                 SyntenicResults: self.validate_synteny(),
+                phantom: PhantomData,
             };
             results
         }
@@ -572,7 +573,7 @@ pub mod yaml_validator_mod {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
         let output: &bool = arguments.unwrap().get_one::<bool>("output").unwrap();
 
-        let output_file = if output.to_owned() {
+        let _output_file = if output.to_owned() {
             "./yamlresults.txt".to_string()
         } else {
             "".to_string()

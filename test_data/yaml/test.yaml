@@ -9,7 +9,7 @@ reference_file: /Users/dp24/Documents/FastaManipulator/TreeValTinyData/assembly/
 map_order: unsorted
 assem_reads:
     read_type: hifi
-    read_data: /Users/dp24/Documents/FastaManipulator/TreeValTinyData/genomic_data/pacbio/
+    read_data: /Users/dp24/Documents/FastaManipulator/TreeValTinyData/genomic_data/pacbio2/
     supplementary_data: path
 hic_data:
     hic_cram: /Users/dp24/Documents/FastaManipulator/TreeValTinyData/genomic_data/hic-arima/
