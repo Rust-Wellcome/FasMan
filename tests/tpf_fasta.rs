@@ -286,15 +286,16 @@ fn check_curate_fasta() {
     // Create temp directory that will get cleaned up
     let dir = Builder::new().prefix("local_tests").tempdir().unwrap();
 
-    // Generate paths for data
+    // Generate paths for mock files
     let fasta_path = &dir.path().join("input_fasta.fa");
     let fai_path = &dir.path().join("input_fasta.fa.fai");
+    let tpf_path = &dir.path().join("input.tpf");
 
-    // Actually generate the files
+    // Actually generate the mock files
     let mut fasta = File::create(fasta_path).unwrap();
     let mut fai = File::create(fai_path).unwrap();
+    let mut tpf = File::create(tpf_path).unwrap();
 
-    let mut tpf = NamedTempFile::new_in("test_data").unwrap();
     let output = "./output.fa";
 
     write!(
@@ -315,14 +316,11 @@ fn check_curate_fasta() {
     )
     .unwrap();
 
-    // make sure they are named right
-    println!("{:?}--{:?}", &fasta, &fai);
-
     cmd.arg("curate")
         .arg("-f")
         .arg(fasta_path)
         .arg("-t")
-        .arg(tpf.path())
+        .arg(tpf_path)
         .arg("-o")
         .arg(output)
         .assert()
