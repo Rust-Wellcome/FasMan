@@ -10,9 +10,9 @@ use fasta_manipulation::tpf_fasta_mod::{
     Tpf,
 };
 
-mod test_util;
+mod util;
 
-use test_util::are_files_identical;
+use util::are_files_identical;
 
 // To test the check orientation function we need to publicly expose it
 // Is there a way to test private functions?
