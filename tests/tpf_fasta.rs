@@ -286,7 +286,7 @@ fn check_curate_fasta() {
 
     write!(
         fai,
-        "SCAFFOLD_1	16	12	16	17
+        r"SCAFFOLD_1	16	12	16	17
         SCAFFOLD_3	16	41	16	17
         "
     )
