@@ -275,39 +275,49 @@ fn check_save_to_fasta() {
     };
 }
 
-#[ignore = "Work in Progress (WIP)"]
+//#[ignore = "Work in Progress (WIP)"]
 #[test]
 fn check_curate_fasta() {
     let mut cmd = Command::cargo_bin("fasta_manipulation").unwrap();
-    let mut fasta = NamedTempFile::new().unwrap();
-    let mut tpf = NamedTempFile::new().unwrap();
-    let mut output = NamedTempFile::new().unwrap();
+    let mut fasta = NamedTempFile::with_prefix_in("input_fa.", "test_data").unwrap(); //Being able to name these would be real handy
+    let mut fai = NamedTempFile::with_prefix_in("input_fa.fai.", "test_data").unwrap(); //Being able to name these would be real handy
+    let mut tpf = NamedTempFile::new_in("test_data").unwrap();
+    let output = "./output.fa";
+
+    write!(
+        fai,
+        "SCAFFOLD_1	16	12	16	17
+        SCAFFOLD_3	16	41	16	17
+        "
+    )
+    .unwrap();
+
     write!(
         fasta,
-        r"
-        >SCAFFOLD_1
+        r">SCAFFOLD_1
         ATGCATGCCGTATAGA
         >SCAFFOLD_3
         AGTGTATTTTTATGCA
-    "
+        "
     )
     .unwrap();
+
     write!(
         tpf,
-        r"
-        ?	SCAFFOLD_1:1-9	RL_1	MINUS
+        r"?	SCAFFOLD_1:1-9	RL_1	MINUS
         GAP	TYPE-2	200
         ?   SCAFFOLD_3:1-5  RL_2    PLUS
         "
     )
     .unwrap();
+
     cmd.arg("curate")
         .arg("-f")
         .arg(fasta.path())
         .arg("-t")
         .arg(tpf.path())
         .arg("-o")
-        .arg(output.path())
+        .arg(output)
         .assert()
         .success();
 }
