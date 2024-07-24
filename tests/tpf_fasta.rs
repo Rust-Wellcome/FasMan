@@ -1,8 +1,11 @@
 use assert_cmd::Command;
+use noodles::fasta::fai;
 use std::fs;
+use std::fs::File;
 use std::io::Write;
 
 use noodles::fasta::record::Sequence;
+use tempfile::Builder;
 use tempfile::NamedTempFile;
 // pub use fasta_manipulation::tpf_fasta::*;
 use fasta_manipulation::tpf_fasta_mod::{
@@ -279,41 +282,45 @@ fn check_save_to_fasta() {
 #[test]
 fn check_curate_fasta() {
     let mut cmd = Command::cargo_bin("fasta_manipulation").unwrap();
-    let mut fasta = NamedTempFile::with_prefix_in("input_fa.", "test_data").unwrap(); //Being able to name these would be real handy
-    let mut fai = NamedTempFile::with_prefix_in("input_fa.fai.", "test_data").unwrap(); //Being able to name these would be real handy
+
+    // Create temp directory that will get cleaned up
+    let dir = Builder::new().prefix("local_tests").tempdir().unwrap();
+
+    // Generate paths for data
+    let fasta_path = &dir.path().join("input_fasta.fa");
+    let fai_path = &dir.path().join("input_fasta.fa.fai");
+
+    // Actually generate the files
+    let mut fasta = File::create(fasta_path).unwrap();
+    let mut fai = File::create(fai_path).unwrap();
+
     let mut tpf = NamedTempFile::new_in("test_data").unwrap();
     let output = "./output.fa";
 
     write!(
         fai,
-        r"SCAFFOLD_1	16	12	16	17
-        SCAFFOLD_3	16	41	16	17
-        "
+        "SCAFFOLD_1\t16\t12\t16\t17\nSCAFFOLD_3\t16\t41\t16\t17"
     )
     .unwrap();
 
     write!(
         fasta,
-        r">SCAFFOLD_1
-        ATGCATGCCGTATAGA
-        >SCAFFOLD_3
-        AGTGTATTTTTATGCA
-        "
+        ">SCAFFOLD_1\nATGCATGCCGTATAGA\n>SCAFFOLD_3\nAGTGTATTTTTATGCA"
     )
     .unwrap();
 
     write!(
         tpf,
-        r"?	SCAFFOLD_1:1-9	RL_1	MINUS
-        GAP	TYPE-2	200
-        ?   SCAFFOLD_3:1-5  RL_2    PLUS
-        "
+        "?\tSCAFFOLD_1:1-9\tRL_1\tMINUS\nGAP\tTYPE-2\t200\n?\tSCAFFOLD_3:1-5\tRL_2\tPLUS"
     )
     .unwrap();
 
+    // make sure they are named right
+    println!("{:?}--{:?}", &fasta, &fai);
+
     cmd.arg("curate")
         .arg("-f")
-        .arg(fasta.path())
+        .arg(fasta_path)
         .arg("-t")
         .arg(tpf.path())
         .arg("-o")
