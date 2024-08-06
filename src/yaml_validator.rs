@@ -1,15 +1,189 @@
 pub mod yaml_validator_mod {
     use clap::ArgMatches;
     use colored::Colorize;
-    use csv::Error;
     use csv::ReaderBuilder;
-    use noodles::fasta;
+    use noodles::{cram, fasta};
     use serde::{Deserialize, Serialize};
     use std::fs::{self, File};
-    use std::io::ErrorKind;
     use std::path::PathBuf;
-    // Would be nice if there was a simple format_check
-    // use noodles::cram as cram;
+    use walkdir::WalkDir;
+
+    /// A function to validate a path given as a &str
+    fn validate_paths(path: &str) -> String {
+        match fs::metadata(path) {
+            Ok(_) => format!("PASS : {}", &path),
+            Err(_) => format!("FAIL : {}", &path),
+        }
+    }
+
+    // Replicate function from generate_csv
+    fn get_file_list(root: &str) -> Vec<PathBuf> {
+        WalkDir::new(root)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter(|e| e.file_type().is_file())
+            .map(|e| e.into_path())
+            .collect()
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct YamlResults {
+        ReferenceResults: String,
+        CramResults: CRAMtags,
+        AlignerResults: String,
+        LongreadResults: String,
+        BuscoResults: String,
+        TelomereResults: String,
+        KmerProfileResults: String,
+        GenesetResults: Vec<String>,
+        SyntenicResults: Vec<String>,
+    }
+
+    impl std::fmt::Display for YamlResults {
+        // Pretty Printing YamlResults
+        fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+            write!(
+                fmt,
+                "YamlResults:\n\tReference: {:#?}\n\tCram: {:#?}\n\tAligner: {:#?}\n\tLongread: {:#?}\n\tBusco: {:#?}\n\tTelomere: {:#?}\n\tKmerProfile: {:#?}\n\tGenesetPaths: {:#?}\n\tSyntenicPaths: {:#?}\n\t{:#?}",
+                &self.ReferenceResults,
+                &self.is_cram_valid(),
+                &self.AlignerResults,
+                &self.LongreadResults,
+                &self.BuscoResults,
+                &self.TelomereResults,
+                &self.KmerProfileResults,
+                &self.GenesetResults,
+                &self.SyntenicResults,
+                &self.CramResults,
+            )
+        }
+    }
+
+    impl YamlResults {
+        fn is_cram_valid(&self) -> String {
+            // this should add a field to the cramresults struct
+            if !self.CramResults.header_read_groups.is_empty() {
+                "PASS".to_string()
+            } else {
+                "FAIL".to_string()
+            }
+        }
+
+        #[allow(dead_code)]
+        fn to_stdout(&self) {
+            println!("{}", &self)
+        }
+
+        #[allow(dead_code)]
+        fn to_file(&self, output_location: String) -> Result<(), std::io::Error> {
+            let string_data = format!("YamlResults:\n\tReference: {:#?}\n\tCram: {:#?}\n\tAligner: {:#?}\n\tLongread: {:#?}\n\tBusco: {:#?}\n\tTelomere: {:#?}\n\tKmerProfile: {:#?}\n\tGenesetPaths: {:#?}\n\tSyntenicPaths: {:#?}\n\t{:#?}",
+                            &self.ReferenceResults,
+                            &self.is_cram_valid(),
+                            &self.AlignerResults,
+                            &self.LongreadResults,
+                            &self.BuscoResults,
+                            &self.TelomereResults,
+                            &self.KmerProfileResults,
+                            &self.GenesetResults,
+                            &self.SyntenicResults,
+                            &self.CramResults,
+                        );
+            fs::write(output_location, string_data)
+        }
+
+        fn check_primaries(&self, primary_list: Vec<Vec<&str>>) -> Vec<String> {
+            let mut failures = Vec::new();
+            for i in primary_list {
+                if !i[1].contains("PASS") {
+                    failures.push(format!("Failed on: {} | Value: {}", i[0], i[1]));
+                }
+            }
+            failures
+        }
+
+        #[allow(unused_variables)]
+        fn check_secondaries(&self, secondary_list: Vec<&Vec<String>>) -> Vec<String> {
+            let failures: Vec<String> = Vec::new();
+            // TODO: Complete this
+            // let fails = for i in secondary_list {
+            //     let fails: Vec<&String> = i
+            //         .into_iter()
+            //         .filter(|j| j.contains("FAIL") || j.contains("NO"))
+            //         .collect();
+            // };
+
+            // for i in fails {}
+
+            failures
+        }
+
+        /// Check the struct and check whether
+        fn to_check(&self) {
+            // Primary fields are where the program must quit
+            // and error out, these fields are essential to
+            // TreeVal.
+            // Secondary fields are those which can FAIL and
+            // will not cause a TreeVal run to fail,
+            // may cause missing data if accidentaly ommitted.
+            let primary_fields: Vec<Vec<&str>> = vec![
+                vec!["Reference", &self.ReferenceResults],
+                vec!["Aligner", &self.AlignerResults],
+                vec!["Longread Data", &self.LongreadResults],
+                vec!["Busco Paths", &self.BuscoResults],
+                vec!["Telomere Motif", &self.TelomereResults],
+            ];
+            let secondary_fields: Vec<&Vec<String>> =
+                vec![&self.GenesetResults, &self.SyntenicResults];
+
+            let failed_primaries = self.check_primaries(primary_fields);
+            let failed_secondary = self.check_secondaries(secondary_fields);
+
+            let failed_primary_count = &failed_primaries.len();
+            let failed_secondary_count = &failed_secondary.len();
+
+            println!("{:?}", &failed_primaries);
+            println!("{:?}", &failed_secondary);
+
+            if !failed_primaries.is_empty() {
+                println!(
+                    "Primary Values Failed: {}\nSecondary Values Failed: {}\nPrimary Values that failed:\n{:?}\nSecondary Values that failed (These are not essential for TreeVal):\n{:?}\n",
+                    failed_primary_count, failed_secondary_count,
+                    failed_primaries, failed_secondary
+                );
+                std::process::exit(1)
+            } else if !failed_secondary.is_empty() {
+                println!("Secondary Values Failed: {}\nSecondary Values that failed (These are not essential for TreeVal):\n{:?}\n",
+                    failed_secondary_count, failed_secondary)
+            } else {
+                println!("All passed!")
+            }
+        }
+    }
+
+    // Default allows us to create an empty Struct later on,
+    // This was helpful for breaking out of a function early
+    // without having to generate some dummy files.
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    struct CRAMtags {
+        header_sort_order: Vec<String>,
+        other_header_fields: Vec<String>,
+        reference_sequence: Vec<usize>,
+        header_read_groups: Vec<String>,
+    }
+
+    impl std::fmt::Display for CRAMtags {
+        // Pretty Printing CRAMtags
+        fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+            write!(
+                fmt,
+                "CRAMtags:\n\t@SO {:?}\n\t@RG {:?}\n\t@?? {:?} <-- Other Tags\n\t@SQ {:?} Counted",
+                self.header_sort_order,
+                self.header_read_groups,
+                self.other_header_fields,
+                self.reference_sequence
+            )
+        }
+    }
 
     #[derive(Debug, Serialize, Deserialize)]
     struct TreeValYaml {
@@ -27,8 +201,25 @@ pub mod yaml_validator_mod {
         busco: Busco,
     }
 
+    /// Struct functions
     impl TreeValYaml {
+        /// Pour the results into a results struct
+        fn into_results(self) -> YamlResults {
+            YamlResults {
+                ReferenceResults: self.validate_fasta(),
+                CramResults: self.hic_data.validate_cram().1,
+                AlignerResults: self.hic_data.validate_aligner(),
+                LongreadResults: self.assem_reads.validate_longread(),
+                BuscoResults: self.busco.validate_busco_path(),
+                TelomereResults: self.telomere.validate_telomere(),
+                KmerProfileResults: self.validate_kmer_prof(),
+                GenesetResults: self.validate_genesets(),
+                SyntenicResults: self.validate_synteny(),
+            }
+        }
+
         #[allow(dead_code)]
+        /// Validate that the input fasta is infact a fasta format and count records.
         fn validate_fasta(&self) -> String {
             let reader = fasta::reader::Builder.build_from_path(&self.reference_file);
 
@@ -36,48 +227,119 @@ pub mod yaml_validator_mod {
             let result = binding.records();
             let counter = result.count();
             if counter >= 1 {
-                format!(
-                    "{} {} {}",
-                    ">- VALID REFERENCE H/S PAIRS:".green(),
-                    counter,
-                    "H/S PAIRS".green()
-                )
+                format!("PASS : FASTA CONTAINS - {} {}", counter, "H/S PAIRS")
             } else {
-                format!("{}", "NO HEADER/SEQ PAIRS".red())
+                "FAIL : NO HEADER/SEQ PAIRS".to_string()
             }
         }
 
-        #[allow(dead_code)]
-        fn validate_busco_path(&self) -> String {
-            let full_busco_path = format!(
-                "{}/lineage/{}",
-                self.busco.lineages_path, self.busco.lineage
+        fn validate_csv(&self, csv_path: &String) -> String {
+            let file = File::open(csv_path);
+
+            match file {
+                Ok(valid_data) => {
+                    format!("PASS: {}", csv_path);
+                    let name = &csv_path.split('/').collect::<Vec<&str>>();
+
+                    let mut reader = ReaderBuilder::new()
+                        .has_headers(true)
+                        .delimiter(b',')
+                        .from_reader(valid_data);
+
+                    format!(
+                        "PASS : {:?}=RECORD-COUNT: >{}<",
+                        name.last().unwrap(),
+                        reader.records().count(),
+                    )
+                }
+                Err(error) => format!("FAIL : {}", error),
+            }
+        }
+
+        /// Validate the geneset location, the presence of the csv file
+        /// TODO: validate the contents of the csv file.
+        fn validate_genesets(&self) -> Vec<String> {
+            let mut exist_tuple = Vec::new();
+            let genesets: Vec<&str> = self.alignment.geneset_id.split(',').collect();
+
+            for i in genesets {
+                // should probably be more of a if directory and csv file exist {pass} else {fail - check for csv and directory}
+                let species_name: Vec<&str> = self.alignment.geneset_id.split('.').collect();
+
+                let full_geneset_path = format!(
+                    "{}/{}/{}",
+                    self.alignment.data_dir, self.assembly.defined_class, species_name[0]
+                );
+                exist_tuple.push(validate_paths(&full_geneset_path));
+
+                let full_geneset_csv = format!(
+                    "{}/{}/csv_data/{}-data.csv",
+                    self.alignment.data_dir, self.assembly.defined_class, i
+                );
+                exist_tuple.push(validate_paths(&full_geneset_csv));
+
+                exist_tuple.push(self.validate_csv(&full_geneset_csv))
+            }
+            exist_tuple // shouldn't then use .all(|x| validate_paths(x)) to get one value because on fail we want to know which one
+        }
+
+        /// Validate the location of the synteny fasta files
+        fn validate_synteny(&self) -> Vec<String> {
+            // Very similar to genesets
+            let mut exist_tuple = Vec::new();
+            let syntenic_genomes: Vec<&str> = self.synteny.synteny_genomes.split(',').collect();
+
+            let path_to_genome = format!(
+                "{}/{}/",
+                self.synteny.synteny_path, self.assembly.defined_class
             );
-            full_busco_path
+
+            let main_path_check = validate_paths(&path_to_genome);
+            if main_path_check.contains("FAIL") {
+                // Check that the above top level dir is valid and if fail break function
+                exist_tuple.push(main_path_check);
+                return exist_tuple;
+            }
+
+            // If the above is valid this second half of the function should then scan through the contents
+            let list_of_paths = fs::read_dir(&path_to_genome).unwrap();
+
+            let count_provided_syntenics = syntenic_genomes.len();
+            let count_found_syntenics = &list_of_paths.count();
+
+            // Fall towards more pythonic style here
+            if count_provided_syntenics <= 1 {
+                exist_tuple.push("NO SYNTENICS PROVIDED".to_string());
+                exist_tuple
+            } else {
+                // This is pretty cool, reformat the string into the required path and then run and return a function on each.
+                let mut full_paths: Vec<String> = syntenic_genomes
+                    .into_iter()
+                    .map(|x| format!("{}{}.fasta", path_to_genome, x))
+                    .map(|x| validate_paths(&x))
+                    .collect();
+
+                full_paths.push(format!(
+                    "AVAILABLE: {} | REQUESTED: {}",
+                    count_found_syntenics,
+                    exist_tuple.len()
+                ));
+
+                full_paths
+            }
         }
 
-        #[allow(dead_code)]
-        fn validate_data(&self) {
-            // list_dir(self.hic_reads.dir)
-            // if i in list == .cram {validate_cram} elif i == .fasta.gz { do i need to validate pacbio? }
-        }
+        // Validate whether a previous kmer profile exists
+        fn validate_kmer_prof(&self) -> String {
+            let ktab_path = format!(
+                "{}/k{}/{}.k{}.ktab",
+                &self.kmer_profile.dir,
+                &self.kmer_profile.kmer_length.to_string(),
+                &self.assembly.sample_id,
+                &self.kmer_profile.kmer_length.to_string()
+            );
 
-        #[allow(dead_code)]
-        fn validate_cram() {}
-
-        #[allow(dead_code)]
-        fn validate_genesets(&self) {}
-
-        #[allow(dead_code)]
-        fn validate_synteny(&self) {}
-
-        #[allow(dead_code)]
-        fn validate_kmer_prof(&self) {}
-
-        #[allow(dead_code)]
-        fn validate_telomere(&self) {
-            // make sure only AlphaNumeric
-            // and longer than 3
+            validate_paths(&ktab_path)
         }
     }
 
@@ -87,33 +349,175 @@ pub mod yaml_validator_mod {
         dir: String,
     }
 
+    impl KmerProfile {}
+
     #[derive(Debug, Serialize, Deserialize)]
     struct HicReads {
         hic_cram: String,
         hic_aligner: String,
     }
 
+    impl HicReads {
+        /// Validate the aligner against a set Vec of options
+        fn validate_aligner(&self) -> String {
+            // Should be const
+            let aligners = vec!["bwamem2".to_string(), "minimap2".to_string()];
+            if aligners.contains(&self.hic_aligner.to_string()) {
+                format!("PASS : {}", &self.hic_aligner)
+            } else {
+                format!("FAIL : {} NOT IN {:?}", &self.hic_aligner, aligners)
+            }
+        }
+
+        /// Grab the data from the cram header and generate a small report
+        fn get_cram_head(&self, cram_files: &Vec<PathBuf>) -> Result<CRAMtags, std::io::Error> {
+            let mut header_sort_order: Vec<String> = Vec::new();
+            let mut header_read_groups: Vec<String> = Vec::new();
+            let mut other_header_fields: Vec<String> = Vec::new();
+            let mut reference_sequence: Vec<usize> = Vec::new();
+
+            let sort_order_key: [u8; 2] = [b'S', b'O'];
+            for i in cram_files {
+                let mut reader = File::open(i).map(cram::io::Reader::new)?;
+                let head = reader.read_header()?;
+
+                // Get read groups into a Vec otherwise you have a 100 long type that you can't do anything with.
+                let read_groups: String = head
+                    .read_groups()
+                    .keys()
+                    .map(|x| x.to_string())
+                    .collect::<Vec<std::string::String>>()
+                    .join("-&-");
+                header_read_groups.push(read_groups);
+
+                let other_headers = head
+                    .header()
+                    .unwrap()
+                    .other_fields()
+                    .into_iter()
+                    .map(|y| format!("@{}: {}", y.0, y.1))
+                    .collect::<Vec<String>>()
+                    .join(" ");
+                other_header_fields.push(other_headers);
+
+                let x = &head
+                    .header()
+                    .unwrap()
+                    .other_fields()
+                    .get(&sort_order_key)
+                    .unwrap()
+                    .to_owned();
+                header_sort_order.push(x.to_string());
+
+                let reference_sequence_value = head.reference_sequences().len();
+                reference_sequence.push(reference_sequence_value);
+            }
+
+            let cram_ob = CRAMtags {
+                header_sort_order,
+                other_header_fields,
+                header_read_groups,
+                reference_sequence,
+            };
+            Ok(cram_ob)
+        }
+
+        /// Validate the location of the CRAM file as well as whether a CRAI file is with it.
+        /// TODO: Validate the contents of the CRAM
+        /// - [x] NO SQ headers
+        /// - [ ] first 100 reads and see whether they are sorted or come in pairs
+        /// - [ ] samtools quickcheck -vvv - to see whether full file file and not corrupted
+        fn validate_cram(&self) -> (String, CRAMtags) {
+            let main_path_check = validate_paths(&self.hic_cram);
+
+            if main_path_check.contains("FAIL") {
+                // Check that the above top level dir is valid and if fail break function
+                return (main_path_check.clone(), CRAMtags::default());
+            };
+
+            let list_of_files = get_file_list(&self.hic_cram);
+
+            let cram_files = &list_of_files
+                .clone()
+                .into_iter()
+                .filter(|f| "cram" == f.extension().unwrap().to_str().unwrap())
+                .collect::<Vec<PathBuf>>();
+            let crai_files = &list_of_files
+                .into_iter()
+                .filter(|f| "crai" == f.extension().unwrap().to_str().unwrap())
+                .collect::<Vec<PathBuf>>();
+
+            let cram_head = self.get_cram_head(cram_files).unwrap();
+
+            // If number of cram file is eq to number of crai (index) files AND cram_files doesn't eq 0
+            if cram_files.len().eq(&crai_files.len()) && cram_files.len().ne(&0) {
+                (
+                    format!(
+                        "PASS : {:?} : cram/crai = {}/{}",
+                        cram_files,
+                        cram_files.len(),
+                        crai_files.len()
+                    ),
+                    cram_head,
+                )
+            } else {
+                (
+                    format!("FAIL : {:?} : INCORRECT NUMBER OF CRAM TO CRAI", cram_files),
+                    cram_head,
+                )
+            }
+        }
+    }
+
     #[derive(Debug, Serialize, Deserialize)]
     struct Assembly {
-        assem_level: String,
-        sample_id: String,
-        latin_name: String,
+        sample_id: String,  // Anything the user wants
+        latin_name: String, // Not in use but maybe in future, how to validate a latin name. Api call with a fallback to yes... it is alphabetical
         defined_class: String,
-        assem_version: u16,
-        project_id: String,
+        assem_version: u8,  // Any number
+        project_id: String, // Can be anything the user wants, not in use
     }
 
     #[derive(Debug, Serialize, Deserialize)]
     struct AssemReads {
         read_type: String,
         read_data: String,
-        supplementary_data: String,
+        supplementary_data: String, // Not yet in use
+    }
+
+    impl AssemReads {
+        /// Validate the location of the FASTA.GZ long read files
+        fn validate_longread(&self) -> String {
+            let main_path_check = validate_paths(&self.read_data);
+
+            if main_path_check.contains("FAIL") {
+                // Check that the above top level dir is valid and if fail break function
+                return main_path_check;
+            };
+
+            let list_of_files = get_file_list(&self.read_data);
+
+            let fasta_reads = &list_of_files
+                .into_iter()
+                .filter(|f| !f.ends_with(".fasta.gz"))
+                .collect::<Vec<PathBuf>>();
+
+            if !fasta_reads.is_empty() {
+                format!(
+                    "PASS : {} : FASTA.GZ = {}",
+                    &self.read_data,
+                    fasta_reads.len() // TODO: Placeholder - Hopefully will eventually be
+                )
+            } else {
+                format!("FAIL ({}) NO READS", &self.read_data)
+            }
+        }
     }
 
     #[derive(Debug, Serialize, Deserialize)]
     struct Alignment {
         data_dir: String,
-        common_name: String,
+        common_name: String, // Not yet in use
         geneset_id: String,
     }
 
@@ -133,6 +537,20 @@ pub mod yaml_validator_mod {
         teloseq: String,
     }
 
+    impl Telomere {
+        /// Validate whether the telomere motif is ALPHABETICAL
+        /// No upper bound as motifs can be large.
+        fn validate_telomere(&self) -> String {
+            if self.teloseq.chars().all(char::is_alphabetic)
+                && self.teloseq.chars().collect::<Vec<_>>().len() > 3
+            {
+                format!("PASS : {}", &self.teloseq)
+            } else {
+                format!("FAIL : {}", &self.teloseq)
+            }
+        }
+    }
+
     #[derive(Debug, Serialize, Deserialize)]
     struct Synteny {
         synteny_path: String,
@@ -145,142 +563,26 @@ pub mod yaml_validator_mod {
         lineage: String,
     }
 
-    //
-    // CSV STRUCT
-    //
-    //#[derive(Deserialize)]
-    //struct Record {
-    //    org: String,
-    //    type: String,
-    //    data_file: String
-    //}
-
-    pub fn validate_paths(path: &str, field_id: &str) {
-        match fs::metadata(path) {
-            Ok(_) => {
-                println!(
-                    "{}{}   \t{}\t{}",
-                    ">-".green(),
-                    &field_id.green(),
-                    "| PATH EXISTS: ".green(),
-                    path.green()
-                );
-                match field_id {
-                    "REFERENCE" => validate_fasta(path),
-                    "GENESET-CSV" => {
-                        _ = validate_csv(path);
-                    }
-                    "HIC" => {}
-                    _ => println!("Error"),
-                }
-            }
-            Err(_) => println!(
-                "{}{}   \t{}\t{}",
-                "<-".red().bold(),
-                &field_id.red().bold(),
-                "| CHECK YAML!:".red().bold(),
-                path
-            ),
+    impl Busco {
+        /// Validate the location of the busco databases
+        fn validate_busco_path(&self) -> String {
+            let full_busco_path = format!("{}/lineages/{}", self.lineages_path, self.lineage);
+            validate_paths(&full_busco_path)
         }
     }
 
-    pub fn validate_fasta(path: &str) {
-        let reader = fasta::reader::Builder.build_from_path(path);
-
-        let mut binding = reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
-        let result = binding.records();
-        let counter = result.count();
-        println!(
-            "{} {} {}",
-            ">- REFERENCE H/S PAIRS:".green(),
-            counter,
-            "H/S PAIRS".green()
-        )
-    }
-
-    pub fn validate_csv(path: &str) -> Result<(), Error> {
-        let file = File::open(path)?;
-
-        let mut reader = ReaderBuilder::new()
-            .has_headers(true)
-            .delimiter(b',')
-            .from_reader(file);
-
-        let record = reader.records().count();
-        println!(
-            "{} {} {}",
-            ">-GENESET-RECORD-COUNT: >".green(),
-            record,
-            "<".green()
-        );
-
-        Ok(())
-    }
-
-    //
-    // FUNCTION: Check if pacbio has fasta.gz files, cram has cram and crai and synteny has fasta
-    //           could make this much easier and consise by passing in a list of file types to check
-    //           validatedata(path, [fa, fna, fasta])
-    //
-    pub fn validate_data(path: &str, dtype: &str) {
-        match fs::read_dir(path) {
-            Err(e) if e.kind() == ErrorKind::NotFound => {}
-            Err(e) => panic!("{} {e}", "<-DIRECTORY PATH DOESN'T EXIST: ".red().bold()),
-            Ok(data_files) => {
-                if dtype == "pacbio" {
-                    let files: Vec<PathBuf> = data_files
-                        .filter_map(|f| f.ok())
-                        .filter(|d| match d.path().extension() {
-                            None => false,
-                            Some(ex) => ex == "fasta.gz",
-                        })
-                        .map(|f| f.path())
-                        .collect();
-
-                    if files.is_empty() {
-                        println!("{}", "<-NO PACBIO DATA FILES".red())
-                    } else {
-                        println!("{} {:?}", ">-YOUR FILES ARE:".green(), &files);
-                    }
-                } else if dtype == "hic" {
-                    let files: Vec<PathBuf> = data_files
-                        .filter_map(|f| f.ok())
-                        .filter(|d| match d.path().extension() {
-                            None => false,
-                            Some(ex) => ex == "cram" || ex == "crai",
-                        })
-                        .map(|f| f.path())
-                        .collect();
-
-                    if files.is_empty() {
-                        println!("{}", "<-NO HIC DATA FILES".red())
-                    } else {
-                        println!("{} {:?}", ">-YOUR FILES ARE:".green(), &files);
-                    }
-                } else if dtype == "synteny" {
-                    let files: Vec<PathBuf> = data_files
-                        .filter_map(|f| f.ok())
-                        .filter(|d| match d.path().extension() {
-                            None => false,
-                            Some(ex) => ex == "fa" || ex == "fasta" || ex == "fna",
-                        })
-                        .map(|f| f.path())
-                        .collect();
-
-                    if files.is_empty() {
-                        println!("{}", "<-NO SYNTENIC GENOMES".red())
-                    } else {
-                        println!("{} {:?}", ">-YOUR GENOMES ARE:".green(), &files);
-                    }
-                }
-            }
-        };
-    }
-
+    #[allow(unused_variables)]
+    /// Validate the yaml file required for the TreeVal pipeline
     pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
-        let _output: &String = arguments.unwrap().get_one::<String>("output").unwrap();
-        let _verbose_flag: &bool = arguments.unwrap().get_one::<bool>("verbose").unwrap();
+        let output: &bool = arguments.unwrap().get_one::<bool>("output").unwrap();
+
+        // TODO: Complete this
+        // let output_file = if output.to_owned() {
+        //     "./yamlresults.txt".to_string()
+        // } else {
+        //     "".to_string()
+        // };
 
         println! {"Validating Yaml: {}", file.purple()};
 
@@ -288,52 +590,13 @@ pub mod yaml_validator_mod {
         let contents: TreeValYaml =
             serde_yaml::from_reader(input).expect("Unable to read from file");
 
-        println!(
-            "RUNNING VALIDATE-YAML FOR SAMPLE: {}",
-            contents.assembly.sample_id.purple()
-        );
+        let results = contents.into_results();
+        //results.to_stdout();
 
-        validate_paths(&contents.reference_file, "REFERENCE");
-        validate_paths(&contents.alignment.data_dir, "GENESET");
-        validate_paths(&contents.synteny.synteny_path, "SYNTENY");
-        validate_paths(&contents.busco.lineages_path, "BUSCO");
+        // results
+        //     .to_file(output_file)
+        //     .expect("Can't create final report");
 
-        validate_paths(&contents.assem_reads.read_data, "PACBIO");
-        validate_data(&contents.assem_reads.read_type, "pacbio");
-
-        validate_paths(&contents.hic_data.hic_cram, "HIC");
-        validate_data(&contents.hic_data.hic_aligner, "hic");
-
-        println!("{}", "CHECKING GENESET DIRECTORY RESOLVES".blue());
-        let genesets = contents.alignment.geneset_id.split(',');
-        for set in genesets {
-            let gene_alignment_path = contents.alignment.data_dir.clone()
-                + &contents.assembly.defined_class
-                + "/csv_data/"
-                + set
-                + "-data.csv";
-            validate_paths(&gene_alignment_path, "GENESET-CSV");
-        }
-
-        println!("{}", "CHECKING SYNTENY DIRECTORY RESOLVES".blue());
-        let synteny_full =
-            contents.synteny.synteny_path.clone() + &contents.assembly.defined_class + "/";
-        validate_paths(&synteny_full, "SYNTENY-FASTA");
-        validate_data(&synteny_full, "synteny");
-
-        println!("{}", "CHECKING BUSCO DIRECTORY RESOLVES".blue());
-        let busco_path =
-            contents.busco.lineages_path.clone() + "/lineages/" + &contents.busco.lineage;
-        validate_paths(&busco_path, "BUSCO-DB");
-        // NOW CHECK FOR FILES IN DIRECTORY?
-
-        println!(
-            "{}\n{}\n{}\n{}\n{}",
-            "VALIDATION COMPLETE".purple().bold(),
-            "GENERAL INFORMATION:".purple().bold(),
-            "Check the log to see what failed".bold(),
-            "FULL : ONLY synteny fails are permitted".purple(),
-            "RAPID: geneset, busco and synteny fails are permitted".purple()
-        );
+        results.to_check()
     }
 }

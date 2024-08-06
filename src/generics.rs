@@ -31,7 +31,10 @@ pub fn validate_fasta(
                 reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
             for result in binding.records() {
                 let record = result?;
-                fasta_map.insert(record.name().to_owned(), record.sequence().len());
+                fasta_map.insert(
+                    str::from_utf8(record.name())?.to_string(),
+                    record.sequence().len(),
+                );
             }
             Ok(fasta_map)
         }
