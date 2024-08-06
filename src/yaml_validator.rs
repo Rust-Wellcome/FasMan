@@ -249,7 +249,7 @@ pub mod yaml_validator_mod {
                         reader.records().count(),
                     )
                 }
-                Err(error) => return format!("FAIL : {}", error),
+                Err(error) => format!("FAIL : {}", error),
             }
         }
 
@@ -393,7 +393,8 @@ pub mod yaml_validator_mod {
                     .other_fields()
                     .into_iter()
                     .map(|y| format!("@{}: {}", y.0, y.1))
-                    .collect::<std::string::String>();
+                    .collect::<Vec<String>>()
+                    .join(" ");
                 other_header_fields.push(other_headers);
 
                 let x = &head
