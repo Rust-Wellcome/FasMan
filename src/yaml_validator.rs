@@ -71,10 +71,12 @@ pub mod yaml_validator_mod {
             }
         }
 
+        #[allow(dead_code)]
         fn to_stdout(&self) {
             println!("{}", &self)
         }
 
+        #[allow(dead_code)]
         fn to_file(&self, output_location: String) -> Result<(), std::io::Error> {
             let string_data = format!("YamlResults:\n\tReference: {:#?}\n\tCram: {:#?}\n\tAligner: {:#?}\n\tLongread: {:#?}\n\tBusco: {:#?}\n\tTelomere: {:#?}\n\tKmerProfile: {:#?}\n\tGenesetPaths: {:#?}\n\tSyntenicPaths: {:#?}\n\t{:#?}",
                             &self.ReferenceResults,
