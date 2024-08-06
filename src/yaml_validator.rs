@@ -109,7 +109,7 @@ pub mod yaml_validator_mod {
                     .collect();
             };
 
-            for i in fails {}
+            // for i in fails {}
 
             failures
         }
