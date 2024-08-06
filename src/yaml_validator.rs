@@ -1,6 +1,6 @@
 pub mod yaml_validator_mod {
     use clap::ArgMatches;
-    use colored::{Colorize};
+    use colored::Colorize;
     use csv::ReaderBuilder;
     use noodles::{cram, fasta};
     use serde::{Deserialize, Serialize};
