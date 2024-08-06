@@ -1,10 +1,9 @@
 pub mod yaml_validator_mod {
     use clap::ArgMatches;
-    use colored::{ColoredString, Colorize};
+    use colored::{Colorize};
     use csv::ReaderBuilder;
     use noodles::{cram, fasta};
     use serde::{Deserialize, Serialize};
-    use std::fmt::format;
     use std::fs::{self, File};
     use std::path::PathBuf;
     use walkdir::WalkDir;
@@ -40,7 +39,7 @@ pub mod yaml_validator_mod {
         SyntenicResults: Vec<String>,
     }
 
-    impl<'a> std::fmt::Display for YamlResults {
+    impl std::fmt::Display for YamlResults {
         // Pretty Printing YamlResults
         fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
             write!(
@@ -63,17 +62,19 @@ pub mod yaml_validator_mod {
     impl YamlResults {
         fn is_cram_valid(&self) -> String {
             // this should add a field to the cramresults struct
-            if &self.CramResults.header_read_groups.len() >= &1 {
+            if !self.CramResults.header_read_groups.is_empty() {
                 "PASS".to_string()
             } else {
                 "FAIL".to_string()
             }
         }
 
+        #[allow(dead_code)]
         fn to_stdout(&self) {
             println!("{}", &self)
         }
 
+        #[allow(dead_code)]
         fn to_file(&self, output_location: String) -> Result<(), std::io::Error> {
             let string_data = format!("YamlResults:\n\tReference: {:#?}\n\tCram: {:#?}\n\tAligner: {:#?}\n\tLongread: {:#?}\n\tBusco: {:#?}\n\tTelomere: {:#?}\n\tKmerProfile: {:#?}\n\tGenesetPaths: {:#?}\n\tSyntenicPaths: {:#?}\n\t{:#?}",
                             &self.ReferenceResults,
@@ -100,14 +101,16 @@ pub mod yaml_validator_mod {
             failures
         }
 
+        #[allow(unused_variables)]
         fn check_secondaries(&self, secondary_list: Vec<&Vec<String>>) -> Vec<String> {
-            let mut failures: Vec<String> = Vec::new();
-            let fails = for i in secondary_list {
-                let fails: Vec<&String> = i
-                    .into_iter()
-                    .filter(|j| j.contains("FAIL") || j.contains("NO"))
-                    .collect();
-            };
+            let failures: Vec<String> = Vec::new();
+            // TODO: Complete this
+            // let fails = for i in secondary_list {
+            //     let fails: Vec<&String> = i
+            //         .into_iter()
+            //         .filter(|j| j.contains("FAIL") || j.contains("NO"))
+            //         .collect();
+            // };
 
             // for i in fails {}
 
@@ -141,14 +144,14 @@ pub mod yaml_validator_mod {
             println!("{:?}", &failed_primaries);
             println!("{:?}", &failed_secondary);
 
-            if &failed_primaries.len() >= &1 {
+            if !failed_primaries.is_empty() {
                 println!(
                     "Primary Values Failed: {}\nSecondary Values Failed: {}\nPrimary Values that failed:\n{:?}\nSecondary Values that failed (These are not essential for TreeVal):\n{:?}\n",
                     failed_primary_count, failed_secondary_count,
                     failed_primaries, failed_secondary
                 );
                 std::process::exit(1)
-            } else if &failed_secondary.len() >= &1 {
+            } else if !failed_secondary.is_empty() {
                 println!("Secondary Values Failed: {}\nSecondary Values that failed (These are not essential for TreeVal):\n{:?}\n",
                     failed_secondary_count, failed_secondary)
             } else {
@@ -168,7 +171,7 @@ pub mod yaml_validator_mod {
         header_read_groups: Vec<String>,
     }
 
-    impl<'a> std::fmt::Display for CRAMtags {
+    impl std::fmt::Display for CRAMtags {
         // Pretty Printing CRAMtags
         fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
             write!(
@@ -201,8 +204,8 @@ pub mod yaml_validator_mod {
     /// Struct functions
     impl TreeValYaml {
         /// Pour the results into a results struct
-        fn into_results(&self) -> YamlResults {
-            let results = YamlResults {
+        fn into_results(self) -> YamlResults {
+            YamlResults {
                 ReferenceResults: self.validate_fasta(),
                 CramResults: self.hic_data.validate_cram().1,
                 AlignerResults: self.hic_data.validate_aligner(),
@@ -212,8 +215,7 @@ pub mod yaml_validator_mod {
                 KmerProfileResults: self.validate_kmer_prof(),
                 GenesetResults: self.validate_genesets(),
                 SyntenicResults: self.validate_synteny(),
-            };
-            results
+            }
         }
 
         /// Validate that the input fasta is infact a fasta format and count records.
@@ -444,7 +446,7 @@ pub mod yaml_validator_mod {
                 .filter(|f| "crai" == f.extension().unwrap().to_str().unwrap())
                 .collect::<Vec<PathBuf>>();
 
-            let cram_head = self.get_cram_head(&cram_files).unwrap();
+            let cram_head = self.get_cram_head(cram_files).unwrap();
 
             // If number of cram file is eq to number of crai (index) files AND cram_files doesn't eq 0
             if cram_files.len().eq(&crai_files.len()) && cram_files.len().ne(&0) {
@@ -568,16 +570,18 @@ pub mod yaml_validator_mod {
         }
     }
 
+    #[allow(unused_variables)]
     /// Validate the yaml file required for the TreeVal pipeline
     pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
         let output: &bool = arguments.unwrap().get_one::<bool>("output").unwrap();
 
-        let output_file = if output.to_owned() {
-            "./yamlresults.txt".to_string()
-        } else {
-            "".to_string()
-        };
+        // TODO: Complete this
+        // let output_file = if output.to_owned() {
+        //     "./yamlresults.txt".to_string()
+        // } else {
+        //     "".to_string()
+        // };
 
         println! {"Validating Yaml: {}", file.purple()};
 
