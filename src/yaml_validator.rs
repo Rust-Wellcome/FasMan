@@ -600,11 +600,15 @@ pub mod yaml_validator_mod {
 
         if output_to_stdout == &true {
             results.to_stdout();
-        } else if output_to_file == &true {
+        }
+
+        if output_to_file == &true {
             results
                 .to_file(output_file)
                 .expect("Can't create final report");
-        } else if output_to_pipeline == &true {
+        }
+
+        if output_to_pipeline == &true {
             results.to_check()
         }
     }
