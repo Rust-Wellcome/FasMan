@@ -571,9 +571,20 @@ pub mod yaml_validator_mod {
     /// Validate the yaml file required for the TreeVal pipeline
     pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
-        let output: &bool = arguments.unwrap().get_one::<bool>("output").unwrap();
+        let output_to_file: &bool = arguments
+            .unwrap()
+            .get_one::<bool>("output_to_file")
+            .unwrap();
+        let output_to_stdout: &bool = arguments
+            .unwrap()
+            .get_one::<bool>("output_to_stdout")
+            .unwrap();
+        let output_to_pipeline: &bool = arguments
+            .unwrap()
+            .get_one::<bool>("output_to_pipeline")
+            .unwrap();
 
-        let _output_file = if output.to_owned() {
+        let output_file = if output_to_file.to_owned() {
             "./yamlresults.txt".to_string()
         } else {
             "".to_string()
@@ -586,12 +597,15 @@ pub mod yaml_validator_mod {
             serde_yaml::from_reader(input).expect("Unable to read from file");
 
         let results = contents.into_results();
-        //results.to_stdout();
 
-        // results
-        //     .to_file(output_file)
-        //     .expect("Can't create final report");
-
-        results.to_check()
+        if output_to_stdout == &true {
+            results.to_stdout();
+        } else if output_to_file == &true {
+            results
+                .to_file(output_file)
+                .expect("Can't create final report");
+        } else if output_to_pipeline == &true {
+            results.to_check()
+        }
     }
 }
