@@ -218,6 +218,7 @@ pub mod yaml_validator_mod {
             }
         }
 
+        #[allow(dead_code)]
         /// Validate that the input fasta is infact a fasta format and count records.
         fn validate_fasta(&self) -> String {
             let reader = fasta::reader::Builder.build_from_path(&self.reference_file);

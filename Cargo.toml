@@ -17,3 +17,5 @@ serde = { version = "1.0.188", features = ["derive"] }
 serde_yaml = "0.9.25"
 stacker = "0.1.15"
 walkdir = "2.5.0"
+assert_cmd = "2.0.14"
+tempfile = "3.10.1"

@@ -11,12 +11,12 @@ pub mod tpf_fasta_mod {
     use crate::generics::validate_fasta;
 
     #[derive(Debug, Clone, PartialEq, Eq)]
-    struct Tpf {
-        ori_scaffold: String,
-        start_coord: usize,
-        end_coord: usize,
-        new_scaffold: String,
-        orientation: String,
+    pub struct Tpf {
+        pub ori_scaffold: String,
+        pub start_coord: usize,
+        pub end_coord: usize,
+        pub new_scaffold: String,
+        pub orientation: String,
     }
 
     impl std::fmt::Display for Tpf {
@@ -31,9 +31,9 @@ pub mod tpf_fasta_mod {
     }
 
     #[derive(Debug, PartialEq, Eq)]
-    struct NewFasta {
-        tpf: Tpf,
-        sequence: String,
+    pub struct NewFasta {
+        pub tpf: Tpf,
+        pub sequence: String,
     }
 
     #[derive(Debug)]
@@ -42,7 +42,7 @@ pub mod tpf_fasta_mod {
         sequence: Vec<String>,
     }
 
-    fn parse_tpf(path: &String) -> Vec<Tpf> {
+    pub fn parse_tpf(path: &String) -> Vec<Tpf> {
         // Instantiate a List of Tpf objects
         let mut all_tpf: Vec<Tpf> = Vec::new();
         for line in read_to_string(path).unwrap().lines() {
@@ -67,7 +67,7 @@ pub mod tpf_fasta_mod {
         all_tpf
     }
 
-    fn subset_vec_tpf<'a>(
+    pub fn subset_vec_tpf<'a>(
         tpf: &'a Vec<Tpf>,
         fasta: (&std::string::String, &usize),
     ) -> Vec<&'a Tpf> {
@@ -83,14 +83,14 @@ pub mod tpf_fasta_mod {
         subset_tpf
     }
 
-    fn check_orientation(
+    // The TPF will contain data in both PLUS (normal) and
+    // MINUS (inverted), if MINUS then we need to invert again
+    // and get the complement sequence
+    // We then return the sequence of the record.
+    pub fn check_orientation(
         parsed: std::option::Option<noodles::fasta::record::Sequence>,
         orientation: String,
     ) -> String {
-        // The TPF will contain data in both PLUS (normal) and
-        // MINUS (inverted), if MINUS then we need to invert again
-        // and get thr complement sequence
-        // We then return the sequence of the record.
         if orientation == "MINUS" {
             let start = Position::try_from(1).unwrap();
             let parse_orientation = parsed.unwrap();
@@ -108,7 +108,7 @@ pub mod tpf_fasta_mod {
         }
     }
 
-    fn parse_seq(
+    pub fn parse_seq(
         sequence: std::option::Option<noodles::fasta::record::Sequence>,
         tpf: Vec<&Tpf>,
     ) -> Vec<NewFasta> {
@@ -139,7 +139,7 @@ pub mod tpf_fasta_mod {
         subset_tpf
     }
 
-    fn get_uniques(tpf_list: &Vec<Tpf>) -> Vec<String> {
+    pub fn get_uniques(tpf_list: &Vec<Tpf>) -> Vec<String> {
         // Get a Vec of the uniques names in the TPF Vec
         let mut uniques: Vec<String> = Vec::new();
 
@@ -151,7 +151,8 @@ pub mod tpf_fasta_mod {
         uniques
     }
 
-    fn save_to_fasta(
+    // The function could take in a path where the output files are stored.
+    pub fn save_to_fasta(
         fasta_data: Vec<NewFasta>,
         tpf_data: Vec<Tpf>,
         output: &String,
@@ -183,6 +184,7 @@ pub mod tpf_fasta_mod {
         // This is inefficient as we are scanning through the fasta_data, uniques
         // ( equal to number of scaffolds) number of times
         // If uniques is 10 long and fasta is 100, then this is 1000 scans through in total.
+        // we need to change x to something more descriptive
         for x in uniques {
             println!("NOW WRITING DATA FOR: {:?}", &x);
             // X = "SUPER_1"
@@ -197,12 +199,14 @@ pub mod tpf_fasta_mod {
                 .expect("Unable to write to file");
 
             let mut data: MyRecord = MyRecord {
+                // would it be better to use x.clone()
                 name: "".to_string(),
                 sequence: Vec::new(),
             };
 
             x.clone_into(&mut data.name);
             for tpf in &tpf_data {
+                // x should be data.name and we should probably transfer ownership?
                 if tpf.new_scaffold == x {
                     for fasta in &fasta_data {
                         if fasta.tpf == *tpf {
