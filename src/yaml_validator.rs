@@ -144,7 +144,7 @@ pub mod yaml_validator_mod {
             let failed_primary_count = &failed_primaries.len();
             let failed_secondary_count = &failed_secondary.len();
 
-            if failed_primaries.len() >= 1 {
+            if !failed_primaries.is_empty() {
                 println!(
                     "Primary Values Failed: {}\nSecondary Values Failed: {}\nPrimary Values that failed:\n{:?}\nSecondary Values that failed (These are not essential for TreeVal):\n{:?}\n",
                     failed_primary_count, failed_secondary_count,
