@@ -27,7 +27,8 @@ pub mod exclude_seq_mod {
                 let mut binding = fasta;
                 for result in binding.records() {
                     let record = result?;
-                    if !exclusions.contains(&record.name()) {
+                    let record_name = str::from_utf8(record.name())?;
+                    if !exclusions.contains(&record_name) {
                         writer.write_record(&record)?;
                     } else {
                         println!("Found record to exclude: {:?}", &record.name());

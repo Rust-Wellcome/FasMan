@@ -106,10 +106,10 @@ pub mod split_by_size_mod {
             let mut record_list: Vec<Record> = Vec::new();
             let list: Vec<&String> = only_keys(i.1.to_owned()).collect();
             for ii in list {
-                let results = fasta_repo.get(ii).transpose();
+                let results = fasta_repo.get(ii.as_bytes()).transpose();
                 let new_rec = match results {
                     Ok(data) => {
-                        let definition = Definition::new(ii, None);
+                        let definition = Definition::new(ii.as_bytes(), None);
                         Record::new(definition, data.unwrap())
                     }
                     Err(e) => panic!("{:?}", e),
