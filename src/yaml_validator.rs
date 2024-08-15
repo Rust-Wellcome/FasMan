@@ -28,6 +28,7 @@ pub mod yaml_validator_mod {
     }
 
     #[derive(Debug, Serialize, Deserialize)]
+    // https://doc.rust-lang.org/std/marker/struct.PhantomData.html
     struct YamlResults<'a> {
         ReferenceResults: String,
         CramResults: CRAMtags,
