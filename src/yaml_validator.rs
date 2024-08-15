@@ -108,7 +108,7 @@ pub mod yaml_validator_mod {
             let mut failures: Vec<&String> = Vec::new();
             for i in secondary_list {
                 let collection = i
-                    .into_iter()
+                    .iter()
                     .filter(|j| j.contains("FAIL") || j.contains("NO"))
                     .collect::<Vec<&String>>();
 
@@ -144,7 +144,7 @@ pub mod yaml_validator_mod {
             let failed_primary_count = &failed_primaries.len();
             let failed_secondary_count = &failed_secondary.len();
 
-            if &failed_primaries.len() >= &1 {
+            if failed_primaries.len() >= 1 {
                 println!(
                     "Primary Values Failed: {}\nSecondary Values Failed: {}\nPrimary Values that failed:\n{:?}\nSecondary Values that failed (These are not essential for TreeVal):\n{:?}\n",
                     failed_primary_count, failed_secondary_count,
@@ -203,7 +203,10 @@ pub mod yaml_validator_mod {
 
     /// Struct functions
     impl TreeValYaml {
+        #[allow(clippy::let_and_return)]
         /// Pour the results into a results struct
+        /// Needs be be let_and_returned otherwise cargo will complain
+        /// there is nothing to return but clippy with complain about the let.
         fn into_results(self) -> YamlResults<'static> {
             let results = YamlResults {
                 ReferenceResults: self.validate_fasta(),

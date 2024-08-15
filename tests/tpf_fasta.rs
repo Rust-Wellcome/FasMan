@@ -1,13 +1,11 @@
 use assert_cmd::Command;
-use noodles::fasta::fai;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
 
 use noodles::fasta::record::Sequence;
 use tempfile::Builder;
-use tempfile::NamedTempFile;
-// pub use fasta_manipulation::tpf_fasta::*;
+
 use fasta_manipulation::tpf_fasta_mod::{
     check_orientation, get_uniques, parse_seq, parse_tpf, save_to_fasta, subset_vec_tpf, NewFasta,
     Tpf,
