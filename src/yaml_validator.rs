@@ -5,6 +5,7 @@ pub mod yaml_validator_mod {
     use noodles::{cram, fasta};
     use serde::{Deserialize, Serialize};
     use std::fs::{self, File};
+    use std::marker::PhantomData;
     use std::path::PathBuf;
     use walkdir::WalkDir;
 
@@ -27,7 +28,8 @@ pub mod yaml_validator_mod {
     }
 
     #[derive(Debug, Serialize, Deserialize)]
-    struct YamlResults {
+    // https://doc.rust-lang.org/std/marker/struct.PhantomData.html
+    struct YamlResults<'a> {
         ReferenceResults: String,
         CramResults: CRAMtags,
         AlignerResults: String,
@@ -37,9 +39,10 @@ pub mod yaml_validator_mod {
         KmerProfileResults: String,
         GenesetResults: Vec<String>,
         SyntenicResults: Vec<String>,
+        phantom: PhantomData<&'a String>,
     }
 
-    impl std::fmt::Display for YamlResults {
+    impl<'a> std::fmt::Display for YamlResults<'a> {
         // Pretty Printing YamlResults
         fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
             write!(
@@ -59,7 +62,7 @@ pub mod yaml_validator_mod {
         }
     }
 
-    impl YamlResults {
+    impl<'a> YamlResults<'a> {
         fn is_cram_valid(&self) -> String {
             // this should add a field to the cramresults struct
             if !self.CramResults.header_read_groups.is_empty() {
@@ -101,18 +104,18 @@ pub mod yaml_validator_mod {
             failures
         }
 
-        #[allow(unused_variables)]
-        fn check_secondaries(&self, secondary_list: Vec<&Vec<String>>) -> Vec<String> {
-            let failures: Vec<String> = Vec::new();
-            // TODO: Complete this
-            // let fails = for i in secondary_list {
-            //     let fails: Vec<&String> = i
-            //         .into_iter()
-            //         .filter(|j| j.contains("FAIL") || j.contains("NO"))
-            //         .collect();
-            // };
+        fn check_secondaries(&'a self, secondary_list: Vec<&'a Vec<String>>) -> Vec<&String> {
+            let mut failures: Vec<&String> = Vec::new();
+            for i in secondary_list {
+                let collection = i
+                    .into_iter()
+                    .filter(|j| j.contains("FAIL") || j.contains("NO"))
+                    .collect::<Vec<&String>>();
 
-            // for i in fails {}
+                for i in collection {
+                    failures.push(i)
+                }
+            }
 
             failures
         }
@@ -141,10 +144,7 @@ pub mod yaml_validator_mod {
             let failed_primary_count = &failed_primaries.len();
             let failed_secondary_count = &failed_secondary.len();
 
-            println!("{:?}", &failed_primaries);
-            println!("{:?}", &failed_secondary);
-
-            if !failed_primaries.is_empty() {
+            if &failed_primaries.len() >= &1 {
                 println!(
                     "Primary Values Failed: {}\nSecondary Values Failed: {}\nPrimary Values that failed:\n{:?}\nSecondary Values that failed (These are not essential for TreeVal):\n{:?}\n",
                     failed_primary_count, failed_secondary_count,
@@ -204,8 +204,8 @@ pub mod yaml_validator_mod {
     /// Struct functions
     impl TreeValYaml {
         /// Pour the results into a results struct
-        fn into_results(self) -> YamlResults {
-            YamlResults {
+        fn into_results(self) -> YamlResults<'static> {
+            let results = YamlResults {
                 ReferenceResults: self.validate_fasta(),
                 CramResults: self.hic_data.validate_cram().1,
                 AlignerResults: self.hic_data.validate_aligner(),
@@ -215,7 +215,9 @@ pub mod yaml_validator_mod {
                 KmerProfileResults: self.validate_kmer_prof(),
                 GenesetResults: self.validate_genesets(),
                 SyntenicResults: self.validate_synteny(),
-            }
+                phantom: PhantomData,
+            };
+            results
         }
 
         #[allow(dead_code)]
@@ -575,14 +577,24 @@ pub mod yaml_validator_mod {
     /// Validate the yaml file required for the TreeVal pipeline
     pub fn validate_yaml(arguments: std::option::Option<&ArgMatches>) {
         let file = arguments.unwrap().get_one::<String>("yaml").unwrap();
-        let output: &bool = arguments.unwrap().get_one::<bool>("output").unwrap();
+        let output_to_file: &bool = arguments
+            .unwrap()
+            .get_one::<bool>("output_to_file")
+            .unwrap();
+        let output_to_stdout: &bool = arguments
+            .unwrap()
+            .get_one::<bool>("output_to_stdout")
+            .unwrap();
+        let output_to_pipeline: &bool = arguments
+            .unwrap()
+            .get_one::<bool>("output_to_pipeline")
+            .unwrap();
 
-        // TODO: Complete this
-        // let output_file = if output.to_owned() {
-        //     "./yamlresults.txt".to_string()
-        // } else {
-        //     "".to_string()
-        // };
+        let output_file = if output_to_file.to_owned() {
+            "./yamlresults.txt".to_string()
+        } else {
+            "".to_string()
+        };
 
         println! {"Validating Yaml: {}", file.purple()};
 
@@ -591,12 +603,19 @@ pub mod yaml_validator_mod {
             serde_yaml::from_reader(input).expect("Unable to read from file");
 
         let results = contents.into_results();
-        //results.to_stdout();
 
-        // results
-        //     .to_file(output_file)
-        //     .expect("Can't create final report");
+        if output_to_stdout == &true {
+            results.to_stdout();
+        }
 
-        results.to_check()
+        if output_to_file == &true {
+            results
+                .to_file(output_file)
+                .expect("Can't create final report");
+        }
+
+        if output_to_pipeline == &true {
+            results.to_check()
+        }
     }
 }
