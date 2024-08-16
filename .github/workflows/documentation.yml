@@ -2,6 +2,7 @@ name: Docs
 on:
   push:
     branches: [main]
+
 permissions:
   contents: read
   pages: write
@@ -16,21 +17,29 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+     
       - name: Configure cache
         uses: Swatinem/rust-cache@v2
+      
       - name: Setup pages
         id: pages
         uses: actions/configure-pages@v4
+     
       - name: Clean docs folder
         run: cargo clean --doc
+     
       - name: Build docs
         run: cargo doc --no-deps
+     
       - name: Add redirect
         run: echo '<meta http-equiv="refresh" content="0;url=aoc/index.html">' > target/doc/index.html
+      
       - name: Remove lock file
         run: rm target/doc/.lock
+     
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
