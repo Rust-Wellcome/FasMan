@@ -10,7 +10,7 @@ pub mod yaml_validator_mod {
     use walkdir::WalkDir;
 
     /// A function to validate a path given as a &str
-    fn validate_paths(path: &str) -> String {
+    pub fn validate_paths(path: &str) -> String {
         match fs::metadata(path) {
             Ok(_) => format!("PASS : {}", &path),
             Err(_) => format!("FAIL : {}", &path),
@@ -18,7 +18,7 @@ pub mod yaml_validator_mod {
     }
 
     // Replicate function from generate_csv
-    fn get_file_list(root: &str) -> Vec<PathBuf> {
+    pub fn get_file_list(root: &str) -> Vec<PathBuf> {
         WalkDir::new(root)
             .into_iter()
             .filter_map(|e| e.ok())
@@ -29,17 +29,17 @@ pub mod yaml_validator_mod {
 
     #[derive(Debug, Serialize, Deserialize)]
     // https://doc.rust-lang.org/std/marker/struct.PhantomData.html
-    struct YamlResults<'a> {
-        ReferenceResults: String,
-        CramResults: CRAMtags,
-        AlignerResults: String,
-        LongreadResults: String,
-        BuscoResults: String,
-        TelomereResults: String,
-        KmerProfileResults: String,
-        GenesetResults: Vec<String>,
-        SyntenicResults: Vec<String>,
-        phantom: PhantomData<&'a String>,
+    pub struct YamlResults<'a> {
+        pub ReferenceResults: String,
+        pub CramResults: CRAMtags,
+        pub AlignerResults: String,
+        pub LongreadResults: String,
+        pub BuscoResults: String,
+        pub TelomereResults: String,
+        pub KmerProfileResults: String,
+        pub GenesetResults: Vec<String>,
+        pub SyntenicResults: Vec<String>,
+        pub phantom: PhantomData<&'a String>,
     }
 
     impl<'a> std::fmt::Display for YamlResults<'a> {
@@ -164,11 +164,11 @@ pub mod yaml_validator_mod {
     // This was helpful for breaking out of a function early
     // without having to generate some dummy files.
     #[derive(Debug, Serialize, Deserialize, Default)]
-    struct CRAMtags {
+    pub struct CRAMtags {
         header_sort_order: Vec<String>,
         other_header_fields: Vec<String>,
         reference_sequence: Vec<usize>,
-        header_read_groups: Vec<String>,
+        pub header_read_groups: Vec<String>,
     }
 
     impl std::fmt::Display for CRAMtags {
