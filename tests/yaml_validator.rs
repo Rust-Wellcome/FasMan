@@ -1,4 +1,4 @@
-use fasta_manipulation::yaml_validator_mod::{get_file_list, validate_paths, YamlResults};
+use fasta_manipulation::yaml_validator_mod::{get_file_list, validate_paths};
 use std::path::PathBuf;
 
 #[test]
@@ -10,7 +10,7 @@ fn check_validate_paths() {
 #[test]
 fn check_get_file_list() {
     let path = "test_data/iyAndFlav1".to_string();
-    let expected_file_list: Vec<PathBuf> = vec![
+    let expected_file_list = vec![
         PathBuf::from("test_data/iyAndFlav1/full/iyAndFlav1_subset.fa.fai"),
         PathBuf::from("test_data/iyAndFlav1/full/iyAndFlav1_subset.fa"),
         PathBuf::from("test_data/iyAndFlav1/full/iyAndFlav1.curated_subset.tpf"),
@@ -23,7 +23,8 @@ fn check_get_file_list() {
         PathBuf::from("test_data/iyAndFlav1/tiny/tiny_test.fa"),
         PathBuf::from("test_data/iyAndFlav1/tiny/tiny_test.fa.fai"),
         PathBuf::from("test_data/iyAndFlav1/tiny/tiny_test.debug.txt"),
-    ];
-    let file_list = get_file_list(&path);
+    ]
+    .sort();
+    let file_list = get_file_list(&path).sort();
     assert_eq!(expected_file_list, file_list);
 }
