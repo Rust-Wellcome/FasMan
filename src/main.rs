@@ -26,8 +26,8 @@ mod generics;
 mod tpf_fasta;
 use crate::tpf_fasta::tpf_fasta_mod::curate_fasta;
 
-mod exclude_seq;
-use crate::exclude_seq::exclude_seq_mod::filter_fasta;
+mod filter_fasta;
+use crate::filter_fasta::filter_fasta_mod::filter_fasta;
 
 fn main() -> Result<(), Error> {
     let split_options = ["pep", "cds", "cdna", "rna", "other"];
@@ -272,7 +272,6 @@ fn main() -> Result<(), Error> {
             .about("Filter a given list of sequences from fasta file")
             .arg(
                 Arg::new("fasta")
-                    .short('f')
                     .required(true)
                     .help("A fasta file for processing")
             )
@@ -285,7 +284,16 @@ fn main() -> Result<(), Error> {
             .arg(
                 Arg::new("filter_list")
                     .short('l')
+                    .required(false)
+                    .default_value("None")
                     .help("A string comma-separated list of sequence names to exclude from the final fasta")
+            )
+            .arg(
+                Arg::new("filter_file")
+                    .short('f')
+                    .required(false)
+                    .default_value("None")
+                    .help("A txt file (such as names.lst) with a sequence header per line to exclude from a final fasta file")
             )
     )
     .subcommand(
