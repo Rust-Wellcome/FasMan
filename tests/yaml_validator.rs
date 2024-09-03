@@ -1,4 +1,6 @@
-use fasta_manipulation::yaml_validator_mod::{get_file_list, validate_paths, CRAMtags, YamlResults};
+use fasta_manipulation::yaml_validator_mod::{
+    get_file_list, validate_paths, CRAMtags, YamlResults,
+};
 use std::path::PathBuf;
 
 #[test]
@@ -68,11 +70,17 @@ fn check_check_primaries_with_all_fails() {
         ..Default::default()
     };
     let failures = yaml_results.check_primaries(primaries);
-    assert_eq!(failures.first().unwrap(), "Failed on: Reference | Value: FAIL");
+    assert_eq!(
+        failures.first().unwrap(),
+        "Failed on: Reference | Value: FAIL"
+    );
     assert_eq!(failures[1], "Failed on: Aligner | Value: FAIL");
     assert_eq!(failures[2], "Failed on: Longread Data | Value: FAIL");
     assert_eq!(failures[3], "Failed on: Busco Paths | Value: FAIL");
-    assert_eq!(failures.last().unwrap(), "Failed on: Telomere Motif | Value: FAIL")
+    assert_eq!(
+        failures.last().unwrap(),
+        "Failed on: Telomere Motif | Value: FAIL"
+    )
 }
 
 #[test]
@@ -104,7 +112,13 @@ fn check_check_primaries_with_fails_and_passes() {
         ..Default::default()
     };
     let failures = yaml_results.check_primaries(primaries);
-    assert_eq!(failures.first().unwrap(), "Failed on: Reference | Value: FAIL");
+    assert_eq!(
+        failures.first().unwrap(),
+        "Failed on: Reference | Value: FAIL"
+    );
     assert_eq!(failures[1], "Failed on: Busco Paths | Value: FAIL");
-    assert_eq!(failures.last().unwrap(), "Failed on: Telomere Motif | Value: FAIL")
+    assert_eq!(
+        failures.last().unwrap(),
+        "Failed on: Telomere Motif | Value: FAIL"
+    )
 }
