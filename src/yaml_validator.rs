@@ -27,7 +27,7 @@ pub mod yaml_validator_mod {
             .collect()
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Default)]
     // https://doc.rust-lang.org/std/marker/struct.PhantomData.html
     pub struct YamlResults<'a> {
         pub reference_results: String,
@@ -63,7 +63,7 @@ pub mod yaml_validator_mod {
     }
 
     impl<'a> YamlResults<'a> {
-        fn is_cram_valid(&self) -> String {
+        pub fn is_cram_valid(&self) -> String {
             // this should add a field to the cramresults struct
             if !self.cram_results.header_read_groups.is_empty() {
                 "PASS".to_string()
@@ -94,7 +94,8 @@ pub mod yaml_validator_mod {
             fs::write(output_location, string_data)
         }
 
-        fn check_primaries(&self, primary_list: Vec<Vec<&str>>) -> Vec<String> {
+        // Might need to consider why this has been made an associated function with YamlResults
+        pub fn check_primaries(&self, primary_list: Vec<Vec<&str>>) -> Vec<String> {
             let mut failures = Vec::new();
             for i in primary_list {
                 if !i[1].contains("PASS") {
@@ -165,9 +166,9 @@ pub mod yaml_validator_mod {
     // without having to generate some dummy files.
     #[derive(Debug, Serialize, Deserialize, Default)]
     pub struct CRAMtags {
-        header_sort_order: Vec<String>,
-        other_header_fields: Vec<String>,
-        reference_sequence: Vec<usize>,
+        pub header_sort_order: Vec<String>,
+        pub other_header_fields: Vec<String>,
+        pub reference_sequence: Vec<usize>,
         pub header_read_groups: Vec<String>,
     }
 
