@@ -105,7 +105,9 @@ pub mod yaml_validator_mod {
             failures
         }
 
-        fn check_secondaries(&'a self, secondary_list: Vec<&'a Vec<String>>) -> Vec<&String> {
+        // Check why this function accepts a Vec<&Vec<String>> while check_primaries accepts
+        // Vec<Vec<&str>>
+        pub fn check_secondaries(&'a self, secondary_list: Vec<&'a Vec<String>>) -> Vec<&String> {
             let mut failures: Vec<&String> = Vec::new();
             for i in secondary_list {
                 let collection = i

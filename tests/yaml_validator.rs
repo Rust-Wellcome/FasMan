@@ -122,3 +122,62 @@ fn check_check_primaries_with_fails_and_passes() {
         "Failed on: Telomere Motif | Value: FAIL"
     )
 }
+
+#[test]
+fn check_check_secondaries_for_all_pass() {
+    let vec_one = vec!["PASS".to_string()];
+    let vec_two = vec!["PASS".to_string()];
+    let vec_three = vec!["PASS".to_string()];
+    let secondaries = vec![&vec_one, &vec_two, &vec_three];
+    let yaml_results = YamlResults {
+        ..Default::default()
+    };
+    let failures = yaml_results.check_secondaries(secondaries);
+    assert!(failures.is_empty())
+}
+
+#[test]
+fn check_check_secondaries_for_all_fails() {
+    let vec_one = vec!["FAIL".to_string()];
+    let vec_two = vec!["FAIL".to_string()];
+    let vec_three = vec!["FAIL".to_string()];
+    let secondaries = vec![&vec_one, &vec_two, &vec_three];
+    let yaml_results = YamlResults {
+        ..Default::default()
+    };
+    let failures = yaml_results.check_secondaries(secondaries);
+    assert_eq!(*failures.first().unwrap(), "FAIL");
+    assert_eq!(failures[1], "FAIL");
+    assert_eq!(*failures.last().unwrap(), "FAIL");
+}
+
+#[test]
+fn check_check_secondaries_for_all_nos() {
+    let vec_one = vec!["NO".to_string()];
+    let vec_two = vec!["NO".to_string()];
+    let vec_three = vec!["NO".to_string()];
+    let secondaries = vec![&vec_one, &vec_two, &vec_three];
+    let yaml_results = YamlResults {
+        ..Default::default()
+    };
+    let failures = yaml_results.check_secondaries(secondaries);
+    assert_eq!(*failures.first().unwrap(), "NO");
+    assert_eq!(failures[1], "NO");
+    assert_eq!(*failures.last().unwrap(), "NO");
+}
+
+#[test]
+fn check_check_secondaries_for_fails_and_nos() {
+    let vec_one = vec!["FAIL".to_string()];
+    let vec_two = vec!["NO".to_string()];
+    let vec_three = vec!["FAIL".to_string()];
+    let vec_four = vec!["PASS".to_string()];
+    let secondaries = vec![&vec_one, &vec_two, &vec_three, &vec_four];
+    let yaml_results = YamlResults {
+        ..Default::default()
+    };
+    let failures = yaml_results.check_secondaries(secondaries);
+    assert_eq!(*failures.first().unwrap(), "FAIL");
+    assert_eq!(failures[1], "NO");
+    assert_eq!(*failures.last().unwrap(), "FAIL");
+}
