@@ -30,15 +30,15 @@ pub mod yaml_validator_mod {
     #[derive(Debug, Serialize, Deserialize)]
     // https://doc.rust-lang.org/std/marker/struct.PhantomData.html
     pub struct YamlResults<'a> {
-        pub ReferenceResults: String,
-        pub CramResults: CRAMtags,
-        pub AlignerResults: String,
-        pub LongreadResults: String,
-        pub BuscoResults: String,
-        pub TelomereResults: String,
-        pub KmerProfileResults: String,
-        pub GenesetResults: Vec<String>,
-        pub SyntenicResults: Vec<String>,
+        pub reference_results: String,
+        pub cram_results: CRAMtags,
+        pub aligner_results: String,
+        pub longread_results: String,
+        pub busco_results: String,
+        pub telomere_results: String,
+        pub kmer_profile_results: String,
+        pub geneset_results: Vec<String>,
+        pub syntenic_results: Vec<String>,
         pub phantom: PhantomData<&'a String>,
     }
 
@@ -48,16 +48,16 @@ pub mod yaml_validator_mod {
             write!(
                 fmt,
                 "YamlResults:\n\tReference: {:#?}\n\tCram: {:#?}\n\tAligner: {:#?}\n\tLongread: {:#?}\n\tBusco: {:#?}\n\tTelomere: {:#?}\n\tKmerProfile: {:#?}\n\tGenesetPaths: {:#?}\n\tSyntenicPaths: {:#?}\n\t{:#?}",
-                &self.ReferenceResults,
+                &self.reference_results,
                 &self.is_cram_valid(),
-                &self.AlignerResults,
-                &self.LongreadResults,
-                &self.BuscoResults,
-                &self.TelomereResults,
-                &self.KmerProfileResults,
-                &self.GenesetResults,
-                &self.SyntenicResults,
-                &self.CramResults,
+                &self.aligner_results,
+                &self.longread_results,
+                &self.busco_results,
+                &self.telomere_results,
+                &self.kmer_profile_results,
+                &self.geneset_results,
+                &self.syntenic_results,
+                &self.cram_results,
             )
         }
     }
@@ -65,7 +65,7 @@ pub mod yaml_validator_mod {
     impl<'a> YamlResults<'a> {
         fn is_cram_valid(&self) -> String {
             // this should add a field to the cramresults struct
-            if !self.CramResults.header_read_groups.is_empty() {
+            if !self.cram_results.header_read_groups.is_empty() {
                 "PASS".to_string()
             } else {
                 "FAIL".to_string()
@@ -80,16 +80,16 @@ pub mod yaml_validator_mod {
         #[allow(dead_code)]
         fn to_file(&self, output_location: String) -> Result<(), std::io::Error> {
             let string_data = format!("YamlResults:\n\tReference: {:#?}\n\tCram: {:#?}\n\tAligner: {:#?}\n\tLongread: {:#?}\n\tBusco: {:#?}\n\tTelomere: {:#?}\n\tKmerProfile: {:#?}\n\tGenesetPaths: {:#?}\n\tSyntenicPaths: {:#?}\n\t{:#?}",
-                            &self.ReferenceResults,
-                            &self.is_cram_valid(),
-                            &self.AlignerResults,
-                            &self.LongreadResults,
-                            &self.BuscoResults,
-                            &self.TelomereResults,
-                            &self.KmerProfileResults,
-                            &self.GenesetResults,
-                            &self.SyntenicResults,
-                            &self.CramResults,
+                                      &self.reference_results,
+                                      &self.is_cram_valid(),
+                                      &self.aligner_results,
+                                      &self.longread_results,
+                                      &self.busco_results,
+                                      &self.telomere_results,
+                                      &self.kmer_profile_results,
+                                      &self.geneset_results,
+                                      &self.syntenic_results,
+                                      &self.cram_results,
                         );
             fs::write(output_location, string_data)
         }
@@ -129,14 +129,14 @@ pub mod yaml_validator_mod {
             // will not cause a TreeVal run to fail,
             // may cause missing data if accidentaly ommitted.
             let primary_fields: Vec<Vec<&str>> = vec![
-                vec!["Reference", &self.ReferenceResults],
-                vec!["Aligner", &self.AlignerResults],
-                vec!["Longread Data", &self.LongreadResults],
-                vec!["Busco Paths", &self.BuscoResults],
-                vec!["Telomere Motif", &self.TelomereResults],
+                vec!["Reference", &self.reference_results],
+                vec!["Aligner", &self.aligner_results],
+                vec!["Longread Data", &self.longread_results],
+                vec!["Busco Paths", &self.busco_results],
+                vec!["Telomere Motif", &self.telomere_results],
             ];
             let secondary_fields: Vec<&Vec<String>> =
-                vec![&self.GenesetResults, &self.SyntenicResults];
+                vec![&self.geneset_results, &self.syntenic_results];
 
             let failed_primaries = self.check_primaries(primary_fields);
             let failed_secondary = self.check_secondaries(secondary_fields);
@@ -209,15 +209,15 @@ pub mod yaml_validator_mod {
         /// there is nothing to return but clippy with complain about the let.
         fn into_results(self) -> YamlResults<'static> {
             let results = YamlResults {
-                ReferenceResults: self.validate_fasta(),
-                CramResults: self.hic_data.validate_cram().1,
-                AlignerResults: self.hic_data.validate_aligner(),
-                LongreadResults: self.assem_reads.validate_longread(),
-                BuscoResults: self.busco.validate_busco_path(),
-                TelomereResults: self.telomere.validate_telomere(),
-                KmerProfileResults: self.validate_kmer_prof(),
-                GenesetResults: self.validate_genesets(),
-                SyntenicResults: self.validate_synteny(),
+                reference_results: self.validate_fasta(),
+                cram_results: self.hic_data.validate_cram().1,
+                aligner_results: self.hic_data.validate_aligner(),
+                longread_results: self.assem_reads.validate_longread(),
+                busco_results: self.busco.validate_busco_path(),
+                telomere_results: self.telomere.validate_telomere(),
+                kmer_profile_results: self.validate_kmer_prof(),
+                geneset_results: self.validate_genesets(),
+                syntenic_results: self.validate_synteny(),
                 phantom: PhantomData,
             };
             results
