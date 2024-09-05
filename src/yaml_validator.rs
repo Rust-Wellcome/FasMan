@@ -72,7 +72,8 @@ pub mod yaml_validator_mod {
             }
         }
 
-        #[allow(dead_code)]
+        // Might worth checking the use of this function, as it can directly be invoked without
+        // declaring a function with println! macro.
         fn to_stdout(&self) {
             println!("{}", &self)
         }
