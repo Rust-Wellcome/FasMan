@@ -189,20 +189,20 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct TreeValYaml {
-        assembly: Assembly,
-        reference_file: String,
-        map_order: String,
-        assem_reads: AssemReads,
-        hic_data: HicReads,
-        kmer_profile: KmerProfile,
-        alignment: Alignment,
-        self_comp: SelfComp,
-        intron: Intron,
-        telomere: Telomere,
-        synteny: Synteny,
-        busco: Busco,
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct TreeValYaml {
+        pub assembly: Assembly,
+        pub reference_file: String,
+        pub map_order: String,
+        pub assem_reads: AssemReads,
+        pub hic_data: HicReads,
+        pub kmer_profile: KmerProfile,
+        pub alignment: Alignment,
+        pub self_comp: SelfComp,
+        pub intron: Intron,
+        pub telomere: Telomere,
+        pub synteny: Synteny,
+        pub busco: Busco,
     }
 
     /// Struct functions
@@ -229,7 +229,8 @@ pub mod yaml_validator_mod {
 
         #[allow(dead_code)]
         /// Validate that the input fasta is infact a fasta format and count records.
-        fn validate_fasta(&self) -> String {
+        /// is this checking it is a fasta format or just that it has records?
+        pub fn validate_fasta(&self) -> String {
             let reader = fasta::reader::Builder.build_from_path(&self.reference_file);
 
             let mut binding = reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
@@ -242,7 +243,8 @@ pub mod yaml_validator_mod {
             }
         }
 
-        fn validate_csv(&self, csv_path: &String) -> String {
+        /// Are there standard functions to do this?
+        pub fn validate_csv(&self, csv_path: &String) -> String {
             let file = File::open(csv_path);
 
             match file {
@@ -352,16 +354,16 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct KmerProfile {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct KmerProfile {
         kmer_length: u16,
         dir: String,
     }
 
     impl KmerProfile {}
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct HicReads {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct HicReads {
         hic_cram: String,
         hic_aligner: String,
     }
@@ -478,8 +480,8 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Assembly {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Assembly {
         sample_id: String,  // Anything the user wants
         latin_name: String, // Not in use but maybe in future, how to validate a latin name. Api call with a fallback to yes... it is alphabetical
         defined_class: String,
@@ -487,8 +489,8 @@ pub mod yaml_validator_mod {
         project_id: String, // Can be anything the user wants, not in use
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct AssemReads {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct AssemReads {
         read_type: String,
         read_data: String,
         supplementary_data: String, // Not yet in use
@@ -523,26 +525,26 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Alignment {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Alignment {
         data_dir: String,
         common_name: String, // Not yet in use
         geneset_id: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct SelfComp {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct SelfComp {
         motif_len: u16,
         mummer_chunk: u16,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Intron {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Intron {
         size: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Telomere {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Telomere {
         teloseq: String,
     }
 
@@ -560,14 +562,14 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Synteny {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Synteny {
         synteny_path: String,
         synteny_genomes: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Busco {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Busco {
         lineages_path: String,
         lineage: String,
     }

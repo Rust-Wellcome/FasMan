@@ -1,5 +1,5 @@
 use fasta_manipulation::yaml_validator_mod::{
-    get_file_list, validate_paths, CRAMtags, YamlResults,
+    get_file_list, validate_paths, CRAMtags, TreeValYaml, YamlResults,
 };
 use std::path::PathBuf;
 
@@ -180,4 +180,38 @@ fn check_check_secondaries_for_fails_and_nos() {
     assert_eq!(*failures.first().unwrap(), "FAIL");
     assert_eq!(failures[1], "NO");
     assert_eq!(*failures.last().unwrap(), "FAIL");
+}
+
+#[test]
+fn check_validate_fasta() {
+    let tree_val_yaml = TreeValYaml {
+        reference_file: "test_data/iyAndFlav1/tiny/tiny_test.fa".to_string(),
+        ..Default::default()
+    };
+
+    assert!(tree_val_yaml.validate_fasta().contains("PASS"));
+
+    let tree_val_yaml = TreeValYaml {
+        reference_file: "test_data/iyAndFlav1/tiny/empty_file.txt".to_string(),
+        ..Default::default()
+    };
+    assert!(tree_val_yaml.validate_fasta().contains("FAIL"));
+}
+
+#[test]
+fn check_validate_csv() {
+    let tree_val_yaml = TreeValYaml {
+        ..Default::default()
+    };
+
+    assert!(tree_val_yaml
+        .validate_csv(&"test_data/iyAndFlav1/tiny/valid_csv.csv".to_string())
+        .contains("PASS"));
+
+    let tree_val_yaml = TreeValYaml {
+        ..Default::default()
+    };
+    assert!(tree_val_yaml
+        .validate_csv(&"test_data/iyAndFlav1/tiny/empty_file.csv".to_string())
+        .contains("FAIL"));
 }
