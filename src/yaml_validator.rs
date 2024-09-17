@@ -249,7 +249,7 @@ pub mod yaml_validator_mod {
 
             match file {
                 Ok(valid_data) => {
-                    format!("PASS: {}", csv_path);
+                    // format!("PASS: {}", csv_path);
                     let name = &csv_path.split('/').collect::<Vec<&str>>();
 
                     let mut reader = ReaderBuilder::new()
