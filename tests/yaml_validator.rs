@@ -1,5 +1,5 @@
 use fasta_manipulation::yaml_validator_mod::{
-    get_file_list, validate_paths, CRAMtags, TreeValYaml, YamlResults,
+    get_file_list, validate_paths, CRAMtags, HicReads, TreeValYaml, YamlResults,
 };
 use std::path::PathBuf;
 
@@ -214,4 +214,30 @@ fn check_validate_csv() {
     assert!(tree_val_yaml
         .validate_csv(&"test_data/iyAndFlav1/tiny/empty_file.csv".to_string())
         .contains("FAIL"));
+}
+
+#[test]
+fn check_validate_aligner_for_pass() {
+    let hic_reads_bwamem2 = HicReads {
+        hic_aligner: "bwamem2".to_string(),
+        ..Default::default()
+    };
+    let hic_reads_minimap2 = HicReads {
+        hic_aligner: "minimap2".to_string(),
+        ..Default::default()
+    };
+    assert_eq!("PASS : bwamem2", hic_reads_bwamem2.validate_aligner());
+    assert_eq!("PASS : minimap2", hic_reads_minimap2.validate_aligner());
+}
+
+#[test]
+fn check_validate_aligner_for_fail() {
+    let hic_reads = HicReads {
+        hic_aligner: "bwa".to_string(),
+        ..Default::default()
+    };
+    assert_eq!(
+        "FAIL : bwa NOT IN [\"bwamem2\", \"minimap2\"]",
+        hic_reads.validate_aligner()
+    );
 }

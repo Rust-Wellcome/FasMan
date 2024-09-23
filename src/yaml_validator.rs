@@ -364,13 +364,13 @@ pub mod yaml_validator_mod {
 
     #[derive(Debug, Serialize, Deserialize, Default)]
     pub struct HicReads {
-        hic_cram: String,
-        hic_aligner: String,
+        pub hic_cram: String,
+        pub hic_aligner: String,
     }
 
     impl HicReads {
         /// Validate the aligner against a set Vec of options
-        fn validate_aligner(&self) -> String {
+        pub fn validate_aligner(&self) -> String {
             // Should be const
             let aligners = vec!["bwamem2".to_string(), "minimap2".to_string()];
             if aligners.contains(&self.hic_aligner.to_string()) {
