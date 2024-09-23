@@ -10,7 +10,7 @@ pub mod yaml_validator_mod {
     use walkdir::WalkDir;
 
     /// A function to validate a path given as a &str
-    fn validate_paths(path: &str) -> String {
+    pub fn validate_paths(path: &str) -> String {
         match fs::metadata(path) {
             Ok(_) => format!("PASS : {}", &path),
             Err(_) => format!("FAIL : {}", &path),
@@ -18,7 +18,7 @@ pub mod yaml_validator_mod {
     }
 
     // Replicate function from generate_csv
-    fn get_file_list(root: &str) -> Vec<PathBuf> {
+    pub fn get_file_list(root: &str) -> Vec<PathBuf> {
         WalkDir::new(root)
             .into_iter()
             .filter_map(|e| e.ok())
@@ -27,19 +27,19 @@ pub mod yaml_validator_mod {
             .collect()
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
+    #[derive(Debug, Serialize, Deserialize, Default)]
     // https://doc.rust-lang.org/std/marker/struct.PhantomData.html
-    struct YamlResults<'a> {
-        ReferenceResults: String,
-        CramResults: CRAMtags,
-        AlignerResults: String,
-        LongreadResults: String,
-        BuscoResults: String,
-        TelomereResults: String,
-        KmerProfileResults: String,
-        GenesetResults: Vec<String>,
-        SyntenicResults: Vec<String>,
-        phantom: PhantomData<&'a String>,
+    pub struct YamlResults<'a> {
+        pub reference_results: String,
+        pub cram_results: CRAMtags,
+        pub aligner_results: String,
+        pub longread_results: String,
+        pub busco_results: String,
+        pub telomere_results: String,
+        pub kmer_profile_results: String,
+        pub geneset_results: Vec<String>,
+        pub syntenic_results: Vec<String>,
+        pub phantom: PhantomData<&'a String>,
     }
 
     impl<'a> std::fmt::Display for YamlResults<'a> {
@@ -48,31 +48,32 @@ pub mod yaml_validator_mod {
             write!(
                 fmt,
                 "YamlResults:\n\tReference: {:#?}\n\tCram: {:#?}\n\tAligner: {:#?}\n\tLongread: {:#?}\n\tBusco: {:#?}\n\tTelomere: {:#?}\n\tKmerProfile: {:#?}\n\tGenesetPaths: {:#?}\n\tSyntenicPaths: {:#?}\n\t{:#?}",
-                &self.ReferenceResults,
+                &self.reference_results,
                 &self.is_cram_valid(),
-                &self.AlignerResults,
-                &self.LongreadResults,
-                &self.BuscoResults,
-                &self.TelomereResults,
-                &self.KmerProfileResults,
-                &self.GenesetResults,
-                &self.SyntenicResults,
-                &self.CramResults,
+                &self.aligner_results,
+                &self.longread_results,
+                &self.busco_results,
+                &self.telomere_results,
+                &self.kmer_profile_results,
+                &self.geneset_results,
+                &self.syntenic_results,
+                &self.cram_results,
             )
         }
     }
 
     impl<'a> YamlResults<'a> {
-        fn is_cram_valid(&self) -> String {
+        pub fn is_cram_valid(&self) -> String {
             // this should add a field to the cramresults struct
-            if !self.CramResults.header_read_groups.is_empty() {
+            if !self.cram_results.header_read_groups.is_empty() {
                 "PASS".to_string()
             } else {
                 "FAIL".to_string()
             }
         }
 
-        #[allow(dead_code)]
+        // Might worth checking the use of this function, as it can directly be invoked without
+        // declaring a function with println! macro.
         fn to_stdout(&self) {
             println!("{}", &self)
         }
@@ -80,21 +81,22 @@ pub mod yaml_validator_mod {
         #[allow(dead_code)]
         fn to_file(&self, output_location: String) -> Result<(), std::io::Error> {
             let string_data = format!("YamlResults:\n\tReference: {:#?}\n\tCram: {:#?}\n\tAligner: {:#?}\n\tLongread: {:#?}\n\tBusco: {:#?}\n\tTelomere: {:#?}\n\tKmerProfile: {:#?}\n\tGenesetPaths: {:#?}\n\tSyntenicPaths: {:#?}\n\t{:#?}",
-                            &self.ReferenceResults,
-                            &self.is_cram_valid(),
-                            &self.AlignerResults,
-                            &self.LongreadResults,
-                            &self.BuscoResults,
-                            &self.TelomereResults,
-                            &self.KmerProfileResults,
-                            &self.GenesetResults,
-                            &self.SyntenicResults,
-                            &self.CramResults,
+                                      &self.reference_results,
+                                      &self.is_cram_valid(),
+                                      &self.aligner_results,
+                                      &self.longread_results,
+                                      &self.busco_results,
+                                      &self.telomere_results,
+                                      &self.kmer_profile_results,
+                                      &self.geneset_results,
+                                      &self.syntenic_results,
+                                      &self.cram_results,
                         );
             fs::write(output_location, string_data)
         }
 
-        fn check_primaries(&self, primary_list: Vec<Vec<&str>>) -> Vec<String> {
+        // Might need to consider why this has been made an associated function with YamlResults
+        pub fn check_primaries(&self, primary_list: Vec<Vec<&str>>) -> Vec<String> {
             let mut failures = Vec::new();
             for i in primary_list {
                 if !i[1].contains("PASS") {
@@ -104,7 +106,9 @@ pub mod yaml_validator_mod {
             failures
         }
 
-        fn check_secondaries(&'a self, secondary_list: Vec<&'a Vec<String>>) -> Vec<&String> {
+        // Check why this function accepts a Vec<&Vec<String>> while check_primaries accepts
+        // Vec<Vec<&str>>
+        pub fn check_secondaries(&'a self, secondary_list: Vec<&'a Vec<String>>) -> Vec<&String> {
             let mut failures: Vec<&String> = Vec::new();
             for i in secondary_list {
                 let collection = i
@@ -129,14 +133,14 @@ pub mod yaml_validator_mod {
             // will not cause a TreeVal run to fail,
             // may cause missing data if accidentaly ommitted.
             let primary_fields: Vec<Vec<&str>> = vec![
-                vec!["Reference", &self.ReferenceResults],
-                vec!["Aligner", &self.AlignerResults],
-                vec!["Longread Data", &self.LongreadResults],
-                vec!["Busco Paths", &self.BuscoResults],
-                vec!["Telomere Motif", &self.TelomereResults],
+                vec!["Reference", &self.reference_results],
+                vec!["Aligner", &self.aligner_results],
+                vec!["Longread Data", &self.longread_results],
+                vec!["Busco Paths", &self.busco_results],
+                vec!["Telomere Motif", &self.telomere_results],
             ];
             let secondary_fields: Vec<&Vec<String>> =
-                vec![&self.GenesetResults, &self.SyntenicResults];
+                vec![&self.geneset_results, &self.syntenic_results];
 
             let failed_primaries = self.check_primaries(primary_fields);
             let failed_secondary = self.check_secondaries(secondary_fields);
@@ -164,11 +168,11 @@ pub mod yaml_validator_mod {
     // This was helpful for breaking out of a function early
     // without having to generate some dummy files.
     #[derive(Debug, Serialize, Deserialize, Default)]
-    struct CRAMtags {
-        header_sort_order: Vec<String>,
-        other_header_fields: Vec<String>,
-        reference_sequence: Vec<usize>,
-        header_read_groups: Vec<String>,
+    pub struct CRAMtags {
+        pub header_sort_order: Vec<String>,
+        pub other_header_fields: Vec<String>,
+        pub reference_sequence: Vec<usize>,
+        pub header_read_groups: Vec<String>,
     }
 
     impl std::fmt::Display for CRAMtags {
@@ -185,20 +189,20 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct TreeValYaml {
-        assembly: Assembly,
-        reference_file: String,
-        map_order: String,
-        assem_reads: AssemReads,
-        hic_data: HicReads,
-        kmer_profile: KmerProfile,
-        alignment: Alignment,
-        self_comp: SelfComp,
-        intron: Intron,
-        telomere: Telomere,
-        synteny: Synteny,
-        busco: Busco,
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct TreeValYaml {
+        pub assembly: Assembly,
+        pub reference_file: String,
+        pub map_order: String,
+        pub assem_reads: AssemReads,
+        pub hic_data: HicReads,
+        pub kmer_profile: KmerProfile,
+        pub alignment: Alignment,
+        pub self_comp: SelfComp,
+        pub intron: Intron,
+        pub telomere: Telomere,
+        pub synteny: Synteny,
+        pub busco: Busco,
     }
 
     /// Struct functions
@@ -209,15 +213,15 @@ pub mod yaml_validator_mod {
         /// there is nothing to return but clippy with complain about the let.
         fn into_results(self) -> YamlResults<'static> {
             let results = YamlResults {
-                ReferenceResults: self.validate_fasta(),
-                CramResults: self.hic_data.validate_cram().1,
-                AlignerResults: self.hic_data.validate_aligner(),
-                LongreadResults: self.assem_reads.validate_longread(),
-                BuscoResults: self.busco.validate_busco_path(),
-                TelomereResults: self.telomere.validate_telomere(),
-                KmerProfileResults: self.validate_kmer_prof(),
-                GenesetResults: self.validate_genesets(),
-                SyntenicResults: self.validate_synteny(),
+                reference_results: self.validate_fasta(),
+                cram_results: self.hic_data.validate_cram().1,
+                aligner_results: self.hic_data.validate_aligner(),
+                longread_results: self.assem_reads.validate_longread(),
+                busco_results: self.busco.validate_busco_path(),
+                telomere_results: self.telomere.validate_telomere(),
+                kmer_profile_results: self.validate_kmer_prof(),
+                geneset_results: self.validate_genesets(),
+                syntenic_results: self.validate_synteny(),
                 phantom: PhantomData,
             };
             results
@@ -225,7 +229,8 @@ pub mod yaml_validator_mod {
 
         #[allow(dead_code)]
         /// Validate that the input fasta is infact a fasta format and count records.
-        fn validate_fasta(&self) -> String {
+        /// is this checking it is a fasta format or just that it has records?
+        pub fn validate_fasta(&self) -> String {
             let reader = fasta::reader::Builder.build_from_path(&self.reference_file);
 
             let mut binding = reader.expect("NO VALID HEADER / SEQUENCE PAIRS");
@@ -238,12 +243,13 @@ pub mod yaml_validator_mod {
             }
         }
 
-        fn validate_csv(&self, csv_path: &String) -> String {
+        /// Are there standard functions to do this?
+        pub fn validate_csv(&self, csv_path: &String) -> String {
             let file = File::open(csv_path);
 
             match file {
                 Ok(valid_data) => {
-                    format!("PASS: {}", csv_path);
+                    // format!("PASS: {}", csv_path);
                     let name = &csv_path.split('/').collect::<Vec<&str>>();
 
                     let mut reader = ReaderBuilder::new()
@@ -348,23 +354,23 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct KmerProfile {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct KmerProfile {
         kmer_length: u16,
         dir: String,
     }
 
     impl KmerProfile {}
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct HicReads {
-        hic_cram: String,
-        hic_aligner: String,
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct HicReads {
+        pub hic_cram: String,
+        pub hic_aligner: String,
     }
 
     impl HicReads {
         /// Validate the aligner against a set Vec of options
-        fn validate_aligner(&self) -> String {
+        pub fn validate_aligner(&self) -> String {
             // Should be const
             let aligners = vec!["bwamem2".to_string(), "minimap2".to_string()];
             if aligners.contains(&self.hic_aligner.to_string()) {
@@ -474,8 +480,8 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Assembly {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Assembly {
         sample_id: String,  // Anything the user wants
         latin_name: String, // Not in use but maybe in future, how to validate a latin name. Api call with a fallback to yes... it is alphabetical
         defined_class: String,
@@ -483,16 +489,20 @@ pub mod yaml_validator_mod {
         project_id: String, // Can be anything the user wants, not in use
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct AssemReads {
-        read_type: String,
-        read_data: String,
-        supplementary_data: String, // Not yet in use
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct AssemReads {
+        pub read_type: String,
+        pub read_data: String,
+        pub supplementary_data: String, // Not yet in use
     }
 
     impl AssemReads {
+        // It looks like this function is trying to validate the location of files with
+        // .fasta.gz extension, but it takes into account only the files that do not have
+        // .fasta.gz extension.
+        //
         /// Validate the location of the FASTA.GZ long read files
-        fn validate_longread(&self) -> String {
+        pub fn validate_longread(&self) -> String {
             let main_path_check = validate_paths(&self.read_data);
 
             if main_path_check.contains("FAIL") {
@@ -502,10 +512,15 @@ pub mod yaml_validator_mod {
 
             let list_of_files = get_file_list(&self.read_data);
 
+            // We might have to check
+            // https://doc.rust-lang.org/std/path/struct.Path.html#method.ends_with
+            // Might have to use .extension() to get the extension
             let fasta_reads = &list_of_files
                 .into_iter()
                 .filter(|f| !f.ends_with(".fasta.gz"))
                 .collect::<Vec<PathBuf>>();
+
+            println!("{:?}", fasta_reads);
 
             if !fasta_reads.is_empty() {
                 format!(
@@ -519,33 +534,33 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Alignment {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Alignment {
         data_dir: String,
         common_name: String, // Not yet in use
         geneset_id: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct SelfComp {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct SelfComp {
         motif_len: u16,
         mummer_chunk: u16,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Intron {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Intron {
         size: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Telomere {
-        teloseq: String,
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Telomere {
+        pub teloseq: String,
     }
 
     impl Telomere {
         /// Validate whether the telomere motif is ALPHABETICAL
         /// No upper bound as motifs can be large.
-        fn validate_telomere(&self) -> String {
+        pub fn validate_telomere(&self) -> String {
             if self.teloseq.chars().all(char::is_alphabetic)
                 && self.teloseq.chars().collect::<Vec<_>>().len() > 3
             {
@@ -556,14 +571,14 @@ pub mod yaml_validator_mod {
         }
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Synteny {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Synteny {
         synteny_path: String,
         synteny_genomes: String,
     }
 
-    #[derive(Debug, Serialize, Deserialize)]
-    struct Busco {
+    #[derive(Debug, Serialize, Deserialize, Default)]
+    pub struct Busco {
         lineages_path: String,
         lineage: String,
     }
