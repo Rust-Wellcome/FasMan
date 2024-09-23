@@ -554,13 +554,13 @@ pub mod yaml_validator_mod {
 
     #[derive(Debug, Serialize, Deserialize, Default)]
     pub struct Telomere {
-        teloseq: String,
+        pub teloseq: String,
     }
 
     impl Telomere {
         /// Validate whether the telomere motif is ALPHABETICAL
         /// No upper bound as motifs can be large.
-        fn validate_telomere(&self) -> String {
+        pub fn validate_telomere(&self) -> String {
             if self.teloseq.chars().all(char::is_alphabetic)
                 && self.teloseq.chars().collect::<Vec<_>>().len() > 3
             {

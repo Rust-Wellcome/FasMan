@@ -1,5 +1,6 @@
 use fasta_manipulation::yaml_validator_mod::{
-    get_file_list, validate_paths, AssemReads, CRAMtags, HicReads, TreeValYaml, YamlResults,
+    get_file_list, validate_paths, AssemReads, CRAMtags, HicReads, Telomere, TreeValYaml,
+    YamlResults,
 };
 use std::path::PathBuf;
 
@@ -280,4 +281,28 @@ fn validate_longread_invalid_paths() {
         "FAIL : test_data/iyAndFlav1/tiny/tiny_test1.fa",
         assem_read.validate_longread()
     );
+}
+
+#[test]
+fn check_validate_telomere_pass() {
+    let telomere = Telomere {
+        teloseq: "AGGGTT".to_string(),
+    };
+    assert_eq!("PASS : AGGGTT", telomere.validate_telomere());
+}
+
+#[test]
+fn check_validate_telomere_fail_non_alphabetic() {
+    let telomere = Telomere {
+        teloseq: "TTGGAA1".to_string(),
+    };
+    assert_eq!("FAIL : TTGGAA1", telomere.validate_telomere());
+}
+
+#[test]
+fn check_validate_telomere_fail_character_length() {
+    let telomere = Telomere {
+        teloseq: "TTG".to_string(),
+    };
+    assert_eq!("FAIL : TTG", telomere.validate_telomere());
 }
