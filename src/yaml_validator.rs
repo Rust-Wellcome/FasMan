@@ -491,14 +491,18 @@ pub mod yaml_validator_mod {
 
     #[derive(Debug, Serialize, Deserialize, Default)]
     pub struct AssemReads {
-        read_type: String,
-        read_data: String,
-        supplementary_data: String, // Not yet in use
+        pub read_type: String,
+        pub read_data: String,
+        pub supplementary_data: String, // Not yet in use
     }
 
     impl AssemReads {
+        // It looks like this function is trying to validate the location of files with
+        // .fasta.gz extension, but it takes into account only the files that do not have
+        // .fasta.gz extension.
+        //
         /// Validate the location of the FASTA.GZ long read files
-        fn validate_longread(&self) -> String {
+        pub fn validate_longread(&self) -> String {
             let main_path_check = validate_paths(&self.read_data);
 
             if main_path_check.contains("FAIL") {
@@ -508,10 +512,15 @@ pub mod yaml_validator_mod {
 
             let list_of_files = get_file_list(&self.read_data);
 
+            // We might have to check
+            // https://doc.rust-lang.org/std/path/struct.Path.html#method.ends_with
+            // Might have to use .extension() to get the extension
             let fasta_reads = &list_of_files
                 .into_iter()
                 .filter(|f| !f.ends_with(".fasta.gz"))
                 .collect::<Vec<PathBuf>>();
+
+            println!("{:?}", fasta_reads);
 
             if !fasta_reads.is_empty() {
                 format!(

@@ -1,5 +1,5 @@
 use fasta_manipulation::yaml_validator_mod::{
-    get_file_list, validate_paths, CRAMtags, HicReads, TreeValYaml, YamlResults,
+    get_file_list, validate_paths, AssemReads, CRAMtags, HicReads, TreeValYaml, YamlResults,
 };
 use std::path::PathBuf;
 
@@ -239,5 +239,45 @@ fn check_validate_aligner_for_fail() {
     assert_eq!(
         "FAIL : bwa NOT IN [\"bwamem2\", \"minimap2\"]",
         hic_reads.validate_aligner()
+    );
+}
+
+#[test]
+fn check_validate_longread_pass() {
+    let read_data = "test_data/iyAndFlav1/tiny/tiny_test.fa".to_string();
+    let assem_read = AssemReads {
+        read_data,
+        ..Default::default()
+    };
+    assert_eq!(
+        "PASS : test_data/iyAndFlav1/tiny/tiny_test.fa : FASTA.GZ = 1",
+        assem_read.validate_longread()
+    );
+}
+
+// Revise this test
+#[test]
+fn check_validate_longread_fail() {
+    let read_data = "test_data/iyAndFlav1/tiny/empty.fasta.gz".to_string();
+    let assem_read = AssemReads {
+        read_data,
+        ..Default::default()
+    };
+    assert_eq!(
+        "PASS : test_data/iyAndFlav1/tiny/empty.fasta.gz : FASTA.GZ = 1",
+        assem_read.validate_longread()
+    );
+}
+
+#[test]
+fn validate_longread_invalid_paths() {
+    let read_data = "test_data/iyAndFlav1/tiny/tiny_test1.fa".to_string();
+    let assem_read = AssemReads {
+        read_data,
+        ..Default::default()
+    };
+    assert_eq!(
+        "FAIL : test_data/iyAndFlav1/tiny/tiny_test1.fa",
+        assem_read.validate_longread()
     );
 }
