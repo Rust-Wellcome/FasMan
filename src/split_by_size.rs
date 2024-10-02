@@ -1,5 +1,5 @@
 pub mod split_by_size_mod {
-    use crate::generics::{only_keys, validate_fasta, write_fasta};
+    use crate::generics::{only_keys, sanitise_header, validate_fasta, write_fasta};
     use clap::ArgMatches;
     use noodles::fasta;
     use noodles::fasta::record::Definition;
@@ -11,21 +11,26 @@ pub mod split_by_size_mod {
     pub fn find_chunks<'a>(
         header_sizes: &'a HashMap<std::string::String, usize>,
         size: &usize,
-    ) -> HashMap<usize, HashMap<&'a String, &'a usize>> {
+        data_type: &str,
+        sanitise: &bool,
+    ) -> HashMap<usize, HashMap<String, &'a usize>> {
         //let mut new_map = HashMap::new();
         let mut chunk = 1;
-        let mut new_map: HashMap<usize, HashMap<&String, &usize>> = HashMap::new();
-        let mut subset_map: HashMap<&String, &usize> = HashMap::new();
-        let mut temp_map: HashMap<&String, &usize> = HashMap::new();
+        let mut new_map: HashMap<usize, HashMap<String, &usize>> = HashMap::new();
+        let mut subset_map: HashMap<String, &usize> = HashMap::new();
+        let mut temp_map: HashMap<String, &usize> = HashMap::new();
 
         for i in header_sizes {
-            let scaff_name = i.0;
+            let scaff_name = if sanitise.to_owned() {
+                sanitise_header(&Definition::new(i.0.to_string(), None), data_type)
+            } else {
+                i.0.to_string()
+            };
             let scaff_size = i.1;
-            // If scaffold size is greater than chunk then output
-            // straight away
-            if i.1 > size {
+            // If scaffold size is greater than chunk then output straight away
+            if scaff_size > size {
                 // Must be something cleaner for this bit
-                temp_map.insert(scaff_name, scaff_size);
+                temp_map.insert(scaff_name.clone(), scaff_size);
                 new_map.insert(chunk, temp_map);
 
                 // Clear Hashmap
@@ -34,7 +39,7 @@ pub mod split_by_size_mod {
             // If Scaffold not > chunk size, add to HashMap
             // scan through HashMap and check whether greater than Chunk.
             } else {
-                subset_map.insert(scaff_name, scaff_size);
+                subset_map.insert(scaff_name.clone(), scaff_size);
                 // If this list sums to larger than Chunk then
                 // remove last item and check again.
                 // if removing [-1] makes total size < chunk
@@ -43,7 +48,7 @@ pub mod split_by_size_mod {
                 if subset_map.len() > 1 {
                     let summed: usize = subset_map.values().copied().sum();
                     if summed > *size {
-                        subset_map.remove(scaff_name);
+                        subset_map.remove(&scaff_name.clone());
                         let summed: usize = subset_map.values().copied().sum();
                         if summed < *size {
                             new_map.insert(chunk, subset_map);
@@ -52,12 +57,12 @@ pub mod split_by_size_mod {
                             println!("ERROR: MORE LOGIC NEEDED TO SPLIT UP")
                         }
                         subset_map = HashMap::new();
-                        subset_map.insert(scaff_name, scaff_size);
+                        subset_map.insert(scaff_name.clone(), scaff_size);
                     }
                 }
             }
         }
-        new_map.insert(chunk.to_owned(), subset_map.to_owned());
+        new_map.insert(chunk, subset_map.clone());
 
         new_map
     }
@@ -66,6 +71,7 @@ pub mod split_by_size_mod {
         let fasta_file: &String = arguments.unwrap().get_one::<String>("fasta-file").unwrap();
         let chunk_size: &usize = arguments.unwrap().get_one::<usize>("mem-size").unwrap();
         let data_type: &String = arguments.unwrap().get_one::<String>("data_type").unwrap();
+        let sanitise: &bool = arguments.unwrap().get_one::<bool>("sanitise").unwrap();
         let outpath: &String = arguments
             .unwrap()
             .get_one::<String>("output-directory")
@@ -87,7 +93,7 @@ pub mod split_by_size_mod {
         let results = validation.unwrap();
 
         // Returns only the HashMap< usize, Hashmap<String, usize>>
-        let split_hash = find_chunks(&results, chunk_size);
+        let split_hash = find_chunks(&results, chunk_size, data_type, sanitise);
 
         // Duplicated from TPF_FASTA
         // Should be abstracted into generics
@@ -104,7 +110,7 @@ pub mod split_by_size_mod {
 
         for i in split_hash {
             let mut record_list: Vec<Record> = Vec::new();
-            let list: Vec<&String> = only_keys(i.1.to_owned()).collect();
+            let list: Vec<String> = only_keys(i.1.to_owned()).collect();
             for ii in list {
                 let results = fasta_repo.get(ii.as_bytes()).transpose();
                 let new_rec = match results {
@@ -120,6 +126,5 @@ pub mod split_by_size_mod {
 
             let _ = write_fasta(&new_outpath, file_name, record_list);
         }
-        //println!("{:?}", split_hash)
     }
 }

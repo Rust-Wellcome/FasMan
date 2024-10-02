@@ -29,6 +29,9 @@ use crate::tpf_fasta::tpf_fasta_mod::curate_fasta;
 mod filter_fasta;
 use crate::filter_fasta::filter_fasta_mod::filter_fasta;
 
+mod split_scaffolds;
+use crate::split_scaffolds::split_scaffolds_mod::split_scaffolds;
+
 fn main() -> Result<(), Error> {
     let split_options = ["pep", "cds", "cdna", "rna", "other"];
     let match_result = command!()
@@ -324,6 +327,22 @@ fn main() -> Result<(), Error> {
                 .help("Output file prefix")
         )
     )
+    .subcommand(
+        Command::new("splitscaff")
+            .about("Split scaffolds of a fasta file into user given size. Split scaffolds will be re-named as {existing name}_{SCAFFOLD_SUB_NUMBER}")
+            .arg(
+                Arg::new("fasta-file")
+                    .required(true)
+                    .help("A fasta file for processing")
+            )
+            .arg(
+                Arg::new("scaff_limit")
+                    .short('l')
+                    .value_parser(clap::value_parser!(usize))
+                    .default_value("2000000000")
+                    .help("Max length of scaffold")
+            )
+    )
     .get_matches();
 
     println! {
@@ -345,12 +364,19 @@ fn main() -> Result<(), Error> {
         Some("splitbycount") => {
             split_file_by_count(match_result.subcommand_matches("splitbycount"))
         }
+        Some("splitscaff") => split_scaffolds(match_result.subcommand_matches("splitscaff")),
         //Some("subset") => subset(match_result.subcommand_matches("subset"))
         //Some("profile") => profile(match_result.subcommand_matches("profile"))
+
+        // Map fasta file headers to simpler format.
         Some("mapheaders") => {
             _ = map_fasta_head(match_result.subcommand_matches("mapheaders"));
         }
+
+        // Using the above generated mapping, re_map to the original naming scheme
         Some("remapheaders") => remapping_head(match_result.subcommand_matches("remapheaders")),
+
+        // exclude named scaffolds from an end fasta file
         Some("filterfasta") => filter_fasta(match_result.subcommand_matches("filterfasta")),
 
         // FASTA + TPF = NEW_FASTA

@@ -7,11 +7,11 @@ pub mod split_by_count_mod {
     use std::{fs::File, io::BufReader, path::Path};
 
     #[allow(clippy::needless_return)]
-    fn fix_head(records: Record, sanitise: bool) -> Record {
+    fn fix_head(records: Record, sanitise: bool, data_type: &str) -> Record {
         // Taker a Record and sanitise the header
         // recombine into a new Record
         if sanitise {
-            let header = sanitise_header(records.definition());
+            let header = sanitise_header(records.definition(), data_type);
             let definition = fasta::record::Definition::new(header, None);
             let seq = records.sequence().to_owned();
             return fasta::Record::new(definition, seq);
@@ -61,7 +61,7 @@ pub mod split_by_count_mod {
             let record = result.unwrap();
             counter += 1;
 
-            let final_rec = fix_head(record, *sanitise);
+            let final_rec = fix_head(record, *sanitise, data_type);
             record_list.push(final_rec);
 
             let cmp = natural();
