@@ -2,7 +2,7 @@ use noodles::fasta;
 use noodles::fasta::record::Definition;
 use std::error::Error;
 use std::fs::{self, File, OpenOptions};
-use std::{collections::HashMap, fmt, io::BufRead, result, str};
+use std::{collections::HashMap, fmt, io::BufRead, path::Path, result, str};
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -13,6 +13,15 @@ impl fmt::Display for EmptyVec {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Can't Display Empty Vec")
     }
+}
+
+pub fn ensure_file_exists(file_path: &str) -> std::io::Result<()> {
+    // Check if the file exists
+    if !Path::new(file_path).exists() {
+        // We don't need to return the FILE object, it just needs to be made
+        let _ = File::create(file_path)?;
+    }
+    Ok(())
 }
 
 pub fn validate_fasta(
@@ -99,7 +108,7 @@ pub fn write_fasta(
     // Create file
     fs::create_dir_all(outdir)?;
     let file_path = format!("{}/{}", outdir, file_name);
-    let _data_file = File::create(&file_path);
+    ensure_file_exists(&file_path).unwrap();
 
     // Append to file
     let file = OpenOptions::new()

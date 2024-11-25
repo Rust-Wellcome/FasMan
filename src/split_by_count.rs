@@ -57,6 +57,8 @@ pub mod split_by_count_mod {
 
         // Create a Record List
         let mut record_list: Vec<Record> = Vec::new();
+
+        // Easily going to be a better way of doing this!
         for result in reader.records() {
             let record = result.unwrap();
             counter += 1;

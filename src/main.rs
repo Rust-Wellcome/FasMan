@@ -20,6 +20,9 @@ use crate::split_by_size::split_by_size_mod::split_file_by_size;
 mod split_by_count;
 use crate::split_by_count::split_by_count_mod::split_file_by_count;
 
+mod split_by_x;
+use crate::split_by_x::split_by_x_mod::split_file_by_x;
+
 mod generics;
 //use crate::generics::validate_fasta;
 
@@ -124,6 +127,29 @@ fn main() -> Result<(), Error> {
                     .short('s')
                     .value_parser(clap::value_parser!(bool))
                     .help("Do we need to sanitise the headers of the input fasta")
+            )
+            .arg(
+                Arg::new("output-directory")
+                    .short('o')
+                    .default_value("./")
+                    .help("The output directory that files will be placed in")
+            )
+    )
+    .subcommand(
+        Command::new("splitbyx")
+            .about("Split an input fasta file into x chunks rather than by chunks of Y size or Z number of records.")
+            .arg(
+                Arg::new("fasta-file")
+                    .short('f')
+                    .required(true)
+                    .help("A path to a valid fasta file.")
+            )
+            .arg(
+                Arg::new("count")
+                    .short('c')
+                    .required(true)
+                    .value_parser(clap::value_parser!(usize))
+                    .help("Number of chunks to split the input file into")
             )
             .arg(
                 Arg::new("output-directory")
@@ -345,6 +371,7 @@ fn main() -> Result<(), Error> {
         Some("splitbycount") => {
             split_file_by_count(match_result.subcommand_matches("splitbycount"))
         }
+        Some("splitbyx") => split_file_by_x(match_result.subcommand_matches("splitbyx")),
         //Some("subset") => subset(match_result.subcommand_matches("subset"))
         //Some("profile") => profile(match_result.subcommand_matches("profile"))
         Some("mapheaders") => {
