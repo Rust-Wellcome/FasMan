@@ -241,6 +241,7 @@ pub mod yaml_validator_mod {
         fn validate_csv(&self, csv_path: &String) -> String {
             let file = File::open(csv_path);
 
+            #[allow(unused_must_use, reason = "This is returned by the match")]
             match file {
                 Ok(valid_data) => {
                     format!("PASS: {}", csv_path);

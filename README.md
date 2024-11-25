@@ -1,6 +1,7 @@
 # FasMan
 
 ## A FastaManipulator script that is slowly doing more...
+Currently version 0.1.6
 
 Originally written by @DLBPointon
 Now a collaborative programming project for the Rust@Wellcome group (Sanger).
@@ -51,6 +52,13 @@ This command generates a mapping file of a given fasta files headers to new name
 ## remap_headers
 
 This compliments the above function by using the above generated map file to regenerate the original headers.
+
+## split_by_x
+Split a fasta file into x number of files.
+
+### TODO:
+    - This function could be simplified and all split functions rolled into ONE function.
+    - It uses a modified version of a function in the generics lib. The modified version takes an individual record to write, the original takes a Vec. The modified version is better as it doesn't reqiore multiple savings of potentially large scaffolds.
 
 ## split_by_count
 
